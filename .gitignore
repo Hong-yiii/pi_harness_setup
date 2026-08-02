@@ -1,0 +1,29 @@
+# Secrets and credentials
+.env
+.env.*
+!.env.example
+auth.json
+oauth.json
+*token*
+*secret*
+*credential*
+
+# Pi runtime state
+sessions/
+logs/
+*.jsonl
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+mcp-cache.json
+
+# Local machine cruft
+.DS_Store
+node_modules/
+tmp/
+.cache/
+
+# Generated backups
+*.bak
+*.backup
+backup-*/
