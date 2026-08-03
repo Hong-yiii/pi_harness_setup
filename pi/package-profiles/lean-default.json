@@ -1,0 +1,58 @@
+{
+  "name": "lean-default",
+  "date": "2026-08-03",
+  "scope": "user",
+  "packages": [
+    {
+      "surface": "observability",
+      "source": "npm:pi-observability@1.3.2"
+    },
+    {
+      "surface": "web-search",
+      "source": "npm:pi-web-access@0.17.1"
+    },
+    {
+      "surface": "code-exploration",
+      "source": "npm:pi-lens@3.8.74",
+      "skills": []
+    },
+    {
+      "surface": "subagents",
+      "source": "npm:pi-subagents@0.40.0",
+      "skills": [],
+      "prompts": []
+    },
+    {
+      "surface": "implementation-taste",
+      "source": "npm:@dietrichgebert/ponytail@4.8.4",
+      "skills": []
+    },
+    {
+      "surface": "background-commands",
+      "source": "npm:pi-background-tasks@0.6.0"
+    }
+  ],
+  "skills": [
+    "diagnose",
+    "caveman",
+    "grill-with-docs",
+    "handoff",
+    "to-prd",
+    "to-issues",
+    "zoom-out"
+  ],
+  "excluded": [
+    {
+      "source": "npm:@season179/pi-worktree",
+      "reason": "Persistent PR lanes use native Git worktrees so Pi, tools, and subagents share the same real cwd."
+    },
+    {
+      "source": "npm:@quintinshaw/pi-dynamic-workflows",
+      "reason": "Routing, loops, and evals are repo-owned explicit automation."
+    },
+    {
+      "source": "npm:@malinamnam/pi-phone",
+      "reason": "Remote access uses Tailscale, SSH/Mosh, tmux, and cmux."
+    }
+  ]
+}

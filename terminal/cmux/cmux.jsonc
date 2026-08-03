@@ -1,0 +1,81 @@
+{
+  "$schema": "https://raw.githubusercontent.com/manaflow-ai/cmux/main/web/data/cmux.schema.json",
+  "schemaVersion": 1,
+  "app": {
+    "appearance": "system",
+    "newWorkspacePlacement": "afterCurrent",
+    "workspaceInheritWorkingDirectory": true,
+    "focusPaneOnFirstClick": true,
+    "openSupportedFilesInCmux": true,
+    "openMarkdownInCmuxViewer": true,
+    "confirmQuit": "dirty-only",
+    "sendAnonymousTelemetry": false
+  },
+  "terminal": {
+    "showScrollBar": true,
+    "copyOnSelect": true,
+    "autoResumeAgentSessions": false,
+    "showTextBoxOnNewTerminals": false,
+    "focusTextBoxOnNewTerminals": false,
+    "textBoxMaxLines": 8
+  },
+  "browser": {
+    "openTerminalLinksInCmuxBrowser": true,
+    "hostsToOpenInEmbeddedBrowser": [
+      "localhost",
+      "127.0.0.1",
+      "*.local",
+      "*.ts.net"
+    ]
+  },
+  "notifications": {
+    "dockBadge": true,
+    "showInMenuBar": true,
+    "unreadPaneRing": true,
+    "paneFlash": true,
+    "agentPermissionPrompt": true,
+    "agentTurnComplete": "whenIdle",
+    "agentIdleReminder": true,
+    "sound": "default",
+    "hooksMode": "append"
+  },
+  "automation": {
+    "socketControlMode": "cmuxOnly",
+    "suppressSubagentNotifications": true,
+    "workspaceAutoNaming": false
+  },
+  "sidebar": {
+    "showWorkspaceDescription": true,
+    "branchLayout": "vertical",
+    "showNotificationMessage": true,
+    "notificationMessageLineLimit": 8,
+    "showBranchDirectory": true,
+    "showPullRequests": true,
+    "watchGitStatus": true,
+    "showSSH": true,
+    "showPorts": true,
+    "showProgress": true,
+    "showAgentActivity": true
+  },
+  "shortcuts": {
+    "showModifierHoldHints": true,
+    "bindings": {
+      "focusLeft": [
+        "ctrl+b",
+        "h"
+      ],
+      "focusDown": [
+        "ctrl+b",
+        "j"
+      ],
+      "focusUp": [
+        "ctrl+b",
+        "k"
+      ],
+      "focusRight": [
+        "ctrl+b",
+        "l"
+      ]
+    }
+  }
+}

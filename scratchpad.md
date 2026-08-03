@@ -87,7 +87,16 @@ Initial synthesis after critique pass:
 - Use profiles: base, research, parallel, remote, experimental.
 - Strong early candidates: one observability/status package, `pi-web-access`, `pi-lens`, one worktree package, then `pi-subagents`.
 - Build deterministic loop/eval harnesses in this repo using Pi SDK/RPC/JSON mode.
-- Trial `@quintinshaw/pi-dynamic-workflows` later as the orchestrator lane, not as the evaluation truth. Disable triggers and cap fanout.
-- Keep `context-mode`, Ponytail, browser/phone UI, and read/edit replacement packages in experimental until measured.
+- Trial `@quintinshaw/pi-dynamic-workflows` later as the orchestrator lane, not as the evaluation truth. It is complementary to `pi-subagents`, but overlaps in fanout, status, budgets, model routing, and worktrees. Disable triggers and cap fanout.
+- Use Ponytail as a selected implementation/review trial, not research default.
+- Keep `context-mode`, browser/phone UI, and read/edit replacement packages in experimental until measured.
 - Keep one owner per surface: web/fetch, code exploration, read/edit replacement, plan mode, worktrees, observability UI, remote/mobile, orchestration.
 - New repo ritual: accumulate ideas in `docs/reviews/current-plan-review.md`, then build from reviewed batches.
+
+## 2026-08-03 Chart Iteration
+
+- `pi-subagents`: most mature Pi-native subagent candidate. Day-to-day delegation owner.
+- `@quintinshaw/pi-dynamic-workflows`: promising orchestrator candidate. Trial later with `/workflows-trigger off`, budgets, and reviewed saved workflows.
+- `pi-phone`: Pi-native phone UI, but low adoption and unknown license. Use only behind Tailscale after source review.
+- Usher: not a Pi package, but attractive cross-agent browser/PWA hub for Pi + Codex + Claude. Very early adoption, clearer security docs.
+- Ponytail: use, but profile-scoped. Good for implementation/review taste; off during research unless requested.

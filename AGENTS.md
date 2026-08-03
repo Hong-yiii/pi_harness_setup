@@ -12,6 +12,8 @@ This repo documents and reconstructs a personal Pi coding-agent harness.
 - Put current research synthesis in `docs/research/`.
 - Put rebuild steps in `docs/runbooks/`.
 - Put versioned Pi assets under `pi/agent/`.
+- Keep the selected cross-agent skill sources under `skills/`; the apply script publishes them to `~/.agents/skills`.
+- Put deterministic routing, loops, and evals under `automation/`; do not load them into ordinary interactive Pi sessions.
 
 ## Research Rules
 
@@ -28,6 +30,8 @@ This repo documents and reconstructs a personal Pi coding-agent harness.
 - If behavior must be enforced, prefer a Pi extension over a prompt-only instruction.
 - Before installing packages or making substantial harness changes, update `docs/reviews/current-plan-review.md`, identify the affected surface, and confirm the change belongs in the next reviewed build batch.
 - Prefer one active owner per high-authority surface: web/search, code exploration, read/edit, plan mode, worktrees, subagents, orchestration, observability, remote/mobile, and UI.
+- Do not add a project-local `.pi/` package profile here; it would duplicate the user-level harness while working on this repo. The reusable profile is `pi/package-profiles/lean-default.json` and is applied by `scripts/apply-pi-setup.mjs`.
+- Keep notes, research, reviews, and decisions outside Pi resource-discovery directories so they do not become ambient context.
 
 ## Target Environment
 
