@@ -1,7 +1,7 @@
 # Current Plan Review
 
 Date started: 2026-08-02
-Status: Draft, not ready to build
+Status: Lean-default batch executed at user scope on 2026-08-03
 
 ## Purpose
 
@@ -37,23 +37,26 @@ Build a reproducible personal Pi harness for:
 ## Current Shape
 
 | Layer | Current State | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Base Pi | Use upstream Pi as documented base. | OMP remains a separate benchmark/trial lane, not the foundation. |
 | Repo as source of truth | Active. | Config, decisions, runbooks, prompts, agents, and future scripts live here. |
-| Package policy | Drafted. | Use profiles: `base`, `research`, `parallel`, `remote`, `experimental`. |
+| Package policy | Lean default accepted. | Keep normal sessions small; move orchestration and remote controls out of the default. |
 | Safety | Underdefined. | Needs explicit package audit checklist and secret/log policy before autonomy increases. |
-| Terminal/session interface | tmux/Tailscale baseline, cmux intended as an interface, mosh possible for phone/flaky networks. | Need compare cmux vs tmux roles rather than treating them as mutually exclusive too early. |
-| Observability | Required, not selected. | Likely one local status layer first, then OTLP/Langfuse later if needed. |
-| Web research | `pi-web-access` is leading candidate. | Research profile first, browser-cookie paths disabled. |
-| Code exploration | `pi-lens` is leading candidate. | Trial alone before any read/edit replacement package. |
+| Terminal/session interface | tmux/Tailscale baseline, cmux intended as Mac cockpit, mosh possible for phone/flaky networks. | cmux is not a tmux replacement. tmux owns durability; cmux owns visual control, notifications, browser panes, and Mac/iOS surface. |
+| Observability | `pi-observability` installed as first local status layer. | Trial behavior in real interactive sessions before adding sidebar/status packages. |
+| Web research | `pi-web-access` installed. | Browser-cookie paths stay disabled unless deliberately enabled. |
+| Code exploration | `pi-lens` installed. | Trial alone before any read/edit replacement package. |
 | Read/edit replacement | Stock Pi first. | `pi-hashline-readmap` or `pi-readseek` later, one at a time. |
-| Plan mode | Existing/simple plan mode first. | Plannotator is a trial candidate if visual annotation matters. |
-| Worktrees | Must-have. | Pick exactly one manual worktree owner first. Dynamic workflows may own orchestrated worktrees later. |
-| Subagents | Important. | `pi-subagents` is likely first package after worktree flow. |
-| Orchestration | Desired but later. | `@quintinshaw/pi-dynamic-workflows` is strongest candidate; trigger off and hard caps if trialed. |
+| Structured user decisions | Stock Pi UI prompts only. | `pi-ask-user` is a trial candidate for a model-callable `ask_user` tool and bundled decision-gating skill; not installed yet. |
+| Plan mode | Existing/simple plan mode remains enabled globally. | Plannotator is a trial candidate if visual annotation matters. |
+| Worktrees | Native Git worktrees own persistent PR lanes; `piwt` is an optional shell helper. | `pi-subagents` may own temporary child worktrees only for explicit parallel writer runs. |
+| Subagents | `pi-subagents` installed as day-to-day delegation owner. | Bundled example `subagent` symlink was disabled to avoid duplicate tool ownership. |
+| Orchestration | Remove the dynamic-workflows extension from the default. | Repo-owned routing, loops, and evals live under `automation/` and run explicitly. |
 | Deterministic loops/evals | Repo-owned. | Build with Pi SDK/RPC/JSON mode; this is the evaluation truth. |
-| Remote/mobile | Tailscale + durable sessions first. | Trial one phone/web/Telegram/Usher-style surface after threat model. |
-| Minimalism/taste | Ponytail is interesting. | Keep opt-in for implementation/review, not research. |
+| Remote/mobile | Tailscale + SSH/Mosh + tmux/cmux. | `pi-phone` and Usher are excluded for now. |
+| Minimalism/taste | Ponytail remains in the default at `lite`. | Its bundled command skills are hidden from the default skill catalog. |
+| Background commands | Add a focused background-task owner. | Pin `pi-background-tasks@0.6.0`; later releases add unrelated always-on orchestration. |
+| Skills | Seven general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
 | Context/memory | `context-mode` is interesting. | Experimental until measured on real research tasks. |
 
 ## Surface Ownership
@@ -61,19 +64,152 @@ Build a reproducible personal Pi harness for:
 Pick one active owner per high-authority surface:
 
 | Surface | First Owner | Trial Later | Avoid |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Web/search/fetch | `pi-web-access` | `context-mode` fetch/index tools | Multiple web/MCP fetch stacks at once |
 | Code exploration | `pi-lens` | semantic index package | Installing LSP/index/hashline bundles together first |
 | Read/edit replacement | stock Pi | `pi-hashline-readmap` or `pi-readseek` | More than one read/edit override |
 | Plan mode | bundled/simple plan mode | Plannotator | Two plan owners with different approval state |
-| Manual worktrees | one narrow worktree package | `pi-worktree` or `@pandi-coding-agent/worktree` | Multiple worktree managers |
-| Orchestrated worktrees | none initially | `@quintinshaw/pi-dynamic-workflows` | Letting two orchestrators own branch cleanup |
-| Human status | one local status package | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
-| Remote/mobile | SSH/tmux/Tailscale/cmux baseline | one web/phone/Telegram/Usher surface | Public web exposure or multiple remote controllers |
+| Structured user decisions | stock Pi UI prompts | `pi-ask-user` | Multiple tools or skills enforcing competing decision gates |
+| Persistent PR worktrees | native Git CLI, optionally through `piwt` | a package only after a new compatibility review | Starting Pi before entering the real worktree |
+| Temporary child worktrees | `pi-subagents` with explicit `worktree: true` | repo-owned automation later | Letting two orchestrators own branch cleanup |
+| Human status | `pi-observability` | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
+| Remote/mobile | SSH/tmux/Tailscale/cmux baseline | Revisit a controller only after the baseline is proven | Public web exposure or multiple remote controllers |
+
+## Lean Default Batch 2026-08-03
+
+Status: Executed at user scope
+
+Default package owners:
+
+- observability: `pi-observability`,
+- web/search: `pi-web-access`,
+- code exploration: `pi-lens`,
+- persistent PR worktrees: native Git CLI with optional `piwt`,
+- subagents and temporary child worktrees: `pi-subagents`,
+- implementation taste: `@dietrichgebert/ponytail` at `lite`,
+- background commands: `pi-background-tasks@0.6.0`.
+
+Default non-package extensions:
+
+- Pi's bundled plan mode,
+- the cmux Pi lifecycle hook.
+
+Remove from the default:
+
+- `@quintinshaw/pi-dynamic-workflows`,
+- `@malinamnam/pi-phone`,
+- package-bundled skills and prompts that are not needed for normal tool operation.
+
+Repo shape:
+
+- `pi/agent/` and `pi/package-profiles/` are the reproducible source of truth.
+- `scripts/apply-pi-setup.mjs` applies the profile to user-level Pi config on a fresh machine.
+- `automation/` is reserved for explicit repo-owned routing, loops, and evals; nothing there loads into every Pi session.
+- this repo intentionally has no active project-local `.pi/` package list, which
+  prevents the user-level packages from loading twice while editing the harness.
+
+Trust and rollback:
+
+- Preserve unrelated global Pi settings and packages.
+- Back up `~/.pi/agent/settings.json` before changing it.
+- Pin the background-task package because its newer release adds an unrelated always-active multi-model workflow.
+- Do not remove skills from `~/.agents/skills`; filter them only for Pi so other harnesses remain unaffected.
+
+Validation:
+
+- all six pinned user packages appear in `pi list`,
+- `@season179/pi-worktree` is absent,
+- dynamic workflows and Pi Phone are absent,
+- the user package audit reports zero vulnerabilities,
+- Pi sees six auto-invokable general skills, four Pi Lens guides, and the
+  manual-only `zoom-out` skill,
+- a fresh second apply completed without changing the selected package set.
+
+## Native Worktree Correction 2026-08-04
+
+Status: Accepted for immediate application
+
+Affected surfaces: worktrees, subagents, safety, and documentation.
+
+Decision:
+
+- remove `@season179/pi-worktree` from the lean profile;
+- use native persistent sibling worktrees for concurrent PR lanes;
+- publish the optional `piwt <branch> [base]` zsh helper;
+- keep one writer per PR worktree;
+- allow `pi-subagents` to own temporary child worktrees only when an explicit
+  parallel writer run uses `worktree: true`.
+
+Reason: the package creates a real Git worktree but leaves Pi's logical
+`ctx.cwd` at the original checkout and redirects only selected built-in tools.
+Custom tools and child processes can therefore resolve cwd and artifacts
+against the original checkout while parent file tools resolve against the
+generated worktree.
+
+Rollback: restore the previous profile/settings backup and re-add the pinned
+package only after documenting which subagent workflows are prohibited.
+
+Smoke test:
+
+- apply the profile and confirm `pi list` omits `@season179/pi-worktree`;
+- source `~/.config/pi_harness_setup/piwt.zsh`;
+- create a test branch/worktree and confirm shell `pwd`, Pi cwd, and subagent
+  cwd identify the same directory;
+- remove the test worktree explicitly with Git.
+
+## cmux Setup Batch
+
+Status: Executed locally on macOS; homelab validation pending
+
+Goal: make cmux the Mac-native visual interface while preserving tmux as durable session truth.
+
+Candidate contents:
+
+- install or repair cmux cask/CLI,
+- back up and merge `~/.config/cmux/cmux.json`,
+- add Ghostty rendering defaults,
+- add tmux mouse/QOL defaults,
+- configure Vim-style pane navigation chords in cmux and tmux,
+- install local Pi cmux hook,
+- install tmux, mosh, and Neovim,
+- verify local cmux config,
+- verify `cmux ssh homelab`,
+- defer remote tmux beta until plain SSH works,
+- defer cmux iOS beta until Mac + Tailscale path is stable.
+
+Trust notes:
+
+- cmux is a native macOS app with CLI/socket automation authority.
+- Project `.cmux/cmux.json` actions are executable and should be reviewed before trust.
+- Remote cmux features upload a relay binary to the remote host under `~/.cmux/bin`.
+- Phone notifications may send notification text through cmux/Apple push unless hidden-content mode is enabled.
+
+Rollback:
+
+- uninstall cask,
+- restore previous `~/.config/cmux/cmux.json`,
+- restore previous `~/.config/ghostty/config`,
+- restore previous `~/.tmux.conf`.
+
+Executed locally:
+
+- cmux app found at `/Applications/cmux.app`.
+- cmux CLI linked to `/opt/homebrew/bin/cmux`.
+- Applied repo templates to `~/.config/cmux/cmux.json`, `~/.config/ghostty/config`, and `~/.tmux.conf`.
+- Installed `tmux`, `mosh`, and `neovim`.
+- Installed cmux Pi hook at `~/.pi/agent/extensions/cmux-session.ts`.
+- Validated `cmux config check`, tmux smoke session, and Pi smoke response.
+
+Pending:
+
+- `cmux notify` live UI test while cmux app is open.
+- homelab SSH alias and `cmux ssh homelab`.
+- optional remote tmux beta after plain SSH is stable.
+- optional cmux iOS beta after Tailscale Mac-phone path is stable.
 
 ## Candidate Build Batch 1
 
-Status: Not ready
+Status: Accepted for initialization on 2026-08-03
 
 Goal: create the boring substrate before adding autonomy.
 
@@ -96,7 +232,7 @@ Open gates:
 
 ## Candidate Build Batch 2
 
-Status: Not ready
+Status: Partially accepted for initialization on 2026-08-03
 
 Goal: add code exploration and safe parallel workspace behavior.
 
@@ -105,19 +241,22 @@ Candidate contents:
 - `pi-lens` trial,
 - one manual worktree package trial,
 - `pi-subagents` trial,
-- first deterministic RPC/SDK eval skeleton.
+- first deterministic RPC/SDK eval skeleton,
+- Ponytail implementation/review profile trial.
 
 Open gates:
 
 - choose manual worktree owner,
 - decide subagent caps and tool inheritance rules,
-- choose a small real repo/task set for eval comparison.
+- choose a small real repo/task set for eval comparison,
+- decide Ponytail default level and when it is off.
 
 ## Candidate Build Batch 3
 
-Status: Not ready
+Status: Superseded by the lean-default batch on 2026-08-03
 
-Goal: add richer orchestration and remote/mobile surfaces.
+Historical goal: add richer orchestration and remote/mobile surfaces. These
+items are no longer approved defaults; retain them as research history only.
 
 Candidate contents:
 
@@ -125,7 +264,7 @@ Candidate contents:
 - `@quintinshaw/pi-dynamic-workflows` trial with trigger off and hard caps,
 - one remote/mobile surface over Tailscale,
 - `context-mode` before/after measurement,
-- optional Ponytail implementation/review mode.
+- optional Usher comparison if the goal becomes cross-agent remote control.
 
 Open gates:
 
@@ -134,24 +273,77 @@ Open gates:
 - define fanout budgets and workflow artifact storage,
 - decide what measurements make `context-mode` worth keeping.
 
+## Initialization Batch 2026-08-03
+
+Status: Executed locally on 2026-08-03
+
+Install scope: project-local package profile where supported.
+
+Runtime:
+
+- Upgrade global Pi CLI to `@earendil-works/pi-coding-agent@0.83.0`.
+
+Selected package installs:
+
+- `pi-observability`
+- `pi-web-access`
+- `pi-lens`
+- `@season179/pi-worktree`
+- `pi-subagents`
+- `@quintinshaw/pi-dynamic-workflows`
+- `@dietrichgebert/ponytail`
+- `@malinamnam/pi-phone`
+
+Explicit exclusions:
+
+- Usher,
+- OMP,
+- `context-mode`,
+- Plannotator,
+- hashline/read replacement packages,
+- extra sidebar/status packages.
+
+Guardrails:
+
+- Dynamic workflows trigger is disabled after install.
+- Dynamic workflows defaults are capped: concurrency 4, retry 1, timeout 30 minutes per agent, token budget 200k.
+- Ponytail defaults to `lite`.
+- `pi-phone` is only for private Tailscale/local trial.
+- Remote/mobile still has one active controller rule.
+
+Validation:
+
+- Pi CLI upgraded to `0.83.0`.
+- All eight selected project-local packages installed.
+- `npm audit --prefix .pi/npm --omit dev` found zero vulnerabilities.
+- Pi loads the repo and returns `harness-smoke-ok` in non-interactive mode.
+- `ast-grep 0.45.0` and `pi-lens build-graph` both run.
+
+Local machine adjustment:
+
+- Disabled Pi's bundled example `subagent` symlink at `~/.pi/agent/extensions/subagent`.
+- Reversible copy lives at `~/.pi/agent/extensions.disabled/subagent.bundled-example.disabled-20260803`.
+
 ## Accumulated Ideas
 
 | Idea | Status | Notes |
-|---|---|---|
+| --- | --- | --- |
 | Use upstream Pi as base | Decided | OMP is benchmark/trial lane. |
 | Package profiles | Decided | `base`, `research`, `parallel`, `remote`, `experimental`. |
 | Review gate before build | Decided | This document is the gate. |
 | cmux as interface | Leaning | User intends to use cmux; compare with tmux/session substrate. |
+| Vim-style TUI navigation | Trial | Learn `hjkl`, search, copy mode, and pane movement while keeping mouse/QOL defaults. |
 | Web search | Leaning | `pi-web-access` first. |
 | Advanced code exploration | Leaning | `pi-lens` first. |
-| Worktrees | Decided | Must-have. Owner not selected. |
-| Subagents | Decided | Important. Likely `pi-subagents` first. |
+| Worktrees | Decided | Native Git worktrees own persistent PR lanes; `piwt` is the optional convenience function. |
+| Subagents | Initialized | `pi-subagents` owns the `subagent` tool; bundled example disabled. |
 | Read-only agent archetypes | Trial | Iterate user-scoped `researcher`, `scout`, and `reviewer` around bounded trajectories, evidence discipline, and explicit read-only runtime metadata. Prefer inherited project context and task contracts over same-name project shadows. |
 | Deterministic loops | Decided | Repo-owned SDK/RPC/JSON harness. |
-| Orchestrator loops | Trial | `@quintinshaw/pi-dynamic-workflows` later. |
-| Remote phone access | Trial | Tailscale/private network first, one remote surface later. |
+| Orchestrator loops | Rejected from default | Build explicit routing and eval runners under `automation/` when repeated work justifies them. |
+| Remote phone access | Deferred | Use Tailscale + SSH/Mosh + tmux/cmux; Pi Phone and Usher are not installed. |
 | context-mode | Open | Debate with measurement. |
-| Ponytail | Open | Likely opt-in implementation/review taste layer. |
+| Ponytail | Initialized | Default is `lite`; use `off` for broad research sessions if needed. |
+| `pi-ask-user` | Trial | Candidate UI/decision-gating owner. Catalog version observed: `0.13.1`; extension + bundled skill, zero runtime dependencies, install with `pi install --local npm:pi-ask-user` after source review. Smoke-test searchable selection, freeform/cancel, and print/RPC fallback; use inline mode around terminal images. |
 
 ## Agent Archetype Iteration 2026-08-03
 
@@ -184,3 +376,4 @@ Rollback:
 - Package policy: `docs/decisions/0005-package-adoption-policy.md`
 - Initial shortlist decision: `docs/decisions/0006-initial-package-shortlist.md`
 - Remote/mobile decision: `docs/decisions/0002-local-homelab-mobile-operating-model.md`
+- Subagents, phone, Ponytail, maturity review: `docs/research/2026-08-03-subagents-phone-ponytail-maturity.md`

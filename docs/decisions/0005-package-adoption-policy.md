@@ -22,6 +22,7 @@ No package moves to `base` until it has:
 - version/pin strategy,
 - source link,
 - trust notes,
+- maturity/support notes,
 - rollback command,
 - fit statement,
 - smoke test.
@@ -34,4 +35,5 @@ The Pi package ecosystem moves quickly. A package can execute code, inject promp
 
 - The harness repo should gain profile docs/scripts before bulk installs.
 - Package research should include a "profile" recommendation.
+- Package research should include credibility, popularity, maturity, support, dependency, and license notes.
 - Worktree/subagent packages may land in `parallel` before they land in `base`.

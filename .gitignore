@@ -20,6 +20,8 @@ mcp-cache.json
 # Local machine cruft
 .DS_Store
 node_modules/
+.pi/
+.pi-subagents/
 tmp/
 .cache/
 

@@ -1,0 +1,6 @@
+font-family = SF Mono
+font-size = 14
+theme = One Dark
+scrollback-limit = 50000000
+split-divider-color = #3e4451
+working-directory = ~/Projects

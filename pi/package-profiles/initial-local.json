@@ -1,0 +1,113 @@
+{
+  "name": "initial-local",
+  "status": "historical-discovery-record; not applied",
+  "date": "2026-08-03",
+  "piRuntime": {
+    "package": "@earendil-works/pi-coding-agent",
+    "targetVersion": "0.83.0",
+    "scope": "global-cli"
+  },
+  "installScope": "project-local",
+  "localState": {
+    "executed": true,
+    "executedDate": "2026-08-03",
+    "piVersionVerified": "0.83.0",
+    "userConfigTemplates": [
+      "pi/user-config/workflows-settings.json",
+      "pi/user-config/ponytail-config.json"
+    ],
+    "machineAdjustments": [
+      {
+        "surface": "subagents",
+        "action": "disabled bundled example user extension symlink",
+        "from": "~/.pi/agent/extensions/subagent",
+        "to": "~/.pi/agent/extensions.disabled/subagent.bundled-example.disabled-20260803",
+        "reason": "Avoid duplicate subagent tool registration with project-local pi-subagents."
+      }
+    ]
+  },
+  "packages": [
+    {
+      "surface": "observability",
+      "package": "pi-observability",
+      "version": "1.3.2",
+      "install": "pi install --local npm:pi-observability",
+      "status": "selected"
+    },
+    {
+      "surface": "web-search",
+      "package": "pi-web-access",
+      "version": "0.17.1",
+      "install": "pi install --local npm:pi-web-access",
+      "status": "selected"
+    },
+    {
+      "surface": "code-exploration",
+      "package": "pi-lens",
+      "version": "3.8.74",
+      "install": "pi install --local npm:pi-lens",
+      "status": "selected"
+    },
+    {
+      "surface": "manual-worktrees",
+      "package": "@season179/pi-worktree",
+      "version": "26.7.1",
+      "install": "pi install --local npm:@season179/pi-worktree",
+      "status": "selected"
+    },
+    {
+      "surface": "subagents",
+      "package": "pi-subagents",
+      "version": "0.40.0",
+      "install": "pi install --local npm:pi-subagents",
+      "status": "selected"
+    },
+    {
+      "surface": "orchestration",
+      "package": "@quintinshaw/pi-dynamic-workflows",
+      "version": "3.5.0",
+      "install": "pi install --local npm:@quintinshaw/pi-dynamic-workflows",
+      "status": "selected-with-guardrails"
+    },
+    {
+      "surface": "implementation-review-taste",
+      "package": "@dietrichgebert/ponytail",
+      "version": "4.8.4",
+      "install": "pi install --local npm:@dietrichgebert/ponytail",
+      "status": "selected-opt-in"
+    },
+    {
+      "surface": "phone-ui",
+      "package": "@malinamnam/pi-phone",
+      "version": "0.0.13",
+      "install": "pi install --local npm:@malinamnam/pi-phone",
+      "status": "selected-remote-trial"
+    }
+  ],
+  "excluded": [
+    {
+      "package": "Usher",
+      "reason": "User explicitly said not to do Usher for now."
+    },
+    {
+      "package": "context-mode",
+      "reason": "High influence context/MCP surface; needs measurement before install."
+    },
+    {
+      "package": "@plannotator/pi-extension",
+      "reason": "Plan mode owner not selected; existing/simple plan remains first."
+    },
+    {
+      "package": "pi-hashline-readmap",
+      "reason": "Read/edit replacement; conflicts with code exploration trial if installed too early."
+    },
+    {
+      "package": "pi-sidebar-tui",
+      "reason": "Avoid duplicate human status/UI owner while pi-observability is the first status layer."
+    },
+    {
+      "package": "@oh-my-pi/pi-coding-agent",
+      "reason": "OMP remains a benchmark lane, not the base harness."
+    }
+  ]
+}

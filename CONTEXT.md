@@ -26,11 +26,11 @@ The best shape is a layered harness:
 ## Current Lean
 
 - Treat `tmux + Tailscale + SSH` as the minimum remote/homelab substrate.
-- Add `cmux` as an intended interface layer to evaluate alongside tmux.
-- Add Mosh for phone/flaky-network use.
+- Use `cmux` as the Mac cockpit and `tmux` as the durable session substrate.
+- Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"
 - Avoid public web terminals at first.
-- Keep vim/neovim as a learning track, not a hard harness dependency yet.
+- Keep Neovim as the preferred learning editor on machines we control, with plain Vim literacy for minimal servers.
 - Keep upstream Pi as the documented base for now; trial OMP separately because it is a fork with core behavior, not just a package preset.
 - Bring Pi packages in through named profiles (`base`, `research`, `parallel`, `remote`, `experimental`) rather than a single giant install.
 
@@ -39,12 +39,12 @@ The best shape is a layered harness:
 - Which observability backend should be default: local Jaeger, Grafana LGTM, Sentry, LangSmith, or a layered approach?
 - Should local and homelab share one `~/.pi/agent` via this repo, or should the repo generate per-host configs?
 - Should phone access target local Mac, homelab, or both?
-- Should we adopt `pi-subagents` package or keep the bundled example extension until needs are clearer?
-- Should vim/neovim be a core dependency or a learning track outside the harness?
+- What exact subagent caps/tool inheritance defaults should become policy?
+- How far should Neovim setup go before it becomes too much editor distribution work?
 - Is the homelab host a Raspberry Pi, a mini PC, or a server/VM? Hardware affects monitoring and thermal runbooks.
 - Can OMP be made reproducible and observable enough for homelab use without losing the repo-as-source-of-truth goal?
-- Which packages graduate to `base` versus profile-only?
-- Should deterministic loop code live in scripts/SDK examples inside this repo, while orchestrator packages live in the `parallel` profile?
+- Which real-project friction is strong enough to justify the next package?
+- What first repeated workflow is stable enough to encode under `automation/`?
 
 ## Current Package Shortlist
 
@@ -52,6 +52,18 @@ The current draft shortlist is captured in:
 
 - `docs/research/2026-08-02-pi-package-shortlist.md`
 - `docs/decisions/0006-initial-package-shortlist.md`
+- `docs/research/2026-08-03-subagents-phone-ponytail-maturity.md`
+
+Current refinements:
+
+- `pi-subagents` owns conversational delegation and explicit temporary child worktrees.
+- Native Git worktrees own persistent PR lanes; start Pi inside each real worktree, optionally through `piwt`.
+- Pi Phone, Usher, and dynamic workflows are outside the lean default.
+- Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
+- The general skill shelf is pinned in `skills/`; Pi Lens contributes four additional tool-specific guides.
+- cmux setup is executed locally; homelab SSH and remote tmux validation are still pending.
+- The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
+- The first-project guide is `docs/manuals/first-real-project.md`.
 
 ## Review Gate
 
