@@ -146,14 +146,40 @@ Open gates:
 | Advanced code exploration | Leaning | `pi-lens` first. |
 | Worktrees | Decided | Must-have. Owner not selected. |
 | Subagents | Decided | Important. Likely `pi-subagents` first. |
+| Read-only agent archetypes | Trial | Iterate user-scoped `researcher`, `scout`, and `reviewer` around bounded trajectories, evidence discipline, and explicit read-only runtime metadata. Prefer inherited project context and task contracts over same-name project shadows. |
 | Deterministic loops | Decided | Repo-owned SDK/RPC/JSON harness. |
 | Orchestrator loops | Trial | `@quintinshaw/pi-dynamic-workflows` later. |
 | Remote phone access | Trial | Tailscale/private network first, one remote surface later. |
 | context-mode | Open | Debate with measurement. |
 | Ponytail | Open | Likely opt-in implementation/review taste layer. |
 
+## Agent Archetype Iteration 2026-08-03
+
+Status: Trial approved; versioned prompts updated, global apply and deterministic evals pending
+
+Affected surfaces: subagents, safety, orchestration, and observability.
+
+Trial contents:
+
+- keep `researcher`, `scout`, and `reviewer` as stable user-scoped primitives;
+- add `acceptanceRole: read-only` and `completionGuard: false` because all three retain inspection-only `bash`;
+- inherit trusted project instructions while keeping fresh child conversation context;
+- give each role an explicit trajectory and stop behavior;
+- persist large outputs through the parent/runtime `output` contract rather than conflicting child write instructions;
+- use project `AGENTS.md` and task contracts for normal specialization;
+- reserve same-name project agent definitions for deliberate full shadowing, or use a distinct role name when specialization is substantial;
+- validate with the deterministic matrix in `docs/research/2026-08-03-agent-archetype-trajectories.md` before applying stronger global budgets.
+
+No second owner is introduced: `pi-subagents` remains the conversational delegation owner and `automation/` remains the deterministic evaluation owner.
+
+Rollback:
+
+- restore the previous three files under `pi/agent/agents/`;
+- re-run the apply script only after prompt evals pass.
+
 ## References
 
+- Agent archetype trajectories: `docs/research/2026-08-03-agent-archetype-trajectories.md`
 - Package shortlist: `docs/research/2026-08-02-pi-package-shortlist.md`
 - Package policy: `docs/decisions/0005-package-adoption-policy.md`
 - Initial shortlist decision: `docs/decisions/0006-initial-package-shortlist.md`
