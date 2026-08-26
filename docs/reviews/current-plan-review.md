@@ -157,6 +157,67 @@ Smoke test:
   cwd identify the same directory;
 - remove the test worktree explicitly with Git.
 
+## Ubuntu Homelab + tmux Rollout 2026-08-26
+
+Status: Open; awaiting user approval before implementation or remote changes
+
+Affected surfaces: remote/mobile, terminal/session, safety, package policy, and documentation.
+
+Goal: reproduce the lean user-level Pi harness on the existing Ubuntu homelab
+and run remote Pi sessions inside tmux over Tailscale and SSH. cmux remains the
+Mac cockpit; tmux remains the remote persistence boundary.
+
+Decisions proposed for review:
+
+- reuse the current lean Pi profile on both hosts;
+- keep credentials and Pi session files host-local and outside Git;
+- clone the harness at `~/pi_harness_setup`, matching the requested top-level
+  placement;
+- install verified Node 24 LTS at user scope because the host's Node 18 cannot
+  run the repository-pinned Pi `0.83.0`;
+- install tmux as the only required new apt package; keep Mosh and Neovim
+  optional;
+- leave the working Tailscale configuration unchanged;
+- use plain SSH and tmux first, then test `cmux ssh` only after approving its
+  remote relay write; keep remote-tmux beta optional;
+- add a narrow Ubuntu bootstrap script, runbook, ADR, and cross-links rather
+  than forking the Pi package profile prematurely.
+
+Human checkpoints:
+
+- approve the plan and target checkout path;
+- enter the sudo password or run the exact apt command in another terminal;
+- complete Pi `/login` over interactive SSH without exposing credentials;
+- approve the first cmux relay upload before the cmux cockpit smoke test.
+
+Trust notes:
+
+- never commit or copy `~/.pi/agent/auth.json`, API keys, browser state,
+  session logs, or machine-generated npm state;
+- verify the official Node SHA-256 checksum before extraction;
+- do not use `curl | sh` bootstrap commands;
+- stop on an unexpected remote checkout, checksum failure, package-audit
+  policy finding, or install scope broader than this batch;
+- cmux may write a versioned relay under `~/.cmux/bin` on first remote use.
+
+Rollback:
+
+- restore Pi assets from the apply script's timestamped backup;
+- restore the previous `~/.tmux.conf`;
+- remove only the user-scoped Node/Pi paths and rollout-created test sessions;
+- do not alter or remove Tailscale, SSH configuration, credentials, or
+  unrelated system packages.
+
+Smoke tests:
+
+- verify Node, npm, pinned Pi, tmux, package list, and npm audit;
+- run a harmless authenticated Pi prompt;
+- detach and reconnect to the same named tmux/Pi session;
+- test plain cmux SSH and notification passthrough after relay approval;
+- defer Mosh, phone access, and remote-tmux beta unless tested explicitly.
+
+Detailed staged plan: `docs/reviews/homelab-linux-rollout-plan.md`.
+
 ## cmux Setup Batch
 
 Status: Executed locally on macOS; homelab validation pending
