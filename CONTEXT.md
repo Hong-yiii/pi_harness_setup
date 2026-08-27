@@ -26,6 +26,8 @@ The best shape is a layered harness:
 ## Current Lean
 
 - Treat `tmux + Tailscale + SSH` as the minimum remote/homelab substrate.
+- Reuse the versioned lean profile across hosts while keeping credentials,
+  package state, and sessions host-local.
 - Use `cmux` as the Mac cockpit and `tmux` as the durable session substrate.
 - Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"
@@ -37,7 +39,6 @@ The best shape is a layered harness:
 ## Open Questions
 
 - Which observability backend should be default: local Jaeger, Grafana LGTM, Sentry, LangSmith, or a layered approach?
-- Should local and homelab share one `~/.pi/agent` via this repo, or should the repo generate per-host configs?
 - Should phone access target local Mac, homelab, or both?
 - What exact subagent caps/tool inheritance defaults should become policy?
 - How far should Neovim setup go before it becomes too much editor distribution work?
@@ -61,7 +62,10 @@ Current refinements:
 - Pi Phone, Usher, and dynamic workflows are outside the lean default.
 - Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
 - The general skill shelf is pinned in `skills/`; Pi Lens contributes four additional tool-specific guides.
-- cmux setup is executed locally; homelab SSH and remote tmux validation are still pending.
+- Ubuntu homelab rollout is approved: top-level repo checkout, user-scoped
+  checksum-pinned Node/Pi, shared lean profile, and remote tmux durability.
+- Plain SSH is verified; package install, OAuth, tmux durability, cmux SSH, and
+  optional remote-tmux validation remain pending until the rollout is executed.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

@@ -18,17 +18,32 @@ phone terminal
 
 ## Minimum Setup
 
-On the host:
+On macOS:
 
 ```bash
 brew install tmux mosh tailscale
 ```
 
-Start a durable session:
+On the Ubuntu homelab, follow
+`docs/runbooks/ubuntu-homelab-setup.md`. tmux is required; Mosh is optional and
+should be added only after plain Tailscale SSH is stable:
 
 ```bash
-tmux new -s pi-main
-cd ~/Projects/some-project
+sudo apt-get install -y tmux
+# Optional later: sudo apt-get install -y mosh
+```
+
+Start a durable session from the real project checkout:
+
+```bash
+tmux new-session -A -s pi-main
+```
+
+After tmux attaches, run inside that session:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH" # Needed for the Ubuntu user-scoped runtime.
+cd /path/to/project
 pi
 ```
 

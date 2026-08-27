@@ -173,6 +173,16 @@ cmux is the preferred Mac cockpit: visual workspaces, splits, notifications, bro
 
 For now, treat cmux remote lifecycle hooks as experimental. Use `cmux ssh` for the remote cockpit, but rely on tmux on the homelab for survival across disconnects.
 
+The Ubuntu harness checkout lives at `~/pi_harness_setup`. Bootstrap and
+operate it with `docs/runbooks/ubuntu-homelab-setup.md`; credentials and Pi
+session files stay on that host rather than syncing through Git.
+
+Use one named tmux session per durable project or worktree:
+
+```bash
+ssh -t homelab 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
+```
+
 `pi-phone` and Usher are not in the default.
 
 ## Skill Shelf
@@ -244,7 +254,7 @@ Known local adjustment:
 | `docs/reviews/current-plan-review.md` | Build/config gate. |
 | `docs/decisions/` | Durable choices and tradeoffs. |
 | `docs/research/` | Research syntheses and source notes. |
-| `docs/runbooks/` | Rebuild and operations instructions. |
+| `docs/runbooks/` | Rebuild and operations instructions, including Ubuntu homelab setup. |
 | `pi/agent/` | Versioned Pi user-level guidance/assets. |
 | `pi/package-profiles/` | Package profiles and install rationale. |
 | `pi/user-config/` | Templates for user-level config stored outside the repo. |

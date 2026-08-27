@@ -21,7 +21,7 @@ This repo is the source of truth for:
 - `pi/user-config/`: reproducible templates for user-level package settings that Pi stores outside the repo.
 - `skills/`: the pinned seven-skill shelf shared through `~/.agents/skills`.
 - `automation/`: explicit routing, loops, and evals that do not load in normal sessions.
-- `scripts/`: idempotent setup helpers.
+- `scripts/`: idempotent setup helpers, including the checksum-pinned Ubuntu bootstrap.
 - `terminal/`: cmux, Ghostty, and tmux templates for the terminal/control surface.
 - `scratchpad.md`: live comparison notes while the setup is still taking shape.
 
@@ -63,4 +63,32 @@ it, and start Pi with one real cwd shared by tools and subagents. See
 Start learning the setup on a real codebase with
 `docs/manuals/first-real-project.md`.
 
-The first cmux/tmux/Neovim setup has also been executed locally. See `docs/runbooks/cmux-setup.md` for the live config paths, backups, and pending homelab checks.
+## Ubuntu Homelab
+
+The remote runtime uses the same lean profile with host-local credentials and
+sessions:
+
+```bash
+git clone https://github.com/Hong-yiii/pi_harness_setup.git ~/pi_harness_setup
+cd ~/pi_harness_setup
+bash scripts/bootstrap-ubuntu-homelab.sh
+export PATH="$HOME/.local/bin:$PATH"
+node scripts/apply-pi-setup.mjs
+tmux new-session -A -s pi-main
+```
+
+After tmux attaches, start Pi inside that session:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/pi_harness_setup
+pi
+```
+
+The bootstrap may need interactive sudo for tmux. Complete Pi `/login`
+separately over SSH; never copy auth files into the repository. See
+`docs/runbooks/ubuntu-homelab-setup.md` for the end-to-end procedure and
+rollback.
+
+The first cmux/tmux/Neovim setup has been executed locally. See
+`docs/runbooks/cmux-setup.md` for Mac cockpit details and remote attach flow.

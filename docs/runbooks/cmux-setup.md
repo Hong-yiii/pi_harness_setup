@@ -1,6 +1,6 @@
 # cmux Setup Runbook
 
-Status: Executed locally on macOS; homelab setup still pending
+Status: Executed locally on macOS; homelab rollout approved, validation pending
 Last updated: 2026-08-03
 
 ## Goal
@@ -258,6 +258,10 @@ If a remote Linux box complains about `xterm-ghostty`, install Ghostty terminfo 
 
 ## Remote Homelab Flow
 
+Bootstrap the Linux host first with
+`docs/runbooks/ubuntu-homelab-setup.md`. cmux remains installed only on macOS;
+tmux on Ubuntu owns remote durability.
+
 Use a normal SSH alias first:
 
 ```sshconfig
@@ -278,7 +282,7 @@ cmux ssh homelab --name "homelab"
 Run an initial command:
 
 ```bash
-cmux ssh homelab --name "pi main" --command 'tmux new -A -s pi-main'
+cmux ssh homelab --name "pi main" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
 ```
 
 If the remote tmux beta is enabled in cmux settings and the homelab has tmux 3.2+:
@@ -289,6 +293,7 @@ cmux ssh-tmux homelab
 
 Use remote tmux beta only after the plain SSH flow feels stable.
 
+After plain SSH and tmux work, explicitly approve the first cmux connection.
 On first remote SSH use, cmux may upload a relay helper to the remote host:
 
 ```text
@@ -328,13 +333,14 @@ Then start `pi` in cmux, quit cmux normally, reopen, and confirm the workspace a
 Remote:
 
 ```bash
-cmux ssh homelab --name "homelab smoke" --command 'tmux new -A -s pi-smoke'
+cmux ssh homelab --name "homelab smoke" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-smoke'
 ```
 
 Inside the remote tmux session:
 
 ```bash
-cd ~/Projects/pi_harness_setup
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/pi_harness_setup
 pi
 ```
 

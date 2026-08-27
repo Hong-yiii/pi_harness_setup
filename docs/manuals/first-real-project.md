@@ -30,6 +30,11 @@ start or attach to a named tmux session first:
 
 ```bash
 tmux new-session -A -s my-project
+```
+
+After tmux attaches, run inside that session:
+
+```bash
 cd ~/Projects/my-project
 pi --plan
 ```

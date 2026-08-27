@@ -1,7 +1,7 @@
 # Homelab Linux Rollout Plan
 
 Date: 2026-08-26
-Status: Open; awaiting user approval before implementation or remote changes
+Status: Approved on 2026-08-26; implementation in progress
 Target branch: `homelab-linux-rollout`
 Target host: SSH alias `homelab`
 
@@ -122,11 +122,23 @@ Stop immediately on checksum failure, unexpected sudo/package scope, npm audit f
 
 ### Phase 4 — User OAuth Checkpoint
 
-The orchestrator stops and asks the user to authenticate from their own terminal:
+The orchestrator stops and asks the user to connect from their own terminal:
 
 ```bash
 ssh -t homelab
+```
+
+On the homelab, start or attach to the authentication session:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
 tmux new-session -A -s pi-auth
+```
+
+After tmux attaches, run inside that session:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
 cd ~/pi_harness_setup
 pi
 ```
@@ -150,7 +162,7 @@ The user must not paste OAuth tokens or `auth.json` contents into chat. Afterwar
 5. **Plain cmux SSH:** after explicit approval of the relay write, run:
 
    ```bash
-   cmux ssh homelab --name "homelab Pi" --command 'tmux new-session -A -s pi-main'
+   cmux ssh homelab --name "homelab Pi" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
    ```
 
 6. **Notifications:** test tmux passthrough to the local cmux workspace.

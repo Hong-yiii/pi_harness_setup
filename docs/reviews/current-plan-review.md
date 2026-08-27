@@ -159,7 +159,7 @@ Smoke test:
 
 ## Ubuntu Homelab + tmux Rollout 2026-08-26
 
-Status: Open; awaiting user approval before implementation or remote changes
+Status: Accepted on 2026-08-26; repository implementation in progress
 
 Affected surfaces: remote/mobile, terminal/session, safety, package policy, and documentation.
 

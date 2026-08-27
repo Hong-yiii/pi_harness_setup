@@ -1,27 +1,23 @@
 # Bootstrap Runbook
 
-Status: Ready for the Pi layer; homelab validation pending
+Status: macOS executed; Ubuntu homelab rollout approved
 
-## Fresh Machine
+## Shared Runtime
+
+The repository pins Pi `0.83.0`, which requires Node `>=22.19.0`. Keep live
+credentials, package installation state, and sessions host-local; Git carries
+the reproducible settings and profile.
+
+## macOS Workstation
 
 ```bash
 mkdir -p ~/Projects
 cd ~/Projects
 git clone <repo-url> pi_harness_setup
 cd pi_harness_setup
-```
-
-Install Pi:
-
-```bash
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
-pi --version
-```
-
-Install terminal baseline:
-
-```bash
 brew install tmux neovim
+node scripts/apply-pi-setup.mjs
 ```
 
 Optional mobile/remote baseline:
@@ -39,7 +35,28 @@ ln -sf /Applications/cmux.app/Contents/Resources/bin/cmux /opt/homebrew/bin/cmux
 cmux hooks pi install --yes
 ```
 
+## Ubuntu Homelab
+
+The approved homelab checkout lives at `~/pi_harness_setup`. The Ubuntu
+bootstrap installs tmux plus checksum-pinned, user-scoped Node and Pi without
+replacing the distro Node runtime:
+
+```bash
+git clone https://github.com/Hong-yiii/pi_harness_setup.git ~/pi_harness_setup
+cd ~/pi_harness_setup
+bash scripts/bootstrap-ubuntu-homelab.sh
+export PATH="$HOME/.local/bin:$PATH"
+node scripts/apply-pi-setup.mjs
+```
+
+The bootstrap may pause for the sudo password when installing tmux. Pi `/login`
+is a separate interactive checkpoint; credentials must not enter Git or chat.
+See `docs/runbooks/ubuntu-homelab-setup.md` for exact validation, tmux/cmux
+operation, and rollback.
+
 ## Apply Pi Config
+
+On either host, from the repository root:
 
 ```bash
 node scripts/apply-pi-setup.mjs
