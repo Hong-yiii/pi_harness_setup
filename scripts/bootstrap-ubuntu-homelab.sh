@@ -75,7 +75,8 @@ if (( BASH_REMATCH[1] < 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] < 2) )); t
 	die "tmux 3.2 or newer is required; found $tmux_version"
 fi
 
-mkdir -p "$HOME/.local/opt" "$LOCAL_BIN"
+mkdir -p "$HOME/.local/opt"
+install -d -m 0755 "$LOCAL_BIN"
 
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT

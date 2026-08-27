@@ -1,11 +1,11 @@
 # 0012: Adopt cmux Remote tmux As The Primary Homelab Control Plane
 
 Date: 2026-08-27
-Status: Accepted
+Status: Accepted baseline; Linux-owned cmux TUI is a separate trial
 
 ## Decision
 
-Use cmux Remote tmux as the normal Mac-to-homelab interface:
+Retain cmux Remote tmux as the accepted Mac-to-homelab fallback baseline:
 
 ```text
 cmux on macOS
@@ -14,11 +14,17 @@ cmux on macOS
   -> Pi in a project checkout
 ```
 
-The normal attach command is:
+The normal fallback attach command is:
 
 ```bash
 cmux ssh-tmux homelab
 ```
+
+A later trial evaluates a Linux-owned cmux TUI runtime through
+`npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot`. That trial
+does not supersede this decision until durability, rollback, version-skew, and
+UX gates pass. tmux and cmux TUI own different PTYs, so rollback cannot migrate
+a live process between them.
 
 This is a control-plane cutover, not removal of tmux. Remote tmux is a cmux
 projection of the real remote tmux server and requires tmux 3.2 or newer. tmux
@@ -80,7 +86,8 @@ The beta toggle is stored in cmux app preferences, not the repository
 
 ## Consequences
 
-- `cmux ssh-tmux homelab` becomes the documented daily Mac entry point.
+- `cmux ssh-tmux homelab` remains the documented fallback during the separate
+  cmux TUI trial.
 - A remote tmux session must exist before mirroring; use a narrow SSH command
   to create one when needed.
 - Plain `cmux ssh ... tmux ...` is deprecated.

@@ -3,8 +3,9 @@
 Date: 2026-08-26
 Status: Superseded in part by ADR 0012
 
-ADR 0012 replaces only the Mac control-plane choice. The shared profile,
-host-local state, and remote tmux durability decisions remain active.
+ADR 0012 replaces only the accepted Mac control-plane baseline. Its Remote tmux
+path remains the fallback while the separate Linux-owned cmux TUI trial runs.
+The shared profile, host-local state, and remote tmux fallback remain active.
 
 ## Decision
 
@@ -17,9 +18,11 @@ On the homelab:
 - clone this repository at `~/pi_harness_setup`;
 - install a checksum-pinned Node LTS runtime at user scope;
 - install the repository-pinned Pi CLI and apply the lean profile;
-- run Pi inside named tmux sessions reached through Tailscale and SSH;
-- keep cmux on macOS; ADR 0012 makes its Remote tmux mirror the primary Mac
-  control plane over the remote tmux substrate.
+- keep established Pi work inside named tmux sessions reached through Tailscale
+  and SSH;
+- trial disposable work under the separately managed Linux `cmux-tui` owner;
+- keep the native cmux app on macOS and retain ADR 0012 Remote tmux as the
+  accepted fallback.
 
 ## Why
 
@@ -38,10 +41,10 @@ Mac, cmux, SSH transport, or a phone client.
   scripts, and runbooks.
 - Each host performs its own package install from the shared profile.
 - `auth.json`, API keys, sessions, npm installation state, SSH state, and cmux
-  relay files stay machine-local and out of Git.
-- tmux is required on the homelab; Mosh and Neovim remain optional.
-- ADR 0012 promotes cmux Remote tmux to the primary Mac control plane and
-  deprecates plain `cmux ssh` as the normal attach path.
+  runtime files stay machine-local and out of Git.
+- tmux is required for the accepted fallback; Mosh and Neovim remain optional.
+- ADR 0012 Remote tmux remains the accepted fallback while the Linux-owned cmux
+  TUI path is a trial; plain native `cmux ssh` remains deprecated.
 - Node and Pi upgrades are reviewed repository changes rather than ambient
   host drift.
 

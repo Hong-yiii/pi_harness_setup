@@ -25,10 +25,11 @@ The best shape is a layered harness:
 
 ## Current Lean
 
-- Use cmux Remote tmux as the primary Mac-to-homelab control plane over
-  Tailscale/SSH.
-- Keep the remote tmux server as the durable substrate required by Remote tmux;
-  direct SSH/tmux is break-glass recovery rather than the daily interface.
+- Trial a Linux-owned cmux TUI runtime with the Mac acting as a thin client over
+  managed SSH/Tailscale.
+- Keep cmux Remote tmux and the existing remote tmux sessions as the validated
+  fallback until cmux TUI passes daemon failure, reboot, version-skew, rollback,
+  and daily UX tests.
 - Reuse the versioned lean profile across hosts while keeping credentials,
   package state, and sessions host-local.
 - Use Mosh for phone/flaky-network use.
@@ -67,12 +68,14 @@ Current refinements:
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
   checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
   running inside a named tmux session all passed.
-- ADR 0012 cuts the Mac control plane over to `cmux ssh-tmux homelab` and
-  deprecates the nested plain-cmux-SSH/tmux path.
+- ADR 0012 records the validated `cmux ssh-tmux homelab` baseline. The current
+  `agents-pilot` trial evaluates cmux TUI as the Linux PTY/workspace owner while
+  preserving ADR 0012 for rollback.
 - Remote tmux live validation passed: mirror, safe detach, session survival,
-  reattach, and no-relay checks succeeded with cmux 0.64.22 and tmux 3.4.
-- Remote lifecycle/feed integration, Mosh, phone access, and direct rather than
-  DERP Tailscale connectivity remain optional follow-ups.
+  reattach, and no-relay checks succeeded with native cmux 0.64.22 and tmux 3.4.
+- Direct official iOS attachment to a Linux cmux TUI owner remains `Untested`.
+  Remote lifecycle/feed integration, Mosh, and direct rather than DERP
+  Tailscale connectivity remain optional follow-ups.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

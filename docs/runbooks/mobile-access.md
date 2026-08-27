@@ -16,6 +16,11 @@ phone terminal
   -> pi running inside project directory
 ```
 
+The Linux-owned cmux TUI pilot currently targets a Mac TUI thin client. Official
+cmux iOS documentation still describes pairing the beta app with a Mac; direct
+iOS attachment to the Linux cmux TUI owner remains `Untested`. Do not remove the
+SSH/Mosh/tmux phone path based on the future Hive/BYO-VPS direction.
+
 ## Minimum Setup
 
 On macOS:

@@ -42,7 +42,7 @@ Build a reproducible personal Pi harness for:
 | Repo as source of truth | Active. | Config, decisions, runbooks, prompts, agents, and future scripts live here. |
 | Package policy | Lean default accepted. | Keep normal sessions small; move orchestration and remote controls out of the default. |
 | Safety | Underdefined. | Needs explicit package audit checklist and secret/log policy before autonomy increases. |
-| Terminal/session interface | cmux Remote tmux is the primary Mac-to-homelab control plane over Tailscale/SSH. | Remote tmux still requires the homelab tmux server, which owns durability. Plain SSH/tmux is break-glass recovery; Mosh remains a phone/flaky-network option. |
+| Terminal/session interface | cmux Remote tmux remains the validated baseline while a Linux-owned cmux TUI runtime is trialed over Tailscale/SSH. | During the trial, cmux TUI owns only disposable `agents-pilot` workspaces. tmux continues to own existing durable sessions and rollback until daemon lifecycle, reboot recovery, version skew, and UX pass. |
 | Observability | `pi-observability` installed as first local status layer. | Trial behavior in real interactive sessions before adding sidebar/status packages. |
 | Web research | `pi-web-access` installed. | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens` installed. | Trial alone before any read/edit replacement package. |
@@ -53,7 +53,7 @@ Build a reproducible personal Pi harness for:
 | Subagents | `pi-subagents` installed as day-to-day delegation owner. | Bundled example `subagent` symlink was disabled to avoid duplicate tool ownership. |
 | Orchestration | Remove the dynamic-workflows extension from the default. | Repo-owned routing, loops, and evals live under `automation/` and run explicitly. |
 | Deterministic loops/evals | Repo-owned. | Build with Pi SDK/RPC/JSON mode; this is the evaluation truth. |
-| Remote/mobile | cmux Remote tmux on Mac; SSH/Mosh + tmux on phone. | Plain `cmux ssh ... tmux ...` is deprecated. `pi-phone` and Usher remain excluded. |
+| Remote/mobile | Trial Linux-owned cmux TUI with a Mac TUI thin client; keep cmux Remote tmux and direct SSH/tmux as the validated fallback. | Direct iOS-to-Linux cmux remains `Untested`. `pi-phone` and Usher remain excluded. |
 | Minimalism/taste | Ponytail remains in the default at `lite`. | Its bundled command skills are hidden from the default skill catalog. |
 | Background commands | Add a focused background-task owner. | Pin `pi-background-tasks@0.6.0`; later releases add unrelated always-on orchestration. |
 | Skills | Seven general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
@@ -73,7 +73,7 @@ Pick one active owner per high-authority surface:
 | Persistent PR worktrees | native Git CLI, optionally through `piwt` | a package only after a new compatibility review | Starting Pi before entering the real worktree |
 | Temporary child worktrees | `pi-subagents` with explicit `worktree: true` | repo-owned automation later | Letting two orchestrators own branch cleanup |
 | Human status | `pi-observability` | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
-| Remote/mobile | cmux Remote tmux over Tailscale/SSH; remote tmux durability | Mosh for phone/flaky networks | Plain cmux SSH as a second daily controller, public web exposure, or multiple remote controllers |
+| Remote/mobile | Trial: Linux cmux TUI owner over managed SSH; baseline: cmux Remote tmux with remote tmux durability | Direct iOS-to-Linux only after upstream support is documented; Mosh for phone/flaky networks | Public listeners, relay/Iroh before SSH proves insufficient, or promoting two daily controllers at once |
 
 ## Lean Default Batch 2026-08-03
 
@@ -288,6 +288,78 @@ Observed:
 Decision record:
 `docs/decisions/0012-adopt-cmux-remote-tmux-as-primary-homelab-control-plane.md`.
 
+## cmux TUI Remote Thin-Client Pilot 2026-08-27
+
+Status: Managed install, reconnect, and multi-client smoke passed; interactive TUI/Pi UX remains in trial
+
+Affected surfaces: remote/mobile, terminal/session, UI, safety, and durability.
+
+Goal:
+
+```text
+Mac cmux TUI client
+  -> managed SSH over Tailscale
+  -> Linux cmux TUI owner (`agents-pilot`)
+  -> disposable Pi pilot sessions
+```
+
+The pilot tests cmux TUI's own tmux-like owner/client model. The Linux mux owns
+its PTYs, workspace tree, and Pi processes; the Mac renders and controls that
+state through the Rust TUI. This is separate from the native macOS cmux app and
+its Remote tmux projection. Running the TUI inside a native cmux terminal does
+not make the remote tree native macOS workspaces or panes.
+
+Trial boundaries:
+
+- use the npm-packaged `cmux@0.11.0` client and its pinned Linux binary;
+- start with `npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot`;
+- use existing noninteractive SSH and Tailscale only;
+- do not enable public WebSocket, relay, Iroh, Cloud, or port-forward listeners;
+- treat the homelab Unix account as the authority boundary because every
+  attached client can access every daemon workspace and run commands as that
+  user;
+- keep existing `pi-main` and other tmux sessions unchanged;
+- use only disposable Pi work until rollback and daemon failure are proven;
+- keep direct iOS-to-Linux attachment marked `Untested`.
+
+Trust and install notes:
+
+- the managed SSH path requires a trusted host key and key/agent authentication;
+- it runs SSH noninteractively with forwarding disabled;
+- it may install the compatible remote binary at `~/.local/bin/cmux-tui` and
+  create host-local cmux TUI state outside Git;
+- source builds are excluded from this pilot because client/server compatibility
+  would become operator-owned;
+- the repository does not install a systemd service during the first pass.
+
+Rollback:
+
+- detach or stop only `agents-pilot` after quitting disposable Pi processes;
+- remove the managed cmux TUI binary/state only after inspecting the exact paths;
+- return to `cmux ssh-tmux homelab` and the unchanged `pi-main` tmux session;
+- do not claim live-session rollback between cmux TUI and tmux because they own
+  different PTYs.
+
+Promotion gates:
+
+1. managed install, create, detach, reconnect, and multi-client behavior pass;
+2. Mac/client restart and daemon-side failure behavior are documented;
+3. a supervised Linux reboot test proves the intended recovery semantics;
+4. upgrade/downgrade and exact version checks are documented;
+5. the TUI workflow beats Remote tmux on real daily tasks despite losing native
+   workspace/tab/pane projection;
+6. only then write a superseding ADR and demote tmux to break-glass recovery.
+
+Managed install, disconnect/reconnect, and concurrent-client smoke tests passed.
+The Linux owner is running empty and `pi-main` remains unchanged. Interactive
+Pi use, crash/reboot recovery, upgrades, Machines rail, and iOS remain
+`Untested`.
+
+- Daily use and implementation: `docs/runbooks/cmux-tui-remote.md`
+- Execution log: `docs/trials/2026-08-27-cmux-tui-remote-pilot.md`
+- Research synthesis:
+  `docs/research/2026-08-27-cmux-tui-remote-thin-client.md`
+
 ## cmux Setup Batch
 
 Status: Executed locally and through Remote tmux on the homelab
@@ -461,7 +533,7 @@ Local machine adjustment:
 | Use upstream Pi as base | Decided | OMP is benchmark/trial lane. |
 | Package profiles | Decided | `base`, `research`, `parallel`, `remote`, `experimental`. |
 | Review gate before build | Decided | This document is the gate. |
-| cmux as interface | Decided | cmux Remote tmux is the primary Mac homelab control plane; the remote tmux server remains the durability substrate. |
+| cmux as interface | Trial | Evaluate Linux-owned cmux TUI with Mac as thin client. ADR 0012 Remote tmux remains the accepted fallback until promotion gates pass. |
 | Vim-style TUI navigation | Trial | Learn `hjkl`, search, copy mode, and pane movement while keeping mouse/QOL defaults. |
 | Web search | Leaning | `pi-web-access` first. |
 | Advanced code exploration | Leaning | `pi-lens` first. |
@@ -470,7 +542,7 @@ Local machine adjustment:
 | Read-only agent archetypes | Trial | Iterate user-scoped `researcher`, `scout`, and `reviewer` around bounded trajectories, evidence discipline, and explicit read-only runtime metadata. Prefer inherited project context and task contracts over same-name project shadows. |
 | Deterministic loops | Decided | Repo-owned SDK/RPC/JSON harness. |
 | Orchestrator loops | Rejected from default | Build explicit routing and eval runners under `automation/` when repeated work justifies them. |
-| Remote phone access | Deferred | Use Tailscale + SSH/Mosh + tmux/cmux; Pi Phone and Usher are not installed. |
+| Remote phone access | Deferred | cmux iOS currently documents Mac pairing; direct Linux cmux TUI attachment is `Untested`. Keep Tailscale + SSH/Mosh + tmux as fallback. |
 | context-mode | Open | Debate with measurement. |
 | Ponytail | Initialized | Default is `lite`; use `off` for broad research sessions if needed. |
 | `pi-ask-user` | Trial | Candidate UI/decision-gating owner. Catalog version observed: `0.13.1`; extension + bundled skill, zero runtime dependencies, install with `pi install --local npm:pi-ask-user` after source review. Smoke-test searchable selection, freeform/cancel, and print/RPC fallback; use inline mode around terminal images. |

@@ -77,24 +77,35 @@ node scripts/apply-pi-setup.mjs
 tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"
 ```
 
-On the Mac, enable **cmux Settings -> Beta Features -> Remote tmux**, then use
-the primary attach path:
+The validated fallback remains native cmux Remote tmux:
 
 ```bash
 cmux ssh-tmux homelab
 ```
 
-Start Pi inside the mirrored `pi-main` pane:
+The current thin-client trial instead lets cmux TUI own disposable remote
+workspaces on Linux:
+
+```bash
+npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+```
+
+Start Pi inside the remote `agents-pilot` TUI only for disposable pilot work:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
+cd ~/pi_harness_setup
 pi
 ```
+
+Until daemon crash, reboot, version-skew, and UX tests pass, keep established
+work in the tmux-owned `pi-main` session.
 
 The bootstrap may need interactive sudo for tmux. Complete Pi `/login`
 separately over SSH; never copy auth files into the repository. See
 `docs/runbooks/ubuntu-homelab-setup.md` for the end-to-end procedure and
 rollback.
 
-The first cmux/tmux/Neovim setup has been executed locally. See
-`docs/runbooks/cmux-setup.md` for Mac cockpit details and remote attach flow.
+Use `docs/runbooks/cmux-tui-remote.md` for the thin-client workflow and
+implementation. `docs/runbooks/cmux-setup.md` retains native Mac cockpit and
+Remote tmux fallback details.

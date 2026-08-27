@@ -1,11 +1,11 @@
 # cmux Setup Runbook
 
-Status: Remote tmux cutover executed on 2026-08-27
+Status: Linux-owned cmux TUI thin-client trial active; Remote tmux retained as fallback
 Last updated: 2026-08-27
 
 ## Goal
 
-Use cmux as the Mac-native control surface for local and remote Pi work while keeping tmux as the durable session substrate.
+Evaluate cmux TUI as the Linux-owned remote session substrate while keeping native cmux Remote tmux as the validated fallback.
 
 The desired feel:
 
@@ -19,35 +19,36 @@ The desired feel:
 
 ## Current Decision
 
-cmux Remote tmux is the primary Mac control plane. The remote tmux server is
-the session truth.
-
-Use:
+The active trial uses cmux TUI's own owner/client architecture:
 
 ```text
-cmux on macOS
-  -> local Pi sessions, local browser panes, notifications
-  -> cmux ssh-tmux homelab for remote workspaces/tabs/splits
-
-tmux on homelab
-  -> durable Pi sessions that survive cmux and SSH disconnects
-  -> break-glass direct SSH attachment
-  -> phone attachment through SSH/Mosh
+native cmux terminal on Mac
+  -> pinned cmux TUI client
+  -> managed SSH over Tailscale
+  -> cmux TUI `agents-pilot` owner on Linux
+  -> disposable Pi pilot sessions
 ```
 
-Plain `cmux ssh ... --command 'tmux ...'` is deprecated as a daily path. Remote
-tmux is not a tmux replacement; it projects the remote tmux server into native
-cmux UI.
+The Linux cmux TUI owner, not the Mac, holds the pilot PTYs and workspace tree.
+This is cmux TUI's native tmux-like model, but the client remains a TUI inside a
+native cmux terminal rather than native macOS workspaces/tabs/splits.
+
+ADR 0012 Remote tmux remains the validated fallback. Existing tmux sessions are
+unchanged and continue to own established work until the trial passes daemon
+failure, reboot, version-skew, rollback, and daily UX gates.
 
 ## Sources
 
-- cmux GitHub README: https://github.com/manaflow-ai/cmux
-- cmux configuration docs: https://cmux.com/docs/configuration
-- cmux keyboard shortcuts: https://cmux.com/docs/keyboard-shortcuts
-- cmux SSH docs: https://cmux.com/docs/ssh
-- cmux remote tmux beta docs: https://cmux.com/docs/remote-tmux
-- cmux iOS beta docs: https://cmux.com/docs/ios
-- cmux notification docs: https://cmux.com/docs/notifications
+- cmux GitHub README: <https://github.com/manaflow-ai/cmux>
+- cmux configuration docs: <https://cmux.com/docs/configuration>
+- cmux keyboard shortcuts: <https://cmux.com/docs/keyboard-shortcuts>
+- cmux SSH docs: <https://cmux.com/docs/ssh>
+- cmux remote tmux beta docs: <https://cmux.com/docs/remote-tmux>
+- cmux iOS beta docs: <https://cmux.com/docs/ios>
+- cmux notification docs: <https://cmux.com/docs/notifications>
+- cmux TUI docs: <https://cmux.com/docs/tui>
+- cmux TUI remote docs: <https://github.com/manaflow-ai/cmux/blob/main/cmux-tui/docs/remote.md>
+- cmux TUI Machines docs: <https://github.com/manaflow-ai/cmux/blob/main/cmux-tui/docs/machines.md>
 
 ## Install Or Repair
 
@@ -213,7 +214,7 @@ Codex hooks were not installed in this batch. We backed up `~/.codex/config.toml
 ## cmux Basics To Learn
 
 | Action | Default |
-|---|---|
+| --- | --- |
 | Command palette | `Cmd+Shift+P` |
 | Settings | `Cmd+,` |
 | Reload config | `Cmd+Shift+,` |
@@ -233,7 +234,7 @@ Codex hooks were not installed in this batch. We backed up `~/.codex/config.toml
 Vim-ish learning target:
 
 | Motion | Meaning |
-|---|---|
+| --- | --- |
 | `h` | left |
 | `j` | down |
 | `k` | up |
@@ -262,11 +263,24 @@ Use `set-clipboard on` only if you deliberately want programs inside tmux, such 
 
 If a remote Linux box complains about `xterm-ghostty`, install Ghostty terminfo on the host or temporarily use `TERM=xterm-256color`.
 
-## Remote Homelab Flow
+## cmux TUI Remote Pilot
+
+The Linux-owned `agents-pilot` session is ready for disposable interactive use:
+
+```bash
+npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+```
+
+Daily use, shortcuts, implementation details, security, status checks, and
+rollback are maintained in `docs/runbooks/cmux-tui-remote.md`. Trial chronology
+is kept separately in `docs/trials/2026-08-27-cmux-tui-remote-pilot.md`.
+
+## Remote tmux Fallback Flow
 
 Bootstrap the Linux host first with
-`docs/runbooks/ubuntu-homelab-setup.md`. cmux remains installed only on macOS;
-tmux 3.2+ on Ubuntu owns remote durability.
+`docs/runbooks/ubuntu-homelab-setup.md`. The native cmux app remains macOS-only;
+the separate managed `cmux-tui` binary now exists on Ubuntu for the pilot.
+tmux 3.2+ continues to own established fallback sessions.
 
 Keep the normal SSH alias:
 
@@ -345,7 +359,17 @@ cmux hooks setup pi
 
 Then start `pi` in cmux, quit cmux normally, reopen, and confirm the workspace appears without auto-starting the agent while `autoResumeAgentSessions` is false.
 
-Remote tmux:
+cmux TUI remote pilot:
+
+```bash
+npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+```
+
+Inside the TUI, start a harmless process, detach with `Ctrl+b d`, reconnect with
+the same command, and confirm the process and terminal state remain. Use a
+disposable Pi session only after that passes.
+
+Remote tmux fallback:
 
 ```bash
 ssh homelab 'tmux new-session -d -s pi-smoke -c "$HOME/pi_harness_setup"'
@@ -407,8 +431,19 @@ Operational note: Pi print-mode may remain open after printing the expected smok
 
 ## Rollback
 
-Disable **Settings -> Beta Features -> Remote tmux**. The remote sessions are
-unchanged and remain available through direct SSH/tmux.
+For the cmux TUI pilot, quit disposable Pi processes first, stop only the
+`agents-pilot` owner, and inspect exact cmux-owned paths before removal. A live
+cmux TUI PTY cannot be migrated into tmux.
+
+Return to the validated fallback with:
+
+```bash
+cmux ssh-tmux homelab
+```
+
+Disabling **Settings -> Beta Features -> Remote tmux** remains the fallback's
+own rollback. Existing tmux sessions are unchanged and remain available through
+direct SSH/tmux.
 
 To remove cmux app:
 
