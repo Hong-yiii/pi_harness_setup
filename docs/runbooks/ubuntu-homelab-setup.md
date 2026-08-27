@@ -1,7 +1,7 @@
 # Ubuntu Homelab Setup
 
-Status: Approved for rollout; remote execution pending
-Last updated: 2026-08-26
+Status: Executed through authenticated Pi + tmux on 2026-08-27
+Last updated: 2026-08-27
 
 ## Goal
 
@@ -55,6 +55,32 @@ Read-only inspection on 2026-08-26 found:
 - Tailscale using a Singapore DERP relay rather than a direct peer path.
 
 The repository-pinned Pi `0.83.0` requires Node `>=22.19.0`. The bootstrap installs Node `24.20.0` LTS for this user without replacing `/usr/bin/node`.
+
+## Observed Rollout
+
+Executed on 2026-08-27:
+
+- cloned `origin/main` commit `b8e30fe` to `~/pi_harness_setup`;
+- installed tmux 3.4 through apt;
+- verified and installed Node v24.20.0 with npm 11.19.0 at user scope;
+- installed Pi 0.83.0 and all six lean-profile packages;
+- `npm audit --omit dev` reported zero vulnerabilities;
+- ast-grep 0.45.2 and `pi-lens build-graph` worked on Linux;
+- authenticated provider state remained host-local with mode `0600`;
+- the authenticated smoke prompt returned exactly `homelab-pi-ok`;
+- Pi was observed running as a live pane command inside the attached `pi-auth`
+  tmux session with cwd `~/pi_harness_setup`;
+- the remote Git checkout remained clean;
+- the apply backup is
+  `~/.config/pi_harness_setup/backups/2026-08-27T03-53-01-112Z`.
+
+The npm installer reported an unapproved postinstall for
+`@ast-grep/cli@0.45.2`; no lifecycle script was approved. The shipped Linux
+binary worked, so this remains documented rather than bypassed.
+
+Still optional/untested: cmux relay upload, cmux notification passthrough,
+remote-tmux beta, Mosh, phone access, and a deliberate detach/reconnect drill.
+The Tailscale path still uses DERP rather than a direct peer connection.
 
 ## 1. Publish Before Pulling
 

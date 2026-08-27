@@ -121,7 +121,7 @@ Validation:
 - `@season179/pi-worktree` is absent,
 - dynamic workflows and Pi Phone are absent,
 - the user package audit reports zero vulnerabilities,
-- Pi sees six auto-invokable general skills, four Pi Lens guides, and the
+- Pi sees six auto-invocable general skills, four Pi Lens guides, and the
   manual-only `zoom-out` skill,
 - a fresh second apply completed without changing the selected package set.
 
@@ -159,7 +159,7 @@ Smoke test:
 
 ## Ubuntu Homelab + tmux Rollout 2026-08-26
 
-Status: Accepted on 2026-08-26; repository implementation in progress
+Status: Executed through authenticated Pi + tmux on 2026-08-27; optional cmux checks pending
 
 Affected surfaces: remote/mobile, terminal/session, safety, package policy, and documentation.
 
@@ -215,6 +215,20 @@ Smoke tests:
 - detach and reconnect to the same named tmux/Pi session;
 - test plain cmux SSH and notification passthrough after relay approval;
 - defer Mosh, phone access, and remote-tmux beta unless tested explicitly.
+
+Observed:
+
+- `origin/main` commit `b8e30fe` cloned cleanly to `~/pi_harness_setup`;
+- Node v24.20.0, npm 11.19.0, Pi 0.83.0, and tmux 3.4 installed;
+- all six lean packages installed and npm audit reported zero vulnerabilities;
+- ast-grep 0.45.2 and Pi Lens graph build passed on Linux;
+- OAuth completed with host-local mode-0600 auth state;
+- authenticated smoke returned `homelab-pi-ok`;
+- Pi is running inside the attached `pi-auth` tmux session in the harness cwd;
+- no cmux relay is installed yet.
+
+Pending by choice: deliberate detach/reconnect, plain cmux SSH and notification
+passthrough, remote-tmux beta, Mosh, and phone access.
 
 Detailed staged plan: `docs/reviews/homelab-linux-rollout-plan.md`.
 

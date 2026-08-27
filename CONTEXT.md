@@ -62,10 +62,12 @@ Current refinements:
 - Pi Phone, Usher, and dynamic workflows are outside the lean default.
 - Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
 - The general skill shelf is pinned in `skills/`; Pi Lens contributes four additional tool-specific guides.
-- Ubuntu homelab rollout is approved: top-level repo checkout, user-scoped
-  checksum-pinned Node/Pi, shared lean profile, and remote tmux durability.
-- Plain SSH is verified; package install, OAuth, tmux durability, cmux SSH, and
-  optional remote-tmux validation remain pending until the rollout is executed.
+- Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
+  checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
+  running inside a named tmux session all passed.
+- Deliberate detach/reconnect, cmux SSH/notifications, remote-tmux beta, Mosh,
+  phone access, and direct rather than DERP Tailscale connectivity remain
+  optional follow-ups.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

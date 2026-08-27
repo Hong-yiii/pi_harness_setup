@@ -1,7 +1,7 @@
 # Homelab Linux Rollout Plan
 
 Date: 2026-08-26
-Status: Approved on 2026-08-26; implementation in progress
+Status: Executed through authenticated Pi + tmux on 2026-08-27; optional cmux checks pending
 Target branch: `homelab-linux-rollout`
 Target host: SSH alias `homelab`
 
