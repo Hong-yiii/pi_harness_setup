@@ -1,7 +1,7 @@
 # Homelab Linux Rollout Plan
 
 Date: 2026-08-26
-Status: Executed through authenticated Pi + tmux on 2026-08-27; optional cmux checks pending
+Status: Executed; Mac control-plane steps superseded by ADR 0012 on 2026-08-27
 Target branch: `homelab-linux-rollout`
 Target host: SSH alias `homelab`
 

@@ -8,14 +8,12 @@ Last updated: 2026-08-27
 Run the same lean Pi harness on the Ubuntu homelab inside durable tmux sessions:
 
 ```text
-Mac or phone
-  -> Tailscale
-  -> SSH
-  -> tmux on Ubuntu
-  -> Pi inside a project checkout
+Mac -> cmux Remote tmux -> Tailscale/SSH control mode -> tmux -> Pi
+phone -> Tailscale -> SSH/Mosh -> tmux -> Pi
 ```
 
-cmux is the optional Mac cockpit. tmux is the remote session truth.
+cmux Remote tmux is the primary Mac control plane. tmux is the remote session
+truth and direct SSH/tmux is break-glass recovery.
 
 ## Target And Boundaries
 
@@ -78,9 +76,9 @@ The npm installer reported an unapproved postinstall for
 `@ast-grep/cli@0.45.2`; no lifecycle script was approved. The shipped Linux
 binary worked, so this remains documented rather than bypassed.
 
-Still optional/untested: cmux relay upload, cmux notification passthrough,
-remote-tmux beta, Mosh, phone access, and a deliberate detach/reconnect drill.
-The Tailscale path still uses DERP rather than a direct peer connection.
+The original plain cmux SSH/relay path is deprecated by ADR 0012. Remote tmux
+cutover validation is tracked separately. Mosh, phone access, and direct rather
+than DERP Tailscale connectivity remain optional follow-ups.
 
 ## 1. Publish Before Pulling
 
@@ -261,50 +259,56 @@ ssh -t homelab 'tmux attach-session -t pi-main'
 
 Confirm the same Pi process and conversation remain. Pi session files are stored on the homelab under `~/.pi/agent/sessions/`; use `/session`, `pi -c`, or `pi -r` there.
 
-## 8. Use cmux From The Mac
+## 8. Use cmux Remote tmux From The Mac
 
-First prove plain SSH and tmux. Then, after approving cmux's remote relay write, run from a terminal inside cmux:
+cmux Remote tmux is the primary Mac control plane. It requires the existing
+remote tmux server; Ubuntu's observed tmux 3.4 satisfies the 3.2+ requirement.
 
-```bash
-cmux ssh homelab --name "homelab Pi" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
-```
-
-On first use, cmux may upload a versioned helper under:
-
-```text
-~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote
-```
-
-The helper supports reconnect, remote browser routing, uploads, notifications, and remote CLI relay.
-
-Optional tmux notification passthrough:
+Enable **cmux Settings -> Beta Features -> Remote tmux**. Then create a session
+if the host has none:
 
 ```bash
-printf '\ePtmux;\e\e]777;notify;Pi;homelab tmux notification works\a\e\\'
+ssh homelab 'export PATH="$HOME/.local/bin:$PATH"; tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"'
 ```
 
-Remote-tmux mirroring remains optional beta functionality. Test it only after the plain flow is stable:
+From a terminal inside cmux:
 
 ```bash
 cmux ssh-tmux homelab
 ```
 
-Ubuntu 24.04's tmux 3.4 satisfies cmux's tmux 3.2+ requirement.
+Select the mirrored `pi-main` workspace and start Pi in its pane:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+pi --name "homelab main"
+```
+
+Remote tmux uses SSH control mode and does not require the plain `cmux ssh`
+relay path. Plain cmux SSH is deprecated unless its browser proxy/upload/relay
+features are separately approved.
 
 ## Daily Operation
 
-Start or attach from a normal terminal:
+Primary Mac attach:
 
 ```bash
-ssh -t homelab 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
+cmux ssh-tmux homelab
 ```
 
-Or use the cmux command above. Inside tmux, enter the real project checkout before starting Pi so the process cwd, Pi tools, and subagents agree.
-
-Use a separate named tmux session for each durable project or worktree:
+Create one tmux session per durable project or worktree before mirroring:
 
 ```bash
-tmux new-session -A -s project-name
+ssh homelab 'tmux new-session -d -s project-name -c /path/to/project'
+```
+
+Inside the mirrored pane, start Pi from that real project checkout so the
+process cwd, Pi tools, and subagents agree.
+
+Break-glass recovery only:
+
+```bash
+ssh -t homelab 'tmux attach-session -t pi-main'
 ```
 
 ## Update
@@ -322,6 +326,9 @@ node scripts/apply-pi-setup.mjs
 The bootstrap is idempotent for the pinned Node/Pi versions and preserves a differing tmux config before replacement.
 
 ## Rollback
+
+Disable **cmux Settings -> Beta Features -> Remote tmux** to roll back the Mac
+control plane. Remote tmux sessions and Pi processes remain unchanged.
 
 Stop only rollout-created test sessions:
 

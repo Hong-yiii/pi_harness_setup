@@ -26,7 +26,7 @@ Optional mobile/remote baseline:
 brew install tailscale mosh
 ```
 
-Optional Mac cockpit:
+Mac cockpit (required for the primary homelab flow):
 
 ```bash
 brew tap manaflow-ai/cmux

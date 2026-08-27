@@ -74,14 +74,20 @@ cd ~/pi_harness_setup
 bash scripts/bootstrap-ubuntu-homelab.sh
 export PATH="$HOME/.local/bin:$PATH"
 node scripts/apply-pi-setup.mjs
-tmux new-session -A -s pi-main
+tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"
 ```
 
-After tmux attaches, start Pi inside that session:
+On the Mac, enable **cmux Settings -> Beta Features -> Remote tmux**, then use
+the primary attach path:
+
+```bash
+cmux ssh-tmux homelab
+```
+
+Start Pi inside the mirrored `pi-main` pane:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
-cd ~/pi_harness_setup
 pi
 ```
 

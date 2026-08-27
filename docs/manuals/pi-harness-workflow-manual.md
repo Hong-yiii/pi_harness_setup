@@ -75,7 +75,8 @@ Explicitly out for now:
 | Repeated loop with routing or evals | explicit code under `automation/` | Ambient workflow triggers in normal sessions |
 | Small implementation/review cleanup | Ponytail `lite` | Ponytail during open-ended research if it becomes too terse |
 | Long-running command | background task, then `/tasks` or bounded logs | Blocking the main conversation or polling constantly |
-| Phone/remote interaction | Tailscale + SSH/Mosh + tmux/cmux | Public unauthenticated web exposure or Pi phone servers |
+| Mac/remote interaction | cmux Remote tmux over Tailscale/SSH | Plain cmux SSH as a second daily controller or public web exposure |
+| Phone interaction | Tailscale + SSH/Mosh + tmux | Public unauthenticated web exposure or Pi phone servers |
 
 ## Subagents Vs Repo-Owned Automation
 
@@ -162,25 +163,27 @@ Bad use:
 The baseline architecture is:
 
 ```text
-Mac or phone
-  -> Tailscale/private network
-  -> SSH or Mosh
-  -> tmux durable session
-  -> Pi running inside the project
+Mac -> cmux Remote tmux -> SSH control mode -> homelab tmux -> Pi
+phone -> Tailscale -> SSH or Mosh -> homelab tmux -> Pi
 ```
 
-cmux is the preferred Mac cockpit: visual workspaces, splits, notifications, browser panes, remote SSH workspaces, and eventually iOS companion access. tmux remains the durable substrate, especially on the homelab.
+cmux Remote tmux is the primary Mac cockpit. It projects remote sessions,
+windows, and panes into native cmux workspaces, tabs, and splits. The remote
+tmux server remains the durable substrate and direct SSH/tmux remains
+break-glass recovery.
 
-For now, treat cmux remote lifecycle hooks as experimental. Use `cmux ssh` for the remote cockpit, but rely on tmux on the homelab for survival across disconnects.
+Remote Pi lifecycle hooks are still experimental. Remote tmux mirrors terminal
+state; it does not make local cmux Pi hooks authoritative for remote agents.
 
 The Ubuntu harness checkout lives at `~/pi_harness_setup`. Bootstrap and
 operate it with `docs/runbooks/ubuntu-homelab-setup.md`; credentials and Pi
 session files stay on that host rather than syncing through Git.
 
-Use one named tmux session per durable project or worktree:
+Use one named tmux session per durable project or worktree, then mirror it:
 
 ```bash
-ssh -t homelab 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
+ssh homelab 'tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"'
+cmux ssh-tmux homelab
 ```
 
 `pi-phone` and Usher are not in the default.

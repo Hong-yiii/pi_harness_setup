@@ -25,10 +25,12 @@ The best shape is a layered harness:
 
 ## Current Lean
 
-- Treat `tmux + Tailscale + SSH` as the minimum remote/homelab substrate.
+- Use cmux Remote tmux as the primary Mac-to-homelab control plane over
+  Tailscale/SSH.
+- Keep the remote tmux server as the durable substrate required by Remote tmux;
+  direct SSH/tmux is break-glass recovery rather than the daily interface.
 - Reuse the versioned lean profile across hosts while keeping credentials,
   package state, and sessions host-local.
-- Use `cmux` as the Mac cockpit and `tmux` as the durable session substrate.
 - Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"
 - Avoid public web terminals at first.
@@ -65,9 +67,10 @@ Current refinements:
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
   checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
   running inside a named tmux session all passed.
-- Deliberate detach/reconnect, cmux SSH/notifications, remote-tmux beta, Mosh,
-  phone access, and direct rather than DERP Tailscale connectivity remain
-  optional follow-ups.
+- ADR 0012 cuts the Mac control plane over to `cmux ssh-tmux homelab` and
+  deprecates the nested plain-cmux-SSH/tmux path.
+- Remote tmux live validation is in progress. Mosh, phone access, and direct
+  rather than DERP Tailscale connectivity remain optional follow-ups.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

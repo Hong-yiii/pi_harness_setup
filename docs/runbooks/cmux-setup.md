@@ -1,7 +1,7 @@
 # cmux Setup Runbook
 
-Status: Executed locally on macOS; homelab rollout approved, validation pending
-Last updated: 2026-08-03
+Status: Remote tmux cutover in progress; live mirror validation pending
+Last updated: 2026-08-27
 
 ## Goal
 
@@ -19,22 +19,25 @@ The desired feel:
 
 ## Current Decision
 
-cmux is the cockpit. tmux is the session truth.
+cmux Remote tmux is the primary Mac control plane. The remote tmux server is
+the session truth.
 
 Use:
 
 ```text
 cmux on macOS
   -> local Pi sessions, local browser panes, notifications
-  -> cmux ssh homelab for remote workspaces
-  -> optional cmux ssh-tmux homelab for mirrored tmux sessions
+  -> cmux ssh-tmux homelab for remote workspaces/tabs/splits
 
 tmux on homelab
-  -> durable Pi sessions that survive disconnects
-  -> phone attach fallback through SSH/Mosh
+  -> durable Pi sessions that survive cmux and SSH disconnects
+  -> break-glass direct SSH attachment
+  -> phone attachment through SSH/Mosh
 ```
 
-Do not treat cmux and tmux as mutually exclusive.
+Plain `cmux ssh ... --command 'tmux ...'` is deprecated as a daily path. Remote
+tmux is not a tmux replacement; it projects the remote tmux server into native
+cmux UI.
 
 ## Sources
 
@@ -188,7 +191,10 @@ Current cmux hook behavior:
 
 Start with `terminal.autoResumeAgentSessions` disabled. cmux will restore layout and metadata, but agent terminals stay idle until resumed manually. Turn auto-resume on only after it feels predictable.
 
-Remote caveat: local Pi/Codex hooks are the supported path. Remote homelab hooks are still a weak spot in current cmux: `cmux ssh` gives remote terminals, browser routing, relay, and coarse notifications, but remote lifecycle/feed/native agent restore should be treated as in-progress. For homelab durability today, keep tmux as the session truth.
+Remote caveat: Remote tmux mirrors terminal state; it does not make the local
+Pi/Codex lifecycle hooks authoritative for remote agents. Native remote
+feed/restore behavior remains in progress. The remote tmux server, not cmux
+agent hooks, owns homelab durability.
 
 Executed locally:
 
@@ -241,7 +247,7 @@ cmux already uses `J/K/H/L` in focused sidebar/file-explorer rows. The runbook t
 
 ## tmux Defaults For Mouse/QOL
 
-Use tmux inside remote sessions and as the phone fallback.
+Use tmux as the remote session server, break-glass attachment path, and phone fallback.
 
 Key choices:
 
@@ -260,9 +266,9 @@ If a remote Linux box complains about `xterm-ghostty`, install Ghostty terminfo 
 
 Bootstrap the Linux host first with
 `docs/runbooks/ubuntu-homelab-setup.md`. cmux remains installed only on macOS;
-tmux on Ubuntu owns remote durability.
+tmux 3.2+ on Ubuntu owns remote durability.
 
-Use a normal SSH alias first:
+Keep the normal SSH alias:
 
 ```sshconfig
 Host homelab
@@ -273,34 +279,43 @@ Host homelab
   ServerAliveCountMax 2
 ```
 
-Open a cmux remote workspace:
+Enable **Settings -> Beta Features -> Remote tmux** in cmux. The toggle is an
+app preference, not a supported `cmux.json` key.
+
+Create a remote session when none exists:
 
 ```bash
-cmux ssh homelab --name "homelab"
+ssh homelab 'export PATH="$HOME/.local/bin:$PATH"; tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"'
 ```
 
-Run an initial command:
-
-```bash
-cmux ssh homelab --name "pi main" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-main'
-```
-
-If the remote tmux beta is enabled in cmux settings and the homelab has tmux 3.2+:
+From a terminal inside cmux, mirror the host:
 
 ```bash
 cmux ssh-tmux homelab
 ```
 
-Use remote tmux beta only after the plain SSH flow feels stable.
-
-After plain SSH and tmux work, explicitly approve the first cmux connection.
-On first remote SSH use, cmux may upload a relay helper to the remote host:
+Mapping is bidirectional:
 
 ```text
-~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote
+tmux session -> cmux workspace
+tmux window  -> cmux tab
+tmux pane    -> native cmux split
 ```
 
-That helper handles browser proxying, CLI relay, and remote session management.
+Closing, splitting, or reordering the cmux mirror changes the real tmux
+session. After relaunching cmux, rerun `cmux ssh-tmux homelab`; the remote
+session continues running.
+
+Remote tmux uses SSH plus `tmux -CC` and does not require the plain `cmux ssh`
+relay path. Do not use plain `cmux ssh` unless browser proxying, SCP drop, or
+remote-to-local cmux commands are separately needed and its remote relay write
+is approved.
+
+Break-glass recovery:
+
+```bash
+ssh -t homelab 'tmux attach-session -t pi-main'
+```
 
 ## Phone Flow
 
@@ -330,24 +345,38 @@ cmux hooks setup pi
 
 Then start `pi` in cmux, quit cmux normally, reopen, and confirm the workspace appears without auto-starting the agent while `autoResumeAgentSessions` is false.
 
-Remote:
+Remote tmux:
 
 ```bash
-cmux ssh homelab --name "homelab smoke" --command 'export PATH="$HOME/.local/bin:$PATH"; exec tmux new-session -A -s pi-smoke'
+ssh homelab 'tmux new-session -d -s pi-smoke -c "$HOME/pi_harness_setup"'
+cmux ssh-tmux homelab
 ```
 
-Inside the remote tmux session:
+Inside the mirrored `pi-smoke` workspace:
 
 ```bash
 export PATH="$HOME/.local/bin:$PATH"
-cd ~/pi_harness_setup
-pi
+pi --name "remote tmux smoke"
 ```
 
-Optional cmux/tmux passthrough notification:
+From a terminal inside cmux, safely detach the control client:
 
 ```bash
-printf '\ePtmux;\e\e]777;notify;Pi;tmux passthrough works\a\e\\'
+cmux rpc remote.tmux.detach '{"host":"homelab","session":"pi-smoke"}'
+```
+
+Do not close a mirrored pane or tab for this test: those actions propagate to
+the real tmux layout. Verify survival from a normal shell:
+
+```bash
+ssh homelab 'tmux has-session -t pi-smoke && echo remote-tmux-survived'
+```
+
+Rerun `cmux ssh-tmux homelab`, confirm the same Pi process remains, then clean
+up only the disposable smoke session after quitting Pi:
+
+```bash
+ssh homelab 'tmux kill-session -t pi-smoke'
 ```
 
 Observed local validation:
@@ -360,6 +389,9 @@ Observed local validation:
 Operational note: Pi print-mode may remain open after printing the expected smoke response with the current extension mix. Stop the smoke process manually if it does not exit.
 
 ## Rollback
+
+Disable **Settings -> Beta Features -> Remote tmux**. The remote sessions are
+unchanged and remain available through direct SSH/tmux.
 
 To remove cmux app:
 

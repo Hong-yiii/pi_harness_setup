@@ -1,7 +1,10 @@
 # 0011: Use A Shared Harness With A Host-Local Linux Runtime
 
 Date: 2026-08-26
-Status: Accepted
+Status: Superseded in part by ADR 0012
+
+ADR 0012 replaces only the Mac control-plane choice. The shared profile,
+host-local state, and remote tmux durability decisions remain active.
 
 ## Decision
 
@@ -15,7 +18,8 @@ On the homelab:
 - install a checksum-pinned Node LTS runtime at user scope;
 - install the repository-pinned Pi CLI and apply the lean profile;
 - run Pi inside named tmux sessions reached through Tailscale and SSH;
-- keep cmux on macOS as an optional cockpit over the remote tmux substrate.
+- keep cmux on macOS; ADR 0012 makes its Remote tmux mirror the primary Mac
+  control plane over the remote tmux substrate.
 
 ## Why
 
@@ -35,10 +39,9 @@ Mac, cmux, SSH transport, or a phone client.
 - Each host performs its own package install from the shared profile.
 - `auth.json`, API keys, sessions, npm installation state, SSH state, and cmux
   relay files stay machine-local and out of Git.
-- tmux is required on the homelab; Mosh, Neovim, and cmux remote-tmux remain
-  optional.
-- cmux's first plain remote connection may upload a versioned relay helper and
-  therefore remains an explicit trust checkpoint.
+- tmux is required on the homelab; Mosh and Neovim remain optional.
+- ADR 0012 promotes cmux Remote tmux to the primary Mac control plane and
+  deprecates plain `cmux ssh` as the normal attach path.
 - Node and Pi upgrades are reviewed repository changes rather than ambient
   host drift.
 

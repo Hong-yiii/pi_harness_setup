@@ -4,7 +4,10 @@ Date: 2026-07-24
 
 ## Status
 
-Draft
+Superseded in part by ADR 0012
+
+ADR 0012 replaces the Mac-to-homelab control-plane choice with cmux Remote
+tmux. The homelab durability and phone attachment decisions remain active.
 
 ## Decision
 

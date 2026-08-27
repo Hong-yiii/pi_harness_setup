@@ -42,7 +42,7 @@ Build a reproducible personal Pi harness for:
 | Repo as source of truth | Active. | Config, decisions, runbooks, prompts, agents, and future scripts live here. |
 | Package policy | Lean default accepted. | Keep normal sessions small; move orchestration and remote controls out of the default. |
 | Safety | Underdefined. | Needs explicit package audit checklist and secret/log policy before autonomy increases. |
-| Terminal/session interface | tmux/Tailscale baseline, cmux intended as Mac cockpit, mosh possible for phone/flaky networks. | cmux is not a tmux replacement. tmux owns durability; cmux owns visual control, notifications, browser panes, and Mac/iOS surface. |
+| Terminal/session interface | cmux Remote tmux is the primary Mac-to-homelab control plane over Tailscale/SSH. | Remote tmux still requires the homelab tmux server, which owns durability. Plain SSH/tmux is break-glass recovery; Mosh remains a phone/flaky-network option. |
 | Observability | `pi-observability` installed as first local status layer. | Trial behavior in real interactive sessions before adding sidebar/status packages. |
 | Web research | `pi-web-access` installed. | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens` installed. | Trial alone before any read/edit replacement package. |
@@ -53,7 +53,7 @@ Build a reproducible personal Pi harness for:
 | Subagents | `pi-subagents` installed as day-to-day delegation owner. | Bundled example `subagent` symlink was disabled to avoid duplicate tool ownership. |
 | Orchestration | Remove the dynamic-workflows extension from the default. | Repo-owned routing, loops, and evals live under `automation/` and run explicitly. |
 | Deterministic loops/evals | Repo-owned. | Build with Pi SDK/RPC/JSON mode; this is the evaluation truth. |
-| Remote/mobile | Tailscale + SSH/Mosh + tmux/cmux. | `pi-phone` and Usher are excluded for now. |
+| Remote/mobile | cmux Remote tmux on Mac; SSH/Mosh + tmux on phone. | Plain `cmux ssh ... tmux ...` is deprecated. `pi-phone` and Usher remain excluded. |
 | Minimalism/taste | Ponytail remains in the default at `lite`. | Its bundled command skills are hidden from the default skill catalog. |
 | Background commands | Add a focused background-task owner. | Pin `pi-background-tasks@0.6.0`; later releases add unrelated always-on orchestration. |
 | Skills | Seven general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
@@ -73,7 +73,7 @@ Pick one active owner per high-authority surface:
 | Persistent PR worktrees | native Git CLI, optionally through `piwt` | a package only after a new compatibility review | Starting Pi before entering the real worktree |
 | Temporary child worktrees | `pi-subagents` with explicit `worktree: true` | repo-owned automation later | Letting two orchestrators own branch cleanup |
 | Human status | `pi-observability` | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
-| Remote/mobile | SSH/tmux/Tailscale/cmux baseline | Revisit a controller only after the baseline is proven | Public web exposure or multiple remote controllers |
+| Remote/mobile | cmux Remote tmux over Tailscale/SSH; remote tmux durability | Mosh for phone/flaky networks | Plain cmux SSH as a second daily controller, public web exposure, or multiple remote controllers |
 
 ## Lean Default Batch 2026-08-03
 
@@ -178,8 +178,8 @@ Decisions proposed for review:
 - install tmux as the only required new apt package; keep Mosh and Neovim
   optional;
 - leave the working Tailscale configuration unchanged;
-- use plain SSH and tmux first, then test `cmux ssh` only after approving its
-  remote relay write; keep remote-tmux beta optional;
+- superseded by ADR 0012: cmux Remote tmux is now the primary Mac control
+  plane; plain cmux SSH is deprecated;
 - add a narrow Ubuntu bootstrap script, runbook, ADR, and cross-links rather
   than forking the Pi package profile prematurely.
 
@@ -213,8 +213,9 @@ Smoke tests:
 - verify Node, npm, pinned Pi, tmux, package list, and npm audit;
 - run a harmless authenticated Pi prompt;
 - detach and reconnect to the same named tmux/Pi session;
-- test plain cmux SSH and notification passthrough after relay approval;
-- defer Mosh, phone access, and remote-tmux beta unless tested explicitly.
+- superseded by ADR 0012: validate cmux Remote tmux without installing the
+  plain cmux SSH relay;
+- defer Mosh and phone access unless tested explicitly.
 
 Observed:
 
@@ -227,10 +228,53 @@ Observed:
 - Pi is running inside the attached `pi-auth` tmux session in the harness cwd;
 - no cmux relay is installed yet.
 
-Pending by choice: deliberate detach/reconnect, plain cmux SSH and notification
-passthrough, remote-tmux beta, Mosh, and phone access.
+Superseded follow-up: ADR 0012 owns cmux Remote tmux validation. Mosh and phone
+access remain deferred.
 
 Detailed staged plan: `docs/reviews/homelab-linux-rollout-plan.md`.
+
+## cmux Remote tmux Cutover 2026-08-27
+
+Status: Accepted by the user; implementation and live validation in progress
+
+Affected surfaces: remote/mobile, terminal/session, UI, and safety.
+
+Decision:
+
+- make `cmux ssh-tmux homelab` the normal Mac attach path;
+- retain the remote tmux server as the durability substrate because Remote
+  tmux is a `tmux -CC` projection, not a tmux replacement;
+- deprecate plain `cmux ssh ... --command 'tmux ...'` as a daily path;
+- retain direct SSH/tmux only as break-glass recovery and diagnostics;
+- do not install the plain cmux SSH relay as part of this cutover;
+- keep phone access on SSH/Mosh + tmux.
+
+Accepted beta limits:
+
+- mirrors require manual reattach after cmux relaunch;
+- cmux pane/window mutations change the real remote tmux layout;
+- multi-line paste and resized historical scrollback have documented limits;
+- focus/lifecycle rough edges remain possible while the feature is beta.
+
+Trust and rollback:
+
+- back up cmux app preferences before enabling the beta;
+- no credential or session migration is involved;
+- rollback is disabling Remote tmux and attaching to the unchanged tmux server
+  through direct SSH.
+
+Smoke test:
+
+- enable Settings -> Beta Features -> Remote tmux;
+- create a named `pi-main` session on the homelab;
+- run `cmux ssh-tmux homelab` and verify workspace/tab/pane mapping;
+- detach with `remote.tmux.detach` (not pane/tab close) and confirm the remote
+  session remains alive;
+- reattach the mirror and confirm Pi remains interactive;
+- verify no plain cmux relay was installed.
+
+Decision record:
+`docs/decisions/0012-adopt-cmux-remote-tmux-as-primary-homelab-control-plane.md`.
 
 ## cmux Setup Batch
 
@@ -248,8 +292,8 @@ Candidate contents:
 - install local Pi cmux hook,
 - install tmux, mosh, and Neovim,
 - verify local cmux config,
-- verify `cmux ssh homelab`,
-- defer remote tmux beta until plain SSH works,
+- validate `cmux ssh-tmux homelab` as the primary Mac control plane,
+- deprecate plain `cmux ssh ... tmux ...` after the mirror passes,
 - defer cmux iOS beta until Mac + Tailscale path is stable.
 
 Trust notes:
@@ -278,8 +322,7 @@ Executed locally:
 Pending:
 
 - `cmux notify` live UI test while cmux app is open.
-- homelab SSH alias and `cmux ssh homelab`.
-- optional remote tmux beta after plain SSH is stable.
+- cmux Remote tmux cutover and mirror survival test (tracked in ADR 0012).
 - optional cmux iOS beta after Tailscale Mac-phone path is stable.
 
 ## Candidate Build Batch 1
@@ -406,7 +449,7 @@ Local machine adjustment:
 | Use upstream Pi as base | Decided | OMP is benchmark/trial lane. |
 | Package profiles | Decided | `base`, `research`, `parallel`, `remote`, `experimental`. |
 | Review gate before build | Decided | This document is the gate. |
-| cmux as interface | Leaning | User intends to use cmux; compare with tmux/session substrate. |
+| cmux as interface | Decided | cmux Remote tmux is the primary Mac homelab control plane; the remote tmux server remains the durability substrate. |
 | Vim-style TUI navigation | Trial | Learn `hjkl`, search, copy mode, and pane movement while keeping mouse/QOL defaults. |
 | Web search | Leaning | `pi-web-access` first. |
 | Advanced code exploration | Leaning | `pi-lens` first. |
