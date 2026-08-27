@@ -382,6 +382,45 @@ Pending:
 - remote Pi lifecycle/feed/notification integration beyond terminal mirroring;
 - optional cmux iOS beta after Tailscale Mac-phone path is stable.
 
+## Hunk Review UI Batch 2026-08-27
+
+Status: Accepted and executed locally on 2026-08-27
+
+Affected surfaces: UI, code review, and safety.
+
+Decision:
+
+- adopt Hunk `0.20.0` as an opt-in terminal review UI for working trees and
+  commits;
+- keep Git as source control and stock Pi plus `pi-lens` as code-review owners;
+- use Hunk's bundled skill only when a human has opened a Hunk review session;
+- do not add the skill to Pi's ambient catalog or replace the global Git pager;
+- install from Homebrew core on macOS and pinned `hunkdiff` npm on the Ubuntu
+  user-scoped Node runtime.
+
+Fit: Hunk adds a human-visible full-changeset stream and spatial agent comments
+without registering Pi tools, prompts, or extensions during normal sessions.
+It therefore complements rather than duplicates the current high-authority
+owners.
+
+Trust and rollback:
+
+- Hunk has local repository read access and uses a loopback session daemon for
+  agent interaction;
+- STML remains experimental and disabled;
+- uninstall with `brew uninstall hunk` on macOS or
+  `npm uninstall --global hunkdiff` on Ubuntu;
+- do not use `hunk update`; change the reviewed repository pin instead.
+
+Smoke test:
+
+- `hunk --version` reports `0.20.0`;
+- `hunk --help` succeeds;
+- `hunk diff` opens the current working-tree review;
+- `hunk skill path` locates the version-matched agent skill.
+
+Runbook: `docs/runbooks/hunk.md`.
+
 ## Candidate Build Batch 1
 
 Status: Accepted for initialization on 2026-08-03

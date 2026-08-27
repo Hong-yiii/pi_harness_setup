@@ -4,6 +4,7 @@ set -euo pipefail
 readonly NODE_VERSION="24.20.0"
 readonly NODE_SHA256="2f2c0da162318f0de47665410c7c8c2ed3d36c8f3105de4bbc61176c70a7cbf2"
 readonly PI_VERSION="0.83.0"
+readonly HUNK_VERSION="0.20.0"
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
 readonly NODE_ARCHIVE="node-v${NODE_VERSION}-linux-x64.tar.xz"
@@ -107,7 +108,10 @@ done
 export PATH="$LOCAL_BIN:$PATH"
 
 "$LOCAL_BIN/npm" install --global --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION"
+"$LOCAL_BIN/npm" install --global --ignore-scripts "hunkdiff@$HUNK_VERSION"
 install_managed_link "$NODE_ROOT/bin/pi" "$LOCAL_BIN/pi"
+install_managed_link "$NODE_ROOT/bin/hunk" "$LOCAL_BIN/hunk"
+install_managed_link "$NODE_ROOT/bin/hunkdiff" "$LOCAL_BIN/hunkdiff"
 
 readonly TMUX_SOURCE="$REPO_ROOT/terminal/tmux/tmux.conf"
 readonly TMUX_DESTINATION="$HOME/.tmux.conf"
@@ -127,14 +131,17 @@ fi
 node_version="$(node --version)" || die "Node validation failed"
 npm_version="$(npm --version)" || die "npm validation failed"
 pi_version="$(pi --version)" || die "Pi validation failed"
+hunk_version="$(hunk --version)" || die "Hunk validation failed"
 tmux_version="$(tmux -V)" || die "tmux validation failed"
 [[ $node_version == "v$NODE_VERSION" ]] || die "unexpected Node version after install: $node_version"
 [[ $pi_version == "$PI_VERSION" ]] || die "unexpected Pi version after install: $pi_version"
+[[ $hunk_version == *"$HUNK_VERSION"* ]] || die "unexpected Hunk version after install: $hunk_version"
 
 printf '\nUbuntu homelab runtime installed.\n'
 printf 'Node: %s (%s)\n' "$node_version" "$(command -v node)"
 printf 'npm:  %s (%s)\n' "$npm_version" "$(command -v npm)"
 printf 'Pi:   %s (%s)\n' "$pi_version" "$(command -v pi)"
+printf 'Hunk: %s (%s)\n' "$hunk_version" "$(command -v hunk)"
 printf 'tmux: %s\n' "$tmux_version"
 printf '\nNext, apply the profile:\n'
 printf '  export PATH="$HOME/.local/bin:$PATH"\n'

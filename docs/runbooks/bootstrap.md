@@ -16,7 +16,7 @@ cd ~/Projects
 git clone <repo-url> pi_harness_setup
 cd pi_harness_setup
 npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
-brew install tmux neovim
+brew install tmux neovim hunk
 node scripts/apply-pi-setup.mjs
 ```
 
@@ -49,10 +49,14 @@ export PATH="$HOME/.local/bin:$PATH"
 node scripts/apply-pi-setup.mjs
 ```
 
-The bootstrap may pause for the sudo password when installing tmux. Pi `/login`
-is a separate interactive checkpoint; credentials must not enter Git or chat.
+The bootstrap may pause for the sudo password when installing tmux. It also
+installs pinned Hunk beside the user-scoped Node and Pi runtime. Pi `/login` is
+a separate interactive checkpoint; credentials must not enter Git or chat.
 See `docs/runbooks/ubuntu-homelab-setup.md` for exact validation, tmux/cmux
 operation, and rollback.
+
+Hunk needs no account or initial config. Start with `hunk diff`; see
+`docs/runbooks/hunk.md` for daily use and agent-assisted review.
 
 ## Apply Pi Config
 
@@ -87,6 +91,8 @@ current plan review and change the harness as a reviewed batch.
 
 ```bash
 pi --version
+hunk --version
+hunk skill path
 pi --help | rg -- '--plan'
 pi list
 pi --no-session --thinking minimal --tools read -p 'If a skill named diagnose is listed as available to you, reply exactly SKILL_OK. Otherwise reply exactly SKILL_MISSING.'
