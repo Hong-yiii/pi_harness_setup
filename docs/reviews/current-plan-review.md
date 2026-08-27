@@ -159,7 +159,7 @@ Smoke test:
 
 ## Ubuntu Homelab + tmux Rollout 2026-08-26
 
-Status: Executed through authenticated Pi + tmux on 2026-08-27; optional cmux checks pending
+Status: Executed; Mac control-plane follow-up completed by ADR 0012 on 2026-08-27
 
 Affected surfaces: remote/mobile, terminal/session, safety, package policy, and documentation.
 
@@ -225,8 +225,9 @@ Observed:
 - ast-grep 0.45.2 and Pi Lens graph build passed on Linux;
 - OAuth completed with host-local mode-0600 auth state;
 - authenticated smoke returned `homelab-pi-ok`;
-- Pi is running inside the attached `pi-auth` tmux session in the harness cwd;
-- no cmux relay is installed yet.
+- the initial `pi-auth` session validated Pi-in-tmux; ADR 0012 now uses
+  `pi-main` through cmux Remote tmux;
+- no plain cmux relay is installed.
 
 Superseded follow-up: ADR 0012 owns cmux Remote tmux validation. Mosh and phone
 access remain deferred.
@@ -235,7 +236,7 @@ Detailed staged plan: `docs/reviews/homelab-linux-rollout-plan.md`.
 
 ## cmux Remote tmux Cutover 2026-08-27
 
-Status: Accepted by the user; implementation and live validation in progress
+Status: Executed on 2026-08-27
 
 Affected surfaces: remote/mobile, terminal/session, UI, and safety.
 
@@ -273,12 +274,23 @@ Smoke test:
 - reattach the mirror and confirm Pi remains interactive;
 - verify no plain cmux relay was installed.
 
+Observed:
+
+- enabled the Remote tmux app preference after backing up cmux UserDefaults;
+- `cmux ssh-tmux homelab` mirrored `pi-main` into a native workspace;
+- the mirror received the live Pi pane output from `~/pi_harness_setup`;
+- `remote.tmux.detach` left Pi and the remote session alive;
+- reattach restored the same session successfully;
+- remote `~/.cmux` remained absent, confirming no plain SSH relay install;
+- `--new-window` returned `method_not_found` on cmux 0.64.22, so the supported
+  path for this setup omits that flag.
+
 Decision record:
 `docs/decisions/0012-adopt-cmux-remote-tmux-as-primary-homelab-control-plane.md`.
 
 ## cmux Setup Batch
 
-Status: Executed locally on macOS; homelab validation pending
+Status: Executed locally and through Remote tmux on the homelab
 
 Goal: make cmux the Mac-native visual interface while preserving tmux as durable session truth.
 
@@ -300,7 +312,8 @@ Trust notes:
 
 - cmux is a native macOS app with CLI/socket automation authority.
 - Project `.cmux/cmux.json` actions are executable and should be reviewed before trust.
-- Remote cmux features upload a relay binary to the remote host under `~/.cmux/bin`.
+- Plain `cmux ssh` may upload a relay binary under remote `~/.cmux/bin`;
+  Remote tmux uses SSH control mode and did not install that relay.
 - Phone notifications may send notification text through cmux/Apple push unless hidden-content mode is enabled.
 
 Rollback:
@@ -321,8 +334,7 @@ Executed locally:
 
 Pending:
 
-- `cmux notify` live UI test while cmux app is open.
-- cmux Remote tmux cutover and mirror survival test (tracked in ADR 0012).
+- remote Pi lifecycle/feed/notification integration beyond terminal mirroring;
 - optional cmux iOS beta after Tailscale Mac-phone path is stable.
 
 ## Candidate Build Batch 1

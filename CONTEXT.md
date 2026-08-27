@@ -69,8 +69,10 @@ Current refinements:
   running inside a named tmux session all passed.
 - ADR 0012 cuts the Mac control plane over to `cmux ssh-tmux homelab` and
   deprecates the nested plain-cmux-SSH/tmux path.
-- Remote tmux live validation is in progress. Mosh, phone access, and direct
-  rather than DERP Tailscale connectivity remain optional follow-ups.
+- Remote tmux live validation passed: mirror, safe detach, session survival,
+  reattach, and no-relay checks succeeded with cmux 0.64.22 and tmux 3.4.
+- Remote lifecycle/feed integration, Mosh, phone access, and direct rather than
+  DERP Tailscale connectivity remain optional follow-ups.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

@@ -1,6 +1,6 @@
 # Ubuntu Homelab Setup
 
-Status: Executed through authenticated Pi + tmux on 2026-08-27
+Status: Executed through authenticated Pi + cmux Remote tmux on 2026-08-27
 Last updated: 2026-08-27
 
 ## Goal
@@ -77,8 +77,9 @@ The npm installer reported an unapproved postinstall for
 binary worked, so this remains documented rather than bypassed.
 
 The original plain cmux SSH/relay path is deprecated by ADR 0012. Remote tmux
-cutover validation is tracked separately. Mosh, phone access, and direct rather
-than DERP Tailscale connectivity remain optional follow-ups.
+mirror, safe detach, Pi/session survival, reattach, and no-relay validation all
+passed. Mosh, phone access, and direct rather than DERP Tailscale connectivity
+remain optional follow-ups.
 
 ## 1. Publish Before Pulling
 

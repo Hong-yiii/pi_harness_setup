@@ -1,6 +1,6 @@
 # cmux Setup Runbook
 
-Status: Remote tmux cutover in progress; live mirror validation pending
+Status: Remote tmux cutover executed on 2026-08-27
 Last updated: 2026-08-27
 
 ## Goal
@@ -378,6 +378,23 @@ up only the disposable smoke session after quitting Pi:
 ```bash
 ssh homelab 'tmux kill-session -t pi-smoke'
 ```
+
+Observed Remote tmux cutover:
+
+- cmux 0.64.22 and remote tmux 3.4 passed the version preflight.
+- Backed up the cmux preference domain under
+  `~/.config/pi_harness_setup/backups/20260827T064548Z/` before enabling the
+  Remote tmux beta.
+- Created remote session `pi-main` with Pi running in
+  `~/pi_harness_setup`.
+- `cmux ssh-tmux homelab` created a native `pi-main` workspace with one tmux
+  window and live Pi pane output.
+- `remote.tmux.detach` removed the control client while Pi and the remote tmux
+  session stayed alive; a second `cmux ssh-tmux homelab` reattached
+  successfully.
+- No plain cmux SSH relay appeared under remote `~/.cmux`.
+- `cmux ssh-tmux homelab --new-window` returned `method_not_found` in this
+  release; use the command without `--new-window`.
 
 Observed local validation:
 

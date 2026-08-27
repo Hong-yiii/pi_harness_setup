@@ -89,6 +89,19 @@ The beta toggle is stored in cmux app preferences, not the repository
 - cmux-specific Pi lifecycle hooks on the remote are not assumed; Remote tmux
   mirrors terminal state, not native remote Pi hook state.
 
+## Validation
+
+Executed on 2026-08-27 with cmux 0.64.22 and remote tmux 3.4:
+
+- mirrored `pi-main` into a native cmux workspace;
+- received live output from Pi running in `~/pi_harness_setup`;
+- detached with `remote.tmux.detach` and confirmed Pi/session survival;
+- reattached the same session successfully;
+- confirmed the plain cmux SSH relay was not installed remotely.
+
+The documented `--new-window` flag returned `method_not_found` in this release,
+so this setup uses `cmux ssh-tmux homelab` without that flag.
+
 ## Rollback
 
 Disable Settings -> Beta Features -> Remote tmux and attach directly:
