@@ -49,7 +49,7 @@ hunk diff                   # tracked and untracked working-tree changes
 hunk diff --staged          # staged changes only
 hunk diff main...HEAD       # compare the branch with main
 hunk show                   # latest commit
-hunk show HEAD~1 -- src/    # an older commit, filtered by path
+hunk show HEAD~1            # review an older commit
 hunk diff --watch           # keep the working-tree review live
 ```
 
