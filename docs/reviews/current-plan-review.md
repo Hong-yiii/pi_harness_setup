@@ -384,14 +384,14 @@ Pending:
 
 ## Hunk Review UI Batch 2026-08-27
 
-Status: Accepted and executed locally on 2026-08-27
+Status: Accepted and executed locally; isolated Ubuntu bootstrap validated on 2026-08-29
 
 Affected surfaces: UI, code review, and safety.
 
 Decision:
 
-- adopt Hunk `0.20.0` as an opt-in terminal review UI for working trees and
-  commits;
+- adopt Hunk as an opt-in terminal review UI for working trees and commits;
+  `0.20.0` is the validated version;
 - keep Git as source control and stock Pi plus `pi-lens` as code-review owners;
 - use Hunk's bundled skill only when a human has opened a Hunk review session;
 - do not add the skill to Pi's ambient catalog or replace the global Git pager;
@@ -408,16 +408,19 @@ Trust and rollback:
 - Hunk has local repository read access and uses a loopback session daemon for
   agent interaction;
 - STML remains experimental and disabled;
-- uninstall with `brew uninstall hunk` on macOS or
-  `npm uninstall --global hunkdiff` on Ubuntu;
-- do not use `hunk update`; change the reviewed repository pin instead.
+- uninstall with `brew uninstall hunk` on macOS or the managed-link cleanup in
+  `docs/runbooks/hunk.md` on Ubuntu;
+- do not use `hunk update`; review Homebrew upgrades and change the pinned Ubuntu
+  package through this repository.
 
 Smoke test:
 
 - `hunk --version` reports `0.20.0`;
 - `hunk --help` succeeds;
 - `hunk diff` opens the current working-tree review;
-- `hunk skill path` locates the version-matched agent skill.
+- `hunk skill path` locates the version-matched agent skill;
+- the full bootstrap passed in an isolated homelab Ubuntu `HOME`, reporting the
+  pinned Node, Pi, Hunk, and tmux versions without changing the live runtime.
 
 Runbook: `docs/runbooks/hunk.md`.
 

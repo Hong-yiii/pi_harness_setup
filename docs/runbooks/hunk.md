@@ -13,13 +13,15 @@ Hunk is not a Pi package and does not load into ordinary Pi sessions.
 
 ## Install
 
-The harness pins Hunk `0.20.0`.
+The Ubuntu bootstrap pins Hunk `0.20.0`. On macOS, Homebrew core tracks the
+current formula rather than preserving old versions; `0.20.0` is the version
+validated for this harness.
 
 macOS:
 
 ```bash
 brew install hunk
-hunk --version
+hunk --version  # record and review the installed formula version
 ```
 
 Ubuntu homelab:
@@ -113,16 +115,28 @@ Personal configuration is optional at `~/.config/hunk/config.toml`; repository
 configuration can live at `.hunk/config.toml` and overrides personal settings.
 Start without either and save view preferences only after using the defaults.
 
-Upgrade by changing the reviewed `0.20.0` pin in this repo, then reinstalling
-with Homebrew on macOS and rerunning the Ubuntu bootstrap. Do not commit Hunk
-session state or machine-local preferences.
+For Ubuntu, upgrade by changing the reviewed `0.20.0` repository pin and
+rerunning the bootstrap. On macOS, review the Homebrew formula version before
+`brew upgrade hunk`, then record the validated version in the review gate. Do
+not commit Hunk session state or machine-local preferences.
 
 Rollback:
 
 ```bash
-brew uninstall hunk                         # macOS
-npm uninstall --global hunkdiff             # Ubuntu user-scoped Node runtime
+brew uninstall hunk  # macOS
+
+# Ubuntu user-scoped runtime
+node_root="$HOME/.local/opt/node-v24.20.0-linux-x64"
+"$node_root/bin/npm" uninstall --global hunkdiff
+for name in hunk hunkdiff; do
+  link="$HOME/.local/bin/$name"
+  case "$(readlink "$link" 2>/dev/null || true)" in
+    "$node_root"/bin/*) rm -f "$link" ;;
+  esac
+done
 ```
+
+The target check prevents this rollback from deleting unrelated commands.
 
 Smoke test:
 
