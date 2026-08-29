@@ -15,6 +15,32 @@ This repo documents and reconstructs a personal Pi coding-agent harness.
 - Keep the selected cross-agent skill sources under `skills/`; the apply script publishes them to `~/.agents/skills`.
 - Put deterministic routing, loops, and evals under `automation/`; do not load them into ordinary interactive Pi sessions.
 
+## For Agents Adapting This Harness
+
+This repository records one person's working harness, not a universal machine
+specification. Treat its macOS workstation, Ubuntu x86_64 homelab, Tailscale,
+cmux, and phone workflow as a tested reference architecture—not assumptions
+about the next user's environment.
+
+Before changing or applying the harness for someone else:
+
+1. Read `README.md` for purpose and repository shape.
+2. Read `CONTEXT.md` for current choices, preferences, and open questions.
+3. Read `docs/reviews/current-plan-review.md` for accepted, trial, deferred, and
+   rejected work.
+4. Read the relevant `docs/decisions/` before replacing an established owner,
+   then use `docs/runbooks/` only for the parts that match the target system.
+5. Inventory the new user's OS, architecture, package manager, existing Pi
+   configuration, terminal, network boundaries, and whether remote/mobile use
+   exists at all.
+
+A local-only user does not need the homelab, cmux SSH, tmux durability, Tailscale,
+or mobile layers. A different server OS or CPU must not run the Ubuntu x86_64
+bootstrap unchanged. Reuse the portable Pi assets and package profile first;
+adapt host-specific scripts and runbooks only after documenting the new target
+and validating it there. Never copy this owner's credentials, sessions, machine
+state, or private paths to another installation.
+
 ## Research Rules
 
 - Prefer primary sources and concrete examples over generic opinions.

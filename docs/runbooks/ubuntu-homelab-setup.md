@@ -39,7 +39,9 @@ Host-local and never copied into Git:
 - native cmux helper/runtime files under `~/.cmux/`;
 - private SSH or Tailscale state.
 
-The bootstrap does not alter Tailscale, SSH, firewall, or system Node. It installs only tmux through apt, then installs a checksum-pinned Node runtime and Pi under the user's home directory.
+The bootstrap does not alter Tailscale, SSH, firewall, or system Node. It
+installs only tmux through apt, then installs checksum-pinned Node plus pinned
+Pi and Hunk versions under the user's home directory.
 
 ## Observed Baseline
 
@@ -140,9 +142,10 @@ Then rerun the bootstrap. It will:
 2. install tmux if needed;
 3. verify the official checksum for the pinned Node tarball;
 4. install Node under `~/.local/opt/`;
-5. expose Node, npm, and Pi through user-owned `~/.local/bin/` at mode `0755`;
+5. expose Node, npm, Pi, and Hunk through user-owned `~/.local/bin/` at mode `0755`;
 6. install Pi `0.83.0` with npm lifecycle scripts disabled;
-7. back up and install `terminal/tmux/tmux.conf` as `~/.tmux.conf`.
+7. install `hunkdiff@0.20.0` from npm with lifecycle scripts disabled;
+8. back up and install `terminal/tmux/tmux.conf` as `~/.tmux.conf`.
 
 For the current shell and remote one-shot commands:
 
@@ -215,6 +218,8 @@ cd ~/pi_harness_setup
 node --version
 npm --version
 pi --version
+hunk --version
+hunk skill path
 tmux -V
 pi list --approve
 npm audit --prefix ~/.pi/agent/npm --omit dev
@@ -228,6 +233,7 @@ Expected runtime pins:
 ```text
 Node v24.20.0
 Pi 0.83.0
+Hunk 0.20.0
 ```
 
 Do not waive an npm audit finding silently. Record and review it before proceeding.
@@ -335,7 +341,8 @@ bash scripts/bootstrap-ubuntu-homelab.sh
 node scripts/apply-pi-setup.mjs
 ```
 
-The bootstrap is idempotent for the pinned Node/Pi versions and preserves a differing tmux config before replacement.
+The bootstrap is idempotent for the pinned Node, Pi, and Hunk versions and
+preserves a differing tmux config before replacement.
 
 ## Rollback
 
@@ -373,7 +380,7 @@ only when they still point into the harness-owned Node directory:
 
 ```bash
 node_root="$HOME/.local/opt/node-v24.20.0-linux-x64"
-for name in node npm npx corepack pi; do
+for name in node npm npx corepack pi hunk hunkdiff; do
   link="$HOME/.local/bin/$name"
   case "$(readlink "$link" 2>/dev/null || true)" in
     "$node_root"/bin/*) rm -f "$link" ;;

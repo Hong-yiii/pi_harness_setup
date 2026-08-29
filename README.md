@@ -61,7 +61,9 @@ it, and start Pi with one real cwd shared by tools and subagents. See
 `docs/manuals/pi-harness-workflow-manual.md` for examples and cleanup.
 
 Start learning the setup on a real codebase with
-`docs/manuals/first-real-project.md`.
+`docs/manuals/first-real-project.md`. Review working-tree changes with
+`hunk diff`; `docs/runbooks/hunk.md` covers daily use and Pi-assisted inline
+annotations.
 
 ## Ubuntu Homelab
 

@@ -78,6 +78,8 @@ Current refinements:
   direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
+- Hunk is the opt-in human review UI for local changesets; Git remains source
+  control and its bundled agent skill is loaded only when a Hunk review is open.
 
 ## Review Gate
 
