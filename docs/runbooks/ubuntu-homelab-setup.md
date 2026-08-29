@@ -1,19 +1,20 @@
 # Ubuntu Homelab Setup
 
-Status: Executed through authenticated Pi + cmux Remote tmux on 2026-08-27
+Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
 Last updated: 2026-08-27
 
 ## Goal
 
-Run the same lean Pi harness on the Ubuntu homelab inside durable tmux sessions:
+Run the same lean Pi harness on Ubuntu through native cmux SSH:
 
 ```text
-Mac -> cmux Remote tmux -> Tailscale/SSH control mode -> tmux -> Pi
-phone -> Tailscale -> SSH/Mosh -> tmux -> Pi
+Mac native cmux -> SSH/Tailscale -> Linux cmuxd-remote PTY -> Pi
+fallback: Mac -> cmux Remote tmux -> tmux -> Pi
+phone fallback: Tailscale -> SSH/Mosh -> tmux -> Pi
 ```
 
-cmux Remote tmux is the primary Mac control plane. tmux is the remote session
-truth and direct SSH/tmux is break-glass recovery.
+The versioned Linux helper owns detachable PTYs across transport reconnects.
+Existing tmux sessions remain break-glass recovery.
 
 ## Target And Boundaries
 
@@ -35,7 +36,7 @@ Host-local and never copied into Git:
 - `~/.pi/agent/auth.json` and API keys;
 - `~/.pi/agent/sessions/`;
 - machine-generated package state under `~/.pi/agent/npm/`;
-- cmux relay files under `~/.cmux/`;
+- native cmux helper/runtime files under `~/.cmux/`;
 - private SSH or Tailscale state.
 
 The bootstrap does not alter Tailscale, SSH, firewall, or system Node. It installs only tmux through apt, then installs a checksum-pinned Node runtime and Pi under the user's home directory.
@@ -76,10 +77,15 @@ The npm installer reported an unapproved postinstall for
 `@ast-grep/cli@0.45.2`; no lifecycle script was approved. The shipped Linux
 binary worked, so this remains documented rather than bypassed.
 
-The original plain cmux SSH/relay path is deprecated by ADR 0012. Remote tmux
-mirror, safe detach, Pi/session survival, reattach, and no-relay validation all
-passed. Mosh, phone access, and direct rather than DERP Tailscale connectivity
-remain optional follow-ups.
+ADR 0013 adopts native cmux SSH after local/remote carrier replacement, real Pi
+reconnect, remote notification, and browser-routing tests passed. The Rust cmux
+TUI pilot was removed after comparison. Remote tmux remains fallback; Mosh,
+complete app relaunch, Mac sleep/wake, iOS, remote reboot, and direct rather
+than DERP Tailscale connectivity remain `Untested`.
+
+The native SSH pilot observed remote Pi `0.84.3`, while this repository still
+documents pin `0.83.0`. Reconcile that version drift as a separate reviewed
+change.
 
 ## 1. Publish Before Pulling
 
@@ -134,7 +140,7 @@ Then rerun the bootstrap. It will:
 2. install tmux if needed;
 3. verify the official checksum for the pinned Node tarball;
 4. install Node under `~/.local/opt/`;
-5. expose Node, npm, and Pi through `~/.local/bin/`;
+5. expose Node, npm, and Pi through user-owned `~/.local/bin/` at mode `0755`;
 6. install Pi `0.83.0` with npm lifecycle scripts disabled;
 7. back up and install `terminal/tmux/tmux.conf` as `~/.tmux.conf`.
 
@@ -162,7 +168,10 @@ Expected Linux-specific behavior:
 cmux hook skipped: cmux is not installed or not available.
 ```
 
-That is intentional: cmux runs on the Mac, not on Ubuntu. Record the timestamped backup path printed by the apply script.
+That message refers to the native cmux hook CLI, which is not installed globally
+on Ubuntu. Native `cmux ssh` installs `cmuxd-remote` on demand; it does not make
+the macOS hook CLI available during profile application. Record the timestamped
+backup path printed by the apply script.
 
 ## 5. Authenticate Without Sharing Secrets
 
@@ -260,51 +269,53 @@ ssh -t homelab 'tmux attach-session -t pi-main'
 
 Confirm the same Pi process and conversation remain. Pi session files are stored on the homelab under `~/.pi/agent/sessions/`; use `/session`, `pi -c`, or `pi -r` there.
 
-## 8. Use cmux Remote tmux From The Mac
+## 8. Use Native cmux SSH From The Mac
 
-cmux Remote tmux is the primary Mac control plane. It requires the existing
-remote tmux server; Ubuntu's observed tmux 3.4 satisfies the 3.2+ requirement.
-
-Enable **cmux Settings -> Beta Features -> Remote tmux**. Then create a session
-if the host has none:
+From a terminal inside native cmux:
 
 ```bash
-ssh homelab 'export PATH="$HOME/.local/bin:$PATH"; tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"'
+cmux ssh homelab
 ```
 
-From a terminal inside cmux:
+Then work normally:
+
+```bash
+export PATH="$HOME/.local/bin:$PATH"
+cd ~/pi_harness_setup
+pi --name "homelab main"
+```
+
+The first connection installs a versioned, manifest-verified helper under
+`~/.cmux/bin/cmuxd-remote/`. It owns the detachable remote PTY; native cmux
+reattaches after SSH transport loss.
+
+Daily behavior and implementation details:
+`docs/runbooks/cmux-ssh-remote.md`.
+
+## 9. Keep Remote tmux As Break-Glass Recovery
+
+For existing `pi-main` work:
 
 ```bash
 cmux ssh-tmux homelab
 ```
 
-Select the mirrored `pi-main` workspace and start Pi in its pane:
+Direct recovery:
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-pi --name "homelab main"
+ssh -t homelab 'tmux attach-session -t pi-main'
 ```
-
-Remote tmux uses SSH control mode and does not require the plain `cmux ssh`
-relay path. Plain cmux SSH is deprecated unless its browser proxy/upload/relay
-features are separately approved.
 
 ## Daily Operation
 
 Primary Mac attach:
 
 ```bash
-cmux ssh-tmux homelab
+cmux ssh homelab
 ```
 
-Create one tmux session per durable project or worktree before mirroring:
-
-```bash
-ssh homelab 'tmux new-session -d -s project-name -c /path/to/project'
-```
-
-Inside the mirrored pane, start Pi from that real project checkout so the
-process cwd, Pi tools, and subagents agree.
+Inside the native remote workspace, change to the real project checkout before
+starting Pi so its cwd, tools, and subagents agree.
 
 Break-glass recovery only:
 
@@ -328,8 +339,13 @@ The bootstrap is idempotent for the pinned Node/Pi versions and preserves a diff
 
 ## Rollback
 
-Disable **cmux Settings -> Beta Features -> Remote tmux** to roll back the Mac
-control plane. Remote tmux sessions and Pi processes remain unchanged.
+Exit Pi and close the native SSH workspace, then return to the existing fallback:
+
+```bash
+cmux ssh-tmux homelab
+```
+
+Existing tmux sessions remain unchanged.
 
 Stop only rollout-created test sessions:
 

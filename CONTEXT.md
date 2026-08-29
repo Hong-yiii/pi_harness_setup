@@ -25,10 +25,12 @@ The best shape is a layered harness:
 
 ## Current Lean
 
-- Use cmux Remote tmux as the primary Mac-to-homelab control plane over
-  Tailscale/SSH.
-- Keep the remote tmux server as the durable substrate required by Remote tmux;
-  direct SSH/tmux is break-glass recovery rather than the daily interface.
+- Use native `cmux ssh homelab` as the single normal Mac-to-homelab path over
+  Tailscale.
+- Let Linux own detachable remote PTYs through the native app's versioned helper
+  while macOS retains the native workspace, Feed, browser, and notification UI.
+- Keep Remote tmux and direct SSH/tmux only as break-glass recovery for existing
+  sessions.
 - Reuse the versioned lean profile across hosts while keeping credentials,
   package state, and sessions host-local.
 - Use Mosh for phone/flaky-network use.
@@ -67,12 +69,13 @@ Current refinements:
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
   checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
   running inside a named tmux session all passed.
-- ADR 0012 cuts the Mac control plane over to `cmux ssh-tmux homelab` and
-  deprecates the nested plain-cmux-SSH/tmux path.
-- Remote tmux live validation passed: mirror, safe detach, session survival,
-  reattach, and no-relay checks succeeded with cmux 0.64.22 and tmux 3.4.
-- Remote lifecycle/feed integration, Mosh, phone access, and direct rather than
-  DERP Tailscale connectivity remain optional follow-ups.
+- ADR 0013 adopts native `cmux ssh homelab`; local and remote carrier failures,
+  a real Pi reconnect, native notifications, and remote browser routing passed.
+- ADR 0012 Remote tmux remains historical validation and break-glass recovery.
+- The Rust cmux TUI pilot was decommissioned after comparison; its execution log
+  remains under `docs/trials/`.
+- Complete native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
+  direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/manuals/first-real-project.md`.
 

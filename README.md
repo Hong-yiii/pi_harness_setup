@@ -74,27 +74,29 @@ cd ~/pi_harness_setup
 bash scripts/bootstrap-ubuntu-homelab.sh
 export PATH="$HOME/.local/bin:$PATH"
 node scripts/apply-pi-setup.mjs
-tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"
 ```
 
-On the Mac, enable **cmux Settings -> Beta Features -> Remote tmux**, then use
-the primary attach path:
+From a terminal inside native cmux, open the homelab workspace:
 
 ```bash
-cmux ssh-tmux homelab
+cmux ssh homelab
 ```
 
-Start Pi inside the mirrored `pi-main` pane:
+Then work normally in the remote shell:
 
 ```bash
-export PATH="$HOME/.local/bin:$PATH"
-pi
+cd ~/pi_harness_setup
+pi --name "homelab main"
 ```
+
+The Linux `cmuxd-remote` helper owns the detachable PTY while the Mac keeps its
+native workspace, Feed, browser, notification, and split-pane experience.
+Remote tmux remains break-glass recovery for existing `pi-main` work.
 
 The bootstrap may need interactive sudo for tmux. Complete Pi `/login`
 separately over SSH; never copy auth files into the repository. See
 `docs/runbooks/ubuntu-homelab-setup.md` for the end-to-end procedure and
 rollback.
 
-The first cmux/tmux/Neovim setup has been executed locally. See
-`docs/runbooks/cmux-setup.md` for Mac cockpit details and remote attach flow.
+Use `docs/runbooks/cmux-ssh-remote.md` for the daily workflow, persistence
+semantics, implementation, and fallback.

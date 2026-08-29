@@ -8,12 +8,24 @@ Use the phone to inspect, steer, approve, or resume Pi sessions running on local
 
 ## Baseline Architecture
 
+Candidate cmux iOS companion path (`Untested`):
+
 ```text
-phone terminal
-  -> Tailscale/WireGuard private network
-  -> SSH or Mosh
-  -> tmux session
-  -> pi running inside project directory
+phone cmux beta
+  -> private network/Tailscale
+  -> native cmux on Mac
+  -> native cmux SSH workspace
+  -> homelab cmuxd-remote PTY
+  -> Pi
+```
+
+The official iOS app pairs with the Mac, not directly with Linux. The Mac must
+remain online and reachable. Direct iOS-to-Linux attachment remains `Untested`.
+
+Until the iOS path is validated, use:
+
+```text
+phone terminal -> Tailscale -> SSH or Mosh -> tmux -> Pi
 ```
 
 ## Minimum Setup
