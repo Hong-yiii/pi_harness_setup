@@ -1,11 +1,11 @@
 # cmux Setup Runbook
 
-Status: Linux-owned cmux TUI thin-client trial active; Remote tmux retained as fallback
+Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
 Last updated: 2026-08-27
 
 ## Goal
 
-Evaluate cmux TUI as the Linux-owned remote session substrate while keeping native cmux Remote tmux as the validated fallback.
+Use native cmux as the Mac control surface while Linux owns detachable remote PTYs through native cmux SSH.
 
 The desired feel:
 
@@ -19,23 +19,19 @@ The desired feel:
 
 ## Current Decision
 
-The active trial uses cmux TUI's own owner/client architecture:
+The normal path is:
 
 ```text
-native cmux terminal on Mac
-  -> pinned cmux TUI client
-  -> managed SSH over Tailscale
-  -> cmux TUI `agents-pilot` owner on Linux
-  -> disposable Pi pilot sessions
+native cmux on Mac
+  -> SSH/Tailscale
+  -> versioned cmuxd-remote on Linux
+  -> detachable PTY
+  -> project shell and Pi
 ```
 
-The Linux cmux TUI owner, not the Mac, holds the pilot PTYs and workspace tree.
-This is cmux TUI's native tmux-like model, but the client remains a TUI inside a
-native cmux terminal rather than native macOS workspaces/tabs/splits.
-
-ADR 0012 Remote tmux remains the validated fallback. Existing tmux sessions are
-unchanged and continue to own established work until the trial passes daemon
-failure, reboot, version-skew, rollback, and daily UX gates.
+Use `cmux ssh homelab`. Native cmux keeps its workspaces, panes, Feed,
+notifications, browser routing, and Mac shortcuts while Linux owns the process.
+ADR 0013 records the decision; ADR 0012 Remote tmux is fallback only.
 
 ## Sources
 
@@ -46,9 +42,6 @@ failure, reboot, version-skew, rollback, and daily UX gates.
 - cmux remote tmux beta docs: <https://cmux.com/docs/remote-tmux>
 - cmux iOS beta docs: <https://cmux.com/docs/ios>
 - cmux notification docs: <https://cmux.com/docs/notifications>
-- cmux TUI docs: <https://cmux.com/docs/tui>
-- cmux TUI remote docs: <https://github.com/manaflow-ai/cmux/blob/main/cmux-tui/docs/remote.md>
-- cmux TUI Machines docs: <https://github.com/manaflow-ai/cmux/blob/main/cmux-tui/docs/machines.md>
 
 ## Install Or Repair
 
@@ -192,10 +185,11 @@ Current cmux hook behavior:
 
 Start with `terminal.autoResumeAgentSessions` disabled. cmux will restore layout and metadata, but agent terminals stay idle until resumed manually. Turn auto-resume on only after it feels predictable.
 
-Remote caveat: Remote tmux mirrors terminal state; it does not make the local
-Pi/Codex lifecycle hooks authoritative for remote agents. Native remote
-feed/restore behavior remains in progress. The remote tmux server, not cmux
-agent hooks, owns homelab durability.
+Remote caveat: native SSH exposes the cmux relay command inside its remote
+workspace, and remote notifications passed validation. The profile does not yet
+install native Pi lifecycle hooks on Ubuntu, so automatic remote Pi Feed/resume
+behavior is not assumed. `cmuxd-remote`, not the local Mac hook, owns transport
+persistence.
 
 Executed locally:
 
@@ -263,24 +257,27 @@ Use `set-clipboard on` only if you deliberately want programs inside tmux, such 
 
 If a remote Linux box complains about `xterm-ghostty`, install Ghostty terminfo on the host or temporarily use `TERM=xterm-256color`.
 
-## cmux TUI Remote Pilot
+## Native cmux SSH Homelab Flow
 
-The Linux-owned `agents-pilot` session is ready for disposable interactive use:
+From a terminal inside native cmux:
 
 ```bash
-npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+cmux ssh homelab
 ```
 
-Daily use, shortcuts, implementation details, security, status checks, and
-rollback are maintained in `docs/runbooks/cmux-tui-remote.md`. Trial chronology
-is kept separately in `docs/trials/2026-08-27-cmux-tui-remote-pilot.md`.
+Then `cd` to the project and start Pi. The first connection installs the
+versioned `cmuxd-remote` helper. Browser panes use the homelab network, remote
+notifications reach the native Feed, and transport drops reattach to the same
+remote PTY.
+
+Detailed use and implementation: `docs/runbooks/cmux-ssh-remote.md`.
 
 ## Remote tmux Fallback Flow
 
 Bootstrap the Linux host first with
-`docs/runbooks/ubuntu-homelab-setup.md`. The native cmux app remains macOS-only;
-the separate managed `cmux-tui` binary now exists on Ubuntu for the pilot.
-tmux 3.2+ continues to own established fallback sessions.
+`docs/runbooks/ubuntu-homelab-setup.md`. The native app remains macOS-only; its
+versioned `cmuxd-remote` helper runs on Ubuntu. tmux 3.2+ continues to own
+existing fallback sessions.
 
 Keep the normal SSH alias:
 
@@ -320,10 +317,8 @@ Closing, splitting, or reordering the cmux mirror changes the real tmux
 session. After relaunching cmux, rerun `cmux ssh-tmux homelab`; the remote
 session continues running.
 
-Remote tmux uses SSH plus `tmux -CC` and does not require the plain `cmux ssh`
-relay path. Do not use plain `cmux ssh` unless browser proxying, SCP drop, or
-remote-to-local cmux commands are separately needed and its remote relay write
-is approved.
+Remote tmux uses SSH plus `tmux -CC`. It remains available for recovery, but
+native `cmux ssh homelab` is the normal daily path.
 
 Break-glass recovery:
 
@@ -333,15 +328,12 @@ ssh -t homelab 'tmux attach-session -t pi-main'
 
 ## Phone Flow
 
-Keep the baseline:
+The cmux iOS beta pairs with the Mac and can view its native workspaces, including
+native SSH workspaces, while the Mac remains online and reachable over
+Tailscale. Notification forwarding can send terminal notification text through
+cmux servers and Apple Push; start with hidden notification content.
 
-```text
-phone -> Tailscale -> SSH/Mosh -> tmux -> Pi
-```
-
-cmux iOS is interesting but beta. It pairs to a Mac running cmux and needs your phone to reach the Mac over your own network. Tailscale is the simplest path. Notification forwarding can send terminal notification text through cmux servers and Apple Push unless "Hide content" is enabled, so start with hidden notification content.
-
-Do not depend on cmux iOS as the only phone path yet. Keep SSH/Mosh/tmux working as the fallback.
+Keep phone SSH/Mosh/tmux as break-glass fallback.
 
 ## Smoke Test
 
@@ -359,15 +351,16 @@ cmux hooks setup pi
 
 Then start `pi` in cmux, quit cmux normally, reopen, and confirm the workspace appears without auto-starting the agent while `autoResumeAgentSessions` is false.
 
-cmux TUI remote pilot:
+Native cmux SSH:
 
 ```bash
-npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+cmux ssh homelab
 ```
 
-Inside the TUI, start a harmless process, detach with `Ctrl+b d`, reconnect with
-the same command, and confirm the process and terminal state remain. Use a
-disposable Pi session only after that passes.
+Run a harmless remote process, interrupt the SSH transport, and confirm cmux
+reattaches to the same PID and screen. Native notification, browser routing, and
+real Pi reconnect validation are recorded in
+`docs/trials/2026-08-27-native-cmux-ssh-pilot.md`.
 
 Remote tmux fallback:
 
@@ -431,11 +424,8 @@ Operational note: Pi print-mode may remain open after printing the expected smok
 
 ## Rollback
 
-For the cmux TUI pilot, quit disposable Pi processes first, stop only the
-`agents-pilot` owner, and inspect exact cmux-owned paths before removal. A live
-cmux TUI PTY cannot be migrated into tmux.
-
-Return to the validated fallback with:
+Exit Pi and close any native SSH workspace being abandoned. Return to the
+break-glass fallback with:
 
 ```bash
 cmux ssh-tmux homelab

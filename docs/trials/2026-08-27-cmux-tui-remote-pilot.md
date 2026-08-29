@@ -2,7 +2,8 @@
 
 This is an execution log, not a decision or daily-use runbook.
 
-Runbook: `docs/runbooks/cmux-tui-remote.md`
+The active TUI runbook was removed after ADR 0013 selected native cmux SSH.
+This file remains only as historical trial evidence.
 
 ## Scope
 
@@ -173,15 +174,29 @@ owner remained running while tmux `pi-main` was still present.
 
 Result: passed.
 
+### 9. Decommission after native SSH comparison
+
+Native `cmux ssh` subsequently passed transport reconnect, real Pi continuity,
+notification, and remote-browser tests while retaining the native Mac UI. The
+TUI path was therefore rejected as a competing daily controller.
+
+Verified `agents-pilot` had no workspaces, stopped the owner, then removed only:
+
+```text
+~/.local/bin/cmux-tui
+~/.local/state/cmux/
+```
+
+The native `~/.cmux/bin/cmuxd-remote/` helper and tmux `pi-main` fallback were
+left intact.
+
 ## Final State
 
 ```text
-agents-pilot owner: running on Linux
-remote binary: installed
-remote state root: mode 0700
-~/.local/bin: mode 0755
-local test clients: stopped
+agents-pilot owner: stopped
+remote TUI binary/state: removed
 pilot workspace/process: removed
+native cmux SSH helper: retained
 tmux pi-main: unchanged
 ```
 

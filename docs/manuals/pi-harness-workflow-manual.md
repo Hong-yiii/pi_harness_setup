@@ -75,8 +75,8 @@ Explicitly out for now:
 | Repeated loop with routing or evals | explicit code under `automation/` | Ambient workflow triggers in normal sessions |
 | Small implementation/review cleanup | Ponytail `lite` | Ponytail during open-ended research if it becomes too terse |
 | Long-running command | background task, then `/tasks` or bounded logs | Blocking the main conversation or polling constantly |
-| Mac/remote interaction | Trial pinned cmux TUI managed SSH; keep Remote tmux fallback | Public listeners, relay/Iroh before needed, or two promoted daily controllers |
-| Phone interaction | Tailscale + SSH/Mosh + tmux | Assuming direct iOS-to-Linux cmux support before it is documented |
+| Mac/remote interaction | Native `cmux ssh homelab` | TUI nesting, public listeners, or multiple daily controllers |
+| Phone interaction | cmux iOS companion through the Mac; SSH/Mosh + tmux fallback | Assuming direct iOS-to-Linux support before it is documented |
 
 ## Subagents Vs Repo-Owned Automation
 
@@ -160,55 +160,43 @@ Bad use:
 
 ## Remote And Mobile
 
-The active pilot architecture is:
+The normal architecture is:
 
 ```text
-Mac native cmux terminal
-  -> pinned cmux TUI client
-  -> managed SSH/Tailscale
-  -> Linux cmux TUI `agents-pilot` owner
-  -> disposable Pi session
+native cmux on Mac
+  -> SSH/Tailscale
+  -> Linux cmuxd-remote detachable PTY
+  -> project shell and Pi
 ```
 
-This is cmux TUI's own tmux-like model: Linux owns the PTYs and workspace tree;
-the Mac is a thin TUI client. It does not project the remote tree into native
-macOS workspaces, tabs, and panes.
+Use the native workspace as the organizational and lifecycle boundary. Linux
+owns the process while macOS retains native panes, browser routing, Feed, and
+notifications. Transport drops reconnect to the same remote PID and terminal
+state.
 
-The validated fallback remains:
+Fallback only:
 
 ```text
-Mac -> cmux Remote tmux -> SSH control mode -> homelab tmux -> Pi
-phone -> Tailscale -> SSH or Mosh -> homelab tmux -> Pi
+Mac -> cmux Remote tmux -> homelab tmux -> Pi
+phone terminal -> Tailscale -> SSH or Mosh -> homelab tmux -> Pi
 ```
-
-Managed install, client termination/reconnect, and two-client visibility passed
-with a disposable remote process. Keep established work in tmux until
-interactive Pi use, daemon failure, reboot, version-skew, rollback, and daily UX
-tests also pass.
-
-Remote Pi lifecycle hooks are still experimental. Remote tmux mirrors terminal
-state; it does not make local cmux Pi hooks authoritative for remote agents.
 
 The Ubuntu harness checkout lives at `~/pi_harness_setup`. Bootstrap and
 operate it with `docs/runbooks/ubuntu-homelab-setup.md`; credentials and Pi
 session files stay on that host rather than syncing through Git.
 
-Start the disposable thin-client pilot with:
+Open the homelab from a terminal inside native cmux:
 
 ```bash
-npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
+cmux ssh homelab
 ```
+
+Then change to the project and start Pi normally. Each invocation creates one
+native remote workspace; `--name` and `--command` are optional conveniences.
 
 Daily use and implementation details are in
-`docs/runbooks/cmux-tui-remote.md`.
-
-Use one named tmux session per established project or worktree, then mirror it
-through the fallback:
-
-```bash
-ssh homelab 'tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"'
-cmux ssh-tmux homelab
-```
+`docs/runbooks/cmux-ssh-remote.md`. Remote tmux remains available only for
+existing fallback sessions.
 
 `pi-phone` and Usher are not in the default.
 

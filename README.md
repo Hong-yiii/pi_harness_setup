@@ -74,38 +74,29 @@ cd ~/pi_harness_setup
 bash scripts/bootstrap-ubuntu-homelab.sh
 export PATH="$HOME/.local/bin:$PATH"
 node scripts/apply-pi-setup.mjs
-tmux new-session -d -s pi-main -c "$HOME/pi_harness_setup"
 ```
 
-The validated fallback remains native cmux Remote tmux:
+From a terminal inside native cmux, open the homelab workspace:
 
 ```bash
-cmux ssh-tmux homelab
+cmux ssh homelab
 ```
 
-The current thin-client trial instead lets cmux TUI own disposable remote
-workspaces on Linux:
+Then work normally in the remote shell:
 
 ```bash
-npx --yes cmux@0.11.0 remote ssh homelab --session agents-pilot
-```
-
-Start Pi inside the remote `agents-pilot` TUI only for disposable pilot work:
-
-```bash
-export PATH="$HOME/.local/bin:$PATH"
 cd ~/pi_harness_setup
-pi
+pi --name "homelab main"
 ```
 
-Until daemon crash, reboot, version-skew, and UX tests pass, keep established
-work in the tmux-owned `pi-main` session.
+The Linux `cmuxd-remote` helper owns the detachable PTY while the Mac keeps its
+native workspace, Feed, browser, notification, and split-pane experience.
+Remote tmux remains break-glass recovery for existing `pi-main` work.
 
 The bootstrap may need interactive sudo for tmux. Complete Pi `/login`
 separately over SSH; never copy auth files into the repository. See
 `docs/runbooks/ubuntu-homelab-setup.md` for the end-to-end procedure and
 rollback.
 
-Use `docs/runbooks/cmux-tui-remote.md` for the thin-client workflow and
-implementation. `docs/runbooks/cmux-setup.md` retains native Mac cockpit and
-Remote tmux fallback details.
+Use `docs/runbooks/cmux-ssh-remote.md` for the daily workflow, persistence
+semantics, implementation, and fallback.

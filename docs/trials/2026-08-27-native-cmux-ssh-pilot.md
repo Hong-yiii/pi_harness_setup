@@ -147,7 +147,8 @@ Result: passed.
 - confirmed no persisted native SSH PTY sessions remained;
 - confirmed no `cmuxd-remote` process remained after the last workspace closed;
 - confirmed tmux `pi-main` remained present;
-- confirmed the Rust `agents-pilot` owner remained running.
+- initially left the Rust `agents-pilot` owner running for comparison; after
+  native SSH was selected, verified it was empty and removed its binary/state.
 
 ## Passed
 
@@ -174,7 +175,6 @@ Result: passed.
 ## Result
 
 Native `cmux ssh` passed the core thin-client and agent workflow tests while
-retaining the native sidebar, notification Feed, and browser integration. It is
-a stronger current fit for the desired Mac experience than nesting the Rust
-cmux TUI inside the native app. PR #4 remains draft pending the architecture
-decision.
+retaining the native sidebar, notification Feed, and browser integration. ADR
+0013 adopts it as the single normal Mac-to-homelab path. The Rust cmux TUI pilot
+was removed; Remote tmux remains break-glass recovery.
