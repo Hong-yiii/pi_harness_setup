@@ -4,7 +4,7 @@ Date: 2026-08-03
 
 ## Status
 
-Initialized locally
+Superseded by ADR 0009 and ADR 0010
 
 ## Decision
 
@@ -60,5 +60,5 @@ Executed on 2026-08-03:
 - `pi list --approve` showed all eight selected project-local packages.
 - `npm audit --prefix .pi/npm --omit dev` found zero vulnerabilities.
 - `ast-grep --version` returned `ast-grep 0.45.0`.
-- `pi-lens build-graph --cwd /Users/hongyilin/Projects/pi_harness_setup` completed successfully.
+- `pi-lens build-graph --cwd ~/Projects/pi_harness_setup` completed successfully.
 - `pi --approve --no-session --thinking minimal -p "Reply with exactly: harness-smoke-ok"` returned `harness-smoke-ok`.

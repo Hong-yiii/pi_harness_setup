@@ -4,7 +4,7 @@ Date: 2026-08-01
 
 ## Status
 
-Draft
+Accepted
 
 ## Decision
 

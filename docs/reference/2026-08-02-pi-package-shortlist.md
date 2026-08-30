@@ -122,4 +122,4 @@ Reasons:
 - Pi RPC docs: <https://pi.dev/docs/latest/rpc>
 - Pi JSON mode docs: <https://pi.dev/docs/latest/json>
 - Pi package catalog entries linked in the chart above.
-- Subagents/phone/Ponytail maturity pass: `docs/research/2026-08-03-subagents-phone-ponytail-maturity.md`
+- Subagents/phone/Ponytail maturity pass: `docs/reference/2026-08-03-subagents-phone-ponytail-maturity.md`

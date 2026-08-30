@@ -46,8 +46,8 @@ install_managed_link() {
 # shellcheck source=/dev/null
 source /etc/os-release
 case "${ID:-}" in
-	ubuntu | debian) ;;
-	*) die "supported distributions are Ubuntu and Debian; found ${ID:-unknown}" ;;
+ubuntu | debian) ;;
+*) die "supported distributions are Ubuntu and Debian; found ${ID:-unknown}" ;;
 esac
 
 for command in curl git install ln mktemp mv readlink sha256sum tar xz; do
@@ -72,7 +72,7 @@ fi
 
 tmux_version="$(tmux -V | awk '{ print $2 }')"
 [[ $tmux_version =~ ^([0-9]+)\.([0-9]+) ]] || die "cannot parse tmux version: $tmux_version"
-if (( BASH_REMATCH[1] < 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] < 2) )); then
+if ((BASH_REMATCH[1] < 3 || (BASH_REMATCH[1] == 3 && BASH_REMATCH[2] < 2))); then
 	die "tmux 3.2 or newer is required; found $tmux_version"
 fi
 

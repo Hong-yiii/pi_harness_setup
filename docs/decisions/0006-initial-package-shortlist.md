@@ -4,7 +4,7 @@ Date: 2026-08-02
 
 ## Status
 
-Draft
+Superseded by ADR 0009
 
 ## Decision
 
@@ -36,7 +36,7 @@ Installing all of them would make behavior harder to explain and reproduce. The 
 ## For / Against
 
 | Candidate | For | Against | Decision |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | `pi-web-access` | Directly satisfies research and web search. Broad source support. | API keys, network, optional cookies; overlaps context/fetch packages. | Research profile first. |
 | `pi-lens` | Best code-exploration fit. | Large and broad; may overlap with read/edit replacements. | Trial first, alone. |
 | `pi-subagents` | Natural subagent layer for scouting/review. Strongest Pi-native maturity signal in this comparison. | Adds delegation behavior; needs caps, model scope, and inheritance rules. | Trial after manual worktree flow exists. |
