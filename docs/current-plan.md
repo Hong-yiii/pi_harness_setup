@@ -22,6 +22,104 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Public Repository Release Batch 2026-08-31
+
+Status: Executed on 2026-08-31
+
+Affected surfaces: documentation, public presentation, onboarding, repository
+metadata, and privacy.
+
+Decision:
+
+- turn the root README into a recruiter-friendly landing page without replacing
+  the deeper operating and rebuild documentation;
+- lead with the reason for choosing Pi: a small, inspectable runtime lets this
+  repository own capability, authority, reproducibility, and rollback;
+- show the architecture, selected capability owners, operating loop, tested
+  evidence, and honest limits before the installation details;
+- include a privacy-safe workspace capture and a repo-native architecture
+  visual under `docs/assets/`;
+- keep the human documentation index as the primary route into detailed guides,
+  operations, decisions, research, and history;
+- update GitHub description and topics after the local result passes review.
+
+Trust and scope:
+
+- do not commit the original capture because it contains a workstation name,
+  home path, and unrelated project names;
+- do not expose credentials, sessions, browser state, private network details,
+  or host-local generated state;
+- do not change runtime packages or architecture as part of this presentation
+  pass;
+- preserve the current uncommitted documentation information-architecture work
+  and validate it as part of the same public release.
+
+Validation:
+
+- render the README at desktop and narrow widths and inspect the visual hierarchy;
+- verify local Markdown links and image references across the tracked tree;
+- parse versioned JSON and syntax-check the setup scripts;
+- scan tracked content and the staged release for private paths and common secret
+  patterns;
+- review the final Git diff before committing and pushing.
+
+Observed:
+
+- the root README now leads with the control-oriented Pi rationale, architecture,
+  capability ownership, operating loop, recorded proof, and honest untested
+  boundary before routing readers into setup details;
+- a privacy-safe real workspace capture and a repository-native architecture SVG
+  live under `docs/assets/` with provenance notes;
+- GitHub-style local renders passed visual review at 1440 px and 760 px widths;
+- 113 local Markdown references resolve across 71 files, and the moved
+  documentation contains no references to the retired manuals, runbooks,
+  research, reviews, or trials paths;
+- versioned JSON, Node, Bash, Zsh, SVG, and whitespace checks pass;
+- redacted Gitleaks scans report no leaks in the public working tree or the full
+  pre-release Git history;
+- one historical absolute workstation path was replaced with a portable home-
+  relative path;
+- the public GitHub description and ten discovery topics now reflect the
+  repository's architecture and operating model.
+
+Rollback:
+
+- revert the public-release commit; the underlying guides, operations, ADRs,
+  reference notes, history, and versioned harness assets remain independently
+  usable.
+
+## Human-First Documentation IA Batch 2026-08-30
+
+Status: Executed on 2026-08-30
+
+Affected surfaces: documentation, onboarding, agent navigation, and bookkeeping.
+
+Decision:
+
+- organize documentation by reader intent: getting started, guides, operations,
+  reference, decisions, and history;
+- add a human-readable documentation index with short agent routing hints;
+- keep ADR chronology under `docs/decisions/`;
+- promote the active review gate to `docs/current-plan.md`;
+- retain executed plans and trial logs under `docs/history/` as evidence;
+- update internal links without changing the meaning of historical records.
+
+Validation:
+
+- all tracked Markdown links resolve after the move;
+- no tracked documents remain in the old manuals, research, reviews, runbooks,
+  or trials directories;
+- README, CONTEXT, AGENTS, and the documentation index describe the same reader
+  paths.
+
+Observed:
+
+- all documentation moved into the accepted reader-intent structure;
+- local Markdown links and `docs/` path references resolve across 48 files;
+- the previous manuals, runbooks, research, reviews, and trials directories are
+  absent from the tracked documentation tree;
+- ADR 0014 records the durable information-architecture decision.
+
 ## Current North Star
 
 Build a reproducible personal Pi harness for:
@@ -125,7 +223,7 @@ Smoke test:
   path with read-only subagent fanout; confirm both produce temp HTML only and
   open in a cmux browser pane from a remote workspace.
 
-Research: `docs/research/2026-09-01-teach-skill-research.md`.
+Research: `docs/reference/2026-09-01-teach-skill-research.md`.
 
 ## Lean Default Batch 2026-08-03
 
@@ -284,7 +382,7 @@ Observed:
 Superseded follow-up: ADR 0013 owns native cmux SSH validation. Remote tmux is
 fallback; Mosh and phone access remain deferred.
 
-Detailed staged plan: `docs/reviews/homelab-linux-rollout-plan.md`.
+Detailed staged plan: `docs/history/homelab-linux-rollout-plan.md`.
 
 ## cmux Remote tmux Cutover 2026-08-27
 
@@ -351,7 +449,7 @@ lost native Feed, browser, notification, and iOS-companion integration.
 
 The empty `agents-pilot` owner was stopped. Its managed binary and remote state
 were removed. Historical evidence remains in
-`docs/trials/2026-08-27-cmux-tui-remote-pilot.md`.
+`docs/history/2026-08-27-cmux-tui-remote-pilot.md`.
 
 ## Native cmux SSH Cutover 2026-08-27
 
@@ -366,7 +464,7 @@ Decision:
 - retain native workspaces, panes, Feed, notifications, browser routing, and Mac
   shortcuts;
 - keep Remote tmux and direct SSH/tmux only as break-glass recovery;
-- retain both trial logs under `docs/trials/`.
+- retain both trial logs under `docs/history/`.
 
 Validation:
 
@@ -382,8 +480,8 @@ Remaining `Untested`: full native-app relaunch, Mac sleep/wake, Mosh, remote
 reboot, and iOS.
 
 Decision: `docs/decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md`.
-Runbook: `docs/runbooks/cmux-ssh-remote.md`.
-Execution log: `docs/trials/2026-08-27-native-cmux-ssh-pilot.md`.
+Runbook: `docs/guides/cmux-ssh-remote.md`.
+Execution log: `docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
 
 ## cmux Setup Batch
 
@@ -461,7 +559,7 @@ Trust and rollback:
   agent interaction;
 - STML remains experimental and disabled;
 - uninstall with `brew uninstall hunk` on macOS or the managed-link cleanup in
-  `docs/runbooks/hunk.md` on Ubuntu;
+  `docs/guides/hunk.md` on Ubuntu;
 - do not use `hunk update`; review Homebrew upgrades and change the pinned Ubuntu
   package through this repository.
 
@@ -474,7 +572,7 @@ Smoke test:
 - the full bootstrap passed in an isolated homelab Ubuntu `HOME`, reporting the
   pinned Node, Pi, Hunk, and tmux versions without changing the live runtime.
 
-Runbook: `docs/runbooks/hunk.md`.
+Runbook: `docs/guides/hunk.md`.
 
 ## Candidate Build Batch 1
 
@@ -630,7 +728,7 @@ Trial contents:
 - persist large outputs through the parent/runtime `output` contract rather than conflicting child write instructions;
 - use project `AGENTS.md` and task contracts for normal specialization;
 - reserve same-name project agent definitions for deliberate full shadowing, or use a distinct role name when specialization is substantial;
-- validate with the deterministic matrix in `docs/research/2026-08-03-agent-archetype-trajectories.md` before applying stronger global budgets.
+- validate with the deterministic matrix in `docs/reference/2026-08-03-agent-archetype-trajectories.md` before applying stronger global budgets.
 
 No second owner is introduced: `pi-subagents` remains the conversational delegation owner and `automation/` remains the deterministic evaluation owner.
 
@@ -641,9 +739,9 @@ Rollback:
 
 ## References
 
-- Agent archetype trajectories: `docs/research/2026-08-03-agent-archetype-trajectories.md`
-- Package shortlist: `docs/research/2026-08-02-pi-package-shortlist.md`
+- Agent archetype trajectories: `docs/reference/2026-08-03-agent-archetype-trajectories.md`
+- Package shortlist: `docs/reference/2026-08-02-pi-package-shortlist.md`
 - Package policy: `docs/decisions/0005-package-adoption-policy.md`
 - Initial shortlist decision: `docs/decisions/0006-initial-package-shortlist.md`
 - Remote/mobile decision: `docs/decisions/0002-local-homelab-mobile-operating-model.md`
-- Subagents, phone, Ponytail, maturity review: `docs/research/2026-08-03-subagents-phone-ponytail-maturity.md`
+- Subagents, phone, Ponytail, maturity review: `docs/reference/2026-08-03-subagents-phone-ponytail-maturity.md`

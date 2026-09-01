@@ -15,10 +15,13 @@ Pi is less a sealed coding product and more a terminal agent runtime. The workfl
 ```text
 pi_harness_setup/
   pi/agent/              # copy/sync into ~/.pi/agent
-  docs/research/         # what others do
-  docs/decisions/        # what we choose
-  docs/runbooks/         # how to rebuild and operate
-  scripts/               # later: apply, validate, diff, backup
+  docs/getting-started/  # how a new reader begins
+  docs/guides/           # how to use the harness
+  docs/operations/       # how to rebuild and recover
+  docs/reference/        # what informed the setup
+  docs/decisions/        # what we chose
+  docs/history/          # what we tried and completed
+  scripts/               # apply, validate, diff, backup
 ```
 
 ## Compare Notes Later
@@ -91,7 +94,7 @@ Initial synthesis after critique pass:
 - Use Ponytail as a selected implementation/review trial, not research default.
 - Keep `context-mode`, browser/phone UI, and read/edit replacement packages in experimental until measured.
 - Keep one owner per surface: web/fetch, code exploration, read/edit replacement, plan mode, worktrees, observability UI, remote/mobile, orchestration.
-- New repo ritual: accumulate ideas in `docs/reviews/current-plan-review.md`, then build from reviewed batches.
+- New repo ritual: accumulate ideas in `docs/current-plan.md`, then build from reviewed batches.
 
 ## 2026-08-03 Chart Iteration
 

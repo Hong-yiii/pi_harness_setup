@@ -1,7 +1,7 @@
 # Homelab Linux Rollout Plan
 
 Date: 2026-08-26
-Status: Executed; Mac control-plane steps superseded by ADR 0012 on 2026-08-27
+Status: Executed; Mac control-plane steps first superseded by ADR 0012, then replaced by the current ADR 0013
 Target branch: `homelab-linux-rollout`
 Target host: SSH alias `homelab`
 
@@ -45,7 +45,7 @@ Pi `0.83.0`, the version pinned by this repository, requires Node `>=22.19.0`; t
 
 ### Phase 0 — Plan Gate
 
-1. Add this plan and the matching batch entry to `docs/reviews/current-plan-review.md`.
+1. Add this plan and the matching batch entry to `docs/current-plan.md`.
 2. Commit and push only those plan documents to `origin/homelab-linux-rollout`.
 3. Stop and ask the user to approve or amend:
    - the `~/pi_harness_setup` target path,
@@ -60,8 +60,8 @@ No remote filesystem, package, service, Tailscale, or authentication changes hap
 
 After approval:
 
-1. Add `docs/runbooks/ubuntu-homelab-setup.md` containing prerequisites, clone/bootstrap/apply commands, interactive checkpoints, validation, daily operation, upgrades, and rollback.
-2. Split `docs/runbooks/bootstrap.md` into shared, macOS, and Ubuntu paths.
+1. Add `docs/operations/ubuntu-homelab-setup.md` containing prerequisites, clone/bootstrap/apply commands, interactive checkpoints, validation, daily operation, upgrades, and rollback.
+2. Split `docs/getting-started/bootstrap.md` into shared, macOS, and Ubuntu paths.
 3. Update `README.md`, `CONTEXT.md`, the workflow manual, and cmux/mobile runbooks so the homelab path is discoverable and no longer marked wholly pending.
 4. Add an ADR recording the Linux runtime boundary: shared versioned harness, host-local credentials/sessions, tmux durability, and cmux as a Mac-only control surface.
 5. Add one narrow Ubuntu bootstrap script that:

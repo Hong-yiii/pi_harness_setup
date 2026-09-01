@@ -116,7 +116,7 @@ Executed with native cmux `0.64.22` and the Ubuntu homelab:
 - confirmed tmux `pi-main` remained unchanged.
 
 Execution details:
-`docs/trials/2026-08-27-native-cmux-ssh-pilot.md`.
+`docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
 
 ## Daily Use
 
@@ -132,7 +132,7 @@ pi --name "project-name"
 ```
 
 Detailed operations:
-`docs/runbooks/cmux-ssh-remote.md`.
+`docs/guides/cmux-ssh-remote.md`.
 
 ## Rollback
 

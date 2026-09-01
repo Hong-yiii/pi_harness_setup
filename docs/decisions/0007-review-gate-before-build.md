@@ -4,11 +4,11 @@ Date: 2026-08-02
 
 ## Status
 
-Draft
+Accepted
 
 ## Decision
 
-Use `docs/reviews/current-plan-review.md` as the living gate before meaningful build/configuration passes.
+Use `docs/current-plan.md` as the living gate before meaningful build/configuration passes.
 
 Ideas should accumulate there first. Implementation happens in reviewed batches, not one-off package installs or ad hoc config edits.
 

@@ -296,7 +296,7 @@ The first connection installs a versioned, manifest-verified helper under
 reattaches after SSH transport loss.
 
 Daily behavior and implementation details:
-`docs/runbooks/cmux-ssh-remote.md`.
+`docs/guides/cmux-ssh-remote.md`.
 
 ## 9. Keep Remote tmux As Break-Glass Recovery
 

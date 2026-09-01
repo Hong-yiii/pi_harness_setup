@@ -55,9 +55,9 @@ The best shape is a layered harness:
 
 The current draft shortlist is captured in:
 
-- `docs/research/2026-08-02-pi-package-shortlist.md`
+- `docs/reference/2026-08-02-pi-package-shortlist.md`
 - `docs/decisions/0006-initial-package-shortlist.md`
-- `docs/research/2026-08-03-subagents-phone-ponytail-maturity.md`
+- `docs/reference/2026-08-03-subagents-phone-ponytail-maturity.md`
 
 Current refinements:
 
@@ -73,16 +73,16 @@ Current refinements:
   a real Pi reconnect, native notifications, and remote browser routing passed.
 - ADR 0012 Remote tmux remains historical validation and break-glass recovery.
 - The Rust cmux TUI pilot was decommissioned after comparison; its execution log
-  remains under `docs/trials/`.
+  remains under `docs/history/`.
 - Complete native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.
-- The main operating manual is `docs/manuals/pi-harness-workflow-manual.md`.
-- The first-project guide is `docs/manuals/first-real-project.md`.
+- The main operating manual is `docs/guides/pi-harness-workflow-manual.md`.
+- The first-project guide is `docs/getting-started/first-real-project.md`.
 - Hunk is the opt-in human review UI for local changesets; Git remains source
   control and its bundled agent skill is loaded only when a Hunk review is open.
 
 ## Review Gate
 
-Use `docs/reviews/current-plan-review.md` as the living gate before build/configuration batches.
+Use `docs/current-plan.md` as the living gate before build/configuration batches.
 
 Ideas accumulate there first; once a batch is reviewed, implement it in one coherent pass with rollback and smoke-test notes.

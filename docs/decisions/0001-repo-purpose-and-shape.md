@@ -4,7 +4,7 @@ Date: 2026-07-24
 
 ## Status
 
-Draft
+Superseded in part by ADR 0014
 
 ## Decision
 
@@ -13,9 +13,9 @@ Create `~/Projects/pi_harness_setup` as the source of truth for reconstructing t
 The repo is organized into:
 
 - `pi/agent/` for versioned Pi user-level assets.
-- `docs/research/` for source-backed research.
+- `docs/reference/` for source-backed research.
 - `docs/decisions/` for durable decisions.
-- `docs/runbooks/` for rebuild and operations steps.
+- reader-oriented documentation areas for onboarding, guides, and operations.
 - `scratchpad.md` for active thinking.
 
 ## Rationale

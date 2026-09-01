@@ -52,11 +52,11 @@ node scripts/apply-pi-setup.mjs
 The bootstrap may pause for the sudo password when installing tmux. It also
 installs pinned Hunk beside the user-scoped Node and Pi runtime. Pi `/login` is
 a separate interactive checkpoint; credentials must not enter Git or chat.
-See `docs/runbooks/ubuntu-homelab-setup.md` for exact validation, tmux/cmux
+See `docs/operations/ubuntu-homelab-setup.md` for exact validation, tmux/cmux
 operation, and rollback.
 
 Hunk needs no account or initial config. Start with `hunk diff`; see
-`docs/runbooks/hunk.md` for daily use and agent-assisted review.
+`docs/guides/hunk.md` for daily use and agent-assisted review.
 
 ## Apply Pi Config
 

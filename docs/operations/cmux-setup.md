@@ -270,12 +270,12 @@ versioned `cmuxd-remote` helper. Browser panes use the homelab network, remote
 notifications reach the native Feed, and transport drops reattach to the same
 remote PTY.
 
-Detailed use and implementation: `docs/runbooks/cmux-ssh-remote.md`.
+Detailed use and implementation: `docs/guides/cmux-ssh-remote.md`.
 
 ## Remote tmux Fallback Flow
 
 Bootstrap the Linux host first with
-`docs/runbooks/ubuntu-homelab-setup.md`. The native app remains macOS-only; its
+`docs/operations/ubuntu-homelab-setup.md`. The native app remains macOS-only; its
 versioned `cmuxd-remote` helper runs on Ubuntu. tmux 3.2+ continues to own
 existing fallback sessions.
 
@@ -360,7 +360,7 @@ cmux ssh homelab
 Run a harmless remote process, interrupt the SSH transport, and confirm cmux
 reattaches to the same PID and screen. Native notification, browser routing, and
 real Pi reconnect validation are recorded in
-`docs/trials/2026-08-27-native-cmux-ssh-pilot.md`.
+`docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
 
 Remote tmux fallback:
 

@@ -186,7 +186,7 @@ Passed with native cmux `0.64.22`:
 - clean workspace/process teardown.
 
 Detailed log:
-`docs/trials/2026-08-27-native-cmux-ssh-pilot.md`.
+`docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
 
 Decision:
 `docs/decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md`.

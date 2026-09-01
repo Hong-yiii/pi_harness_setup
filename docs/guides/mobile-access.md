@@ -37,7 +37,7 @@ brew install tmux mosh tailscale
 ```
 
 On the Ubuntu homelab, follow
-`docs/runbooks/ubuntu-homelab-setup.md`. tmux is required; Mosh is optional and
+`docs/operations/ubuntu-homelab-setup.md`. tmux is required; Mosh is optional and
 should be added only after plain Tailscale SSH is stable:
 
 ```bash

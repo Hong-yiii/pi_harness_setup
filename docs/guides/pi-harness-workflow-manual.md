@@ -20,7 +20,7 @@ The current north star is:
 
 Use this loop when changing the harness itself:
 
-1. Capture the idea in `docs/reviews/current-plan-review.md`.
+1. Capture the idea in `docs/current-plan.md`.
 2. Classify it as `Decided`, `Leaning`, `Trial`, `Open`, or `Rejected`.
 3. Name the surface it affects: web/search, code exploration, read/edit, plan mode, worktrees, subagents, orchestration, observability, remote/mobile, UI, or safety.
 4. Check surface ownership so one feature does not quietly become two competing owners.
@@ -67,7 +67,7 @@ Explicitly out for now:
 
 | Situation | Use | Avoid |
 | --- | --- | --- |
-| Broad research or package comparison | `pi-web-access`, researcher subagents, notes in `docs/research/` | Ponytail full/ultra narrowing the exploration too early |
+| Broad research or package comparison | `pi-web-access`, researcher subagents, notes in `docs/reference/` | Ponytail full/ultra narrowing the exploration too early |
 | Understanding a codebase | `rg`, `pi-lens`, scout subagent | Installing read/edit replacement packages before `pi-lens` is understood |
 | Risky change | `/plan`, review gate, small worktree | Editing main branch directly while uncertain |
 | Independent implementation lane | native Git worktree, optionally created with `piwt` | Starting Pi in the root checkout or stacking worktree managers |
@@ -182,7 +182,7 @@ phone terminal -> Tailscale -> SSH or Mosh -> homelab tmux -> Pi
 ```
 
 The Ubuntu harness checkout lives at `~/pi_harness_setup`. Bootstrap and
-operate it with `docs/runbooks/ubuntu-homelab-setup.md`; credentials and Pi
+operate it with `docs/operations/ubuntu-homelab-setup.md`; credentials and Pi
 session files stay on that host rather than syncing through Git.
 
 Open the homelab from a terminal inside native cmux:
@@ -195,7 +195,7 @@ Then change to the project and start Pi normally. Each invocation creates one
 native remote workspace; `--name` and `--command` are optional conveniences.
 
 Daily use and implementation details are in
-`docs/runbooks/cmux-ssh-remote.md`. Remote tmux remains available only for
+`docs/guides/cmux-ssh-remote.md`. Remote tmux remains available only for
 existing fallback sessions.
 
 `pi-phone` and Usher are not in the default.
@@ -241,7 +241,7 @@ Apply the user-level profile with:
 node scripts/apply-pi-setup.mjs
 ```
 
-Package initialization is documented in `docs/runbooks/initialize-packages.md`.
+Package initialization is documented in `docs/operations/initialize-packages.md`.
 
 Core checks:
 
@@ -266,10 +266,14 @@ Known local adjustment:
 | `AGENTS.md` | How future agents should navigate this repo. |
 | `CONTEXT.md` | Current mental model and vocabulary. |
 | `scratchpad.md` | Unsettled thoughts and working notes. |
-| `docs/reviews/current-plan-review.md` | Build/config gate. |
+| `docs/README.md` | Human documentation index and agent routing hints. |
+| `docs/current-plan.md` | Build/config gate. |
+| `docs/getting-started/` | Installation and first-use paths. |
+| `docs/guides/` | Task-oriented usage guides. |
+| `docs/operations/` | Rebuild, maintenance, and recovery procedures. |
 | `docs/decisions/` | Durable choices and tradeoffs. |
-| `docs/research/` | Research syntheses and source notes. |
-| `docs/runbooks/` | Rebuild and operations instructions, including Ubuntu homelab setup. |
+| `docs/reference/` | Research syntheses and source notes. |
+| `docs/history/` | Executed plans and trial evidence. |
 | `pi/agent/` | Versioned Pi user-level guidance/assets. |
 | `pi/package-profiles/` | Package profiles and install rationale. |
 | `pi/user-config/` | Templates for user-level config stored outside the repo. |
