@@ -65,7 +65,7 @@ Current refinements:
 - Native Git worktrees own persistent PR lanes; start Pi inside each real worktree, optionally through `piwt`.
 - Pi Phone, Usher, and dynamic workflows are outside the lean default.
 - Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
-- The general skill shelf is pinned in `skills/`; Pi Lens contributes four additional tool-specific guides.
+- The general skill shelf is pinned in `skills/`; `teach` is a local manual teaching/review trial that emits disposable temp HTML, and Pi Lens contributes four additional tool-specific guides.
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
   checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
   running inside a named tmux session all passed.

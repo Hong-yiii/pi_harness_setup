@@ -19,7 +19,7 @@ This repo is the source of truth for:
 - `docs/runbooks/`: rebuild and operations instructions.
 - `pi/package-profiles/`: selected package profiles and excluded-package rationale.
 - `pi/user-config/`: reproducible templates for user-level package settings that Pi stores outside the repo.
-- `skills/`: the pinned seven-skill shelf shared through `~/.agents/skills`.
+- `skills/`: the selected cross-agent skill shelf shared through `~/.agents/skills`.
 - `automation/`: explicit routing, loops, and evals that do not load in normal sessions.
 - `scripts/`: idempotent setup helpers, including the checksum-pinned Ubuntu bootstrap.
 - `terminal/`: cmux, Ghostty, and tmux templates for the terminal/control surface.
