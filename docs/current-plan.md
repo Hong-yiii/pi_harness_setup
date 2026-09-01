@@ -154,7 +154,7 @@ Build a reproducible personal Pi harness for:
 | Remote/mobile | Native cmux SSH on Mac; cmux iOS companion through the Mac; SSH/Mosh + tmux fallback. | Direct iOS-to-Linux remains `Untested`. `pi-phone` and Usher remain excluded. |
 | Minimalism/taste | Ponytail remains in the default at `lite`. | Its bundled command skills are hidden from the default skill catalog. |
 | Background commands | Add a focused background-task owner. | Pin `pi-background-tasks@0.6.0`; later releases add unrelated always-on orchestration. |
-| Skills | Seven general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
+| Skills | Eight general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `teach`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
 | Context/memory | `context-mode` is interesting. | Experimental until measured on real research tasks. |
 
 ## Surface Ownership
@@ -172,6 +172,58 @@ Pick one active owner per high-authority surface:
 | Temporary child worktrees | `pi-subagents` with explicit `worktree: true` | repo-owned automation later | Letting two orchestrators own branch cleanup |
 | Human status | `pi-observability` | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
 | Remote/mobile | Native `cmux ssh homelab` | Mosh transport and cmux iOS after separate validation | Public listeners, TUI nesting, or multiple promoted daily controllers |
+
+## Teach Skill Trial 2026-09-01
+
+Status: Accepted for source addition; user-scope apply pending
+
+Affected surfaces: skills, subagents, code review, safety, and documentation.
+
+Decision:
+
+- add a manual `teach` skill to the shared skill shelf;
+- keep it instruction-only with no scripts, packages, tools, or persistent
+  workspace state;
+- support two modes: simple high-level skim and maximum-context grounded review;
+- make one teach unit a reviewable artifact: diff, plan, docs section, code
+  path, subagent result, command output, or external doc;
+- make disposable self-contained temp HTML the output primitive for both modes;
+- include a cmux-friendly open flow: serve `/tmp/pi-teach` on remote loopback,
+  open the HTTP URL with `cmux browser open`, and print the bare URL/command;
+- use subagents only as read-only evidence fanout in maximum-context mode; the
+  parent conversation remains the teaching surface;
+- keep implementation outside teach mode; if fixes are requested, switch to the
+  normal one-writer implementation flow after the teach/review unit;
+- start each artifact with `what I understand` / high-level system
+  understanding, then narrow to objective and solution method;
+- require diagrams whenever flow, ownership, state, relationships, or
+  before/after behavior is easier to see than read;
+- require explicit assumptions, failure modes, design critique, and one
+  teach-back/review question per unit.
+
+No second owner is introduced: `pi-subagents` still owns delegation,
+`pi-lens` still owns code exploration, and `teach` only guides how the parent
+explains and reviews work.
+
+Trust and rollback:
+
+- no executable skill assets were added;
+- teach invocations may write one disposable temp HTML file, not repo docs or
+  persistent learning state;
+- remove `skills/teach/`, the `teach` profile entry, and the settings allowlist
+  entry to roll back;
+- restart Pi after applying because skill discovery is session-start behavior.
+
+Smoke test:
+
+- run `node scripts/apply-pi-setup.mjs` when ready to publish the skill to
+  `~/.agents/skills`;
+- restart Pi and confirm `/skill:teach simple <target>` loads the skill;
+- run one simple pass on a small diff and one maximum-context pass on a doc/code
+  path with read-only subagent fanout; confirm both produce temp HTML only and
+  open in a cmux browser pane from a remote workspace.
+
+Research: `docs/reference/2026-09-01-teach-skill-research.md`.
 
 ## Lean Default Batch 2026-08-03
 
@@ -658,6 +710,7 @@ Local machine adjustment:
 | Remote phone access | Deferred | cmux iOS pairs with the Mac and may view native SSH workspaces; keep Tailscale + SSH/Mosh + tmux as fallback until tested. |
 | context-mode | Open | Debate with measurement. |
 | Ponytail | Initialized | Default is `lite`; use `off` for broad research sessions if needed. |
+| Teach skill | Trial | Manual instruction-only teaching/review skill with simple and maximum-context modes; each run emits one disposable temp HTML artifact, starts zoomed-out, and uses diagrams heavily; parent teaches while subagents gather read-only evidence in max mode. |
 | `pi-ask-user` | Trial | Candidate UI/decision-gating owner. Catalog version observed: `0.13.1`; extension + bundled skill, zero runtime dependencies, install with `pi install --local npm:pi-ask-user` after source review. Smoke-test searchable selection, freeform/cancel, and print/RPC fallback; use inline mode around terminal images. |
 
 ## Agent Archetype Iteration 2026-08-03

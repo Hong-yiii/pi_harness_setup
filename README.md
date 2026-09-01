@@ -235,7 +235,7 @@ fallback behavior.
 │   ├── decisions/          Durable ADR-style decisions
 │   └── history/            Executed plans and trial evidence
 ├── pi/                     Versioned Pi assets and package profiles
-├── skills/                 Pinned cross-agent skill sources
+├── skills/                 Selected cross-agent skill sources
 ├── terminal/               cmux, Ghostty, tmux, and zsh templates
 ├── scripts/                Idempotent setup helpers
 └── automation/             Explicit loops and evals; never ambient
