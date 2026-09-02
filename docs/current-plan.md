@@ -188,8 +188,10 @@ Decision:
 - make one teach unit a reviewable artifact: diff, plan, docs section, code
   path, subagent result, command output, or external doc;
 - make disposable self-contained temp HTML the output primitive for both modes;
-- include a cmux-friendly open flow: serve `/tmp/pi-teach` on remote loopback,
-  open the HTTP URL with `cmux browser open`, and print the bare URL/command;
+- include a cmux-friendly open flow: open local temp HTML with direct
+  `file://`; only for remote cmux SSH, serve `/tmp/pi-teach` on remote loopback,
+  open the HTTP URL with `cmux browser open`, and label bare loopback URLs as
+  cmux-remote-browser-only;
 - use subagents only as read-only evidence fanout in maximum-context mode; the
   parent conversation remains the teaching surface;
 - keep implementation outside teach mode; if fixes are requested, switch to the
