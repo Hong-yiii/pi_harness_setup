@@ -33,13 +33,20 @@ Both modes produce **one disposable self-contained HTML file**. The chat reply i
 only an openable link/command, a one-line summary, and the teach-back question.
 
 - Write to a temp path like `${TMPDIR:-/tmp}/pi-teach/<timestamp>-<slug>.html`.
-- In a local terminal, return Markdown: `[Open teach artifact](file:///abs/path.html)`.
-- In a remote cmux SSH workspace, prefer serving `/tmp/pi-teach` on
-  `127.0.0.1` and returning an HTTP URL like
-  `http://localhost:<port>/<file>.html`; cmux browser panes route that localhost
-  to the remote host.
-- If clickable links are not supported, also print the exact command to open it,
-  e.g. `cmux browser open http://localhost:<port>/<file>.html` or
+- First decide whether the HTML path is local to the cmux browser process:
+  - local cmux/Mac: open `file:///abs/path.html` directly in cmux; do not start
+    a loopback server or tunnel;
+  - remote cmux SSH/Linux: the Mac browser cannot read remote `file://` paths;
+    use a remote loopback HTTP server only as the file transport, then open it
+    with `cmux browser open http://localhost:<port>/<file>.html` from the same
+    remote workspace;
+  - no cmux: return a `file://` link plus the platform opener command.
+- Do not present a bare `localhost`/`127.0.0.1` URL as if it is portable. It only
+  resolves to the remote host inside the cmux browser surface opened from that
+  remote workspace; outside it, loopback means the user's local machine.
+- Always print the exact command used or needed, e.g.
+  `cmux browser open file:///abs/path.html`,
+  `cmux browser open http://localhost:<port>/<file>.html`, or
   `xdg-open /abs/path.html`.
 - Do not write lessons, learning records, or Markdown session docs unless the
   user explicitly asks for persistent learning state.
@@ -53,20 +60,42 @@ only an openable link/command, a one-line summary, and the teach-back question.
 
 ## Open flow
 
-After writing the HTML, make it viewable immediately:
+After writing the HTML, make it viewable immediately. Do this check first:
 
-1. If `cmux` is available, do not rely on clickable terminal links.
-2. Serve the temp directory on remote loopback, reusing an existing server when
-   possible:
+```bash
+cmux_ok=0
+command -v cmux >/dev/null 2>&1 && cmux ping >/dev/null 2>&1 && cmux_ok=1
+os=$(uname -s 2>/dev/null || echo unknown)
+remote_cmux=0
+[ "$cmux_ok" = 1 ] && [ "$os" != Darwin ] && remote_cmux=1
+```
+
+For this harness, `remote_cmux=1` means the artifact is probably on the Ubuntu
+homelab inside native `cmux ssh`; the Mac browser cannot read remote
+`file:///tmp/...`. `cmux_ok=1` with `os=Darwin` means local Mac cmux; open the
+file path directly and skip the HTTP server.
+
+1. If local cmux is available, open the artifact directly:
+   `cmux browser open file:///abs/path.html`.
+2. If running in remote cmux SSH, try no undocumented `file://` shortcut. `file://`
+   paths are local to the browser process; the supported remote path is HTTP/WS
+   through the cmux browser relay.
+3. For remote cmux SSH, serve the temp directory on remote loopback:
    `python3 -m http.server <port> --bind 127.0.0.1 --directory /tmp/pi-teach`.
-   Prefer `bg_run` when available; otherwise use a shell background process.
-3. Prefer port `8765`; if occupied, use the next free high port.
-4. Open the artifact in a cmux browser pane:
+   Prefer `bg_run` with a finite timeout, e.g. `timeoutSeconds: 7200`; otherwise
+   use `timeout 2h ... &` and capture the PID.
+4. Prefer port `8765`; if occupied, use the next free high port.
+5. Open the remote artifact in a cmux browser pane from the same remote workspace:
    `cmux browser open http://localhost:<port>/<file>.html`.
-5. Reply with the bare HTTP URL, the exact open command, the temp file path, and
-   the teach-back question. Plain URLs are more portable than Markdown links in
-   terminal UIs.
-6. If `cmux` is unavailable, return a `file://` link plus the local opener command
+6. The cmux browser relay has no separate lesson expiry; it is scoped to the
+   remote workspace and reconnects with that workspace. The teach HTTP server is
+   separate: browser-tab close does **not** kill it, so always set a timeout and
+   include the server task/PID or cleanup note in the reply.
+7. Reply with the `file://` URI for local mode, or with the HTTP URL clearly
+   labeled `cmux remote browser only` for remote mode. Include the exact open
+   command, the temp file path, the server lifetime/cleanup note when HTTP was
+   used, and the teach-back question.
+8. If `cmux` is unavailable, return a `file://` link plus the local opener command
    (`open`, `xdg-open`, or `gio open`, whichever exists).
 
 ## Learner calibration
@@ -183,6 +212,12 @@ HTML sections:
 - Writing the disposable HTML inside the repo by accident.
 - Simple mode quietly turning into max mode through subagent fanout.
 - File-name soup: paths and symbols with no role or flow context.
+- Starting a remote loopback server when the artifact is local and cmux can open
+  the `file://` path directly.
+- Returning a bare `localhost`/`127.0.0.1` URL without saying it only works in the
+  cmux remote browser surface; clicked elsewhere, it targets the wrong machine.
+- Starting an unbounded remote HTTP server; closing the browser tab does not stop
+  that process.
 - Starting too narrow before explaining the system shape.
 - Prose-only explanations for flows or relationships that need a diagram.
 - Jargon-first explanation.
