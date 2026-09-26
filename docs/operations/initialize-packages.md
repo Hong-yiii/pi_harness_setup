@@ -61,6 +61,62 @@ The target package state is recorded in:
 - `~/.pi/agent/settings.json` after applying the profile,
 - `~/.pi/agent/npm/package-lock.json` as machine-generated installed state.
 
+## Publish Only Reviewed Agents And Prompts
+
+For an agent/prompt-only update, do not run the full apply script: it also
+installs packages and republishes settings, skills, and other assets. Review
+local differences first; stop if the destination files contain unreviewed
+changes. This procedure publishes the five standard agents and four templates
+without touching other user configuration.
+
+Run from the repo root in Bash after approving all nine source files:
+
+```bash
+set -eu
+files=(pi/agent/agents/{scout,researcher,planner,worker,reviewer}.md
+       pi/agent/prompts/{research,scout-and-plan,implement,implement-and-review}.md)
+backup="$HOME/.config/pi_harness_setup/backups/$(date -u +%Y%m%dT%H%M%SZ)-subagent-contracts"
+
+# Check all destinations before backing up or replacing any file.
+for source in "${files[@]}"; do
+  target="$HOME/.pi/agent/${source#pi/agent/}"
+  test -f "$source"
+  test -f "$target"
+  test ! -L "$target"
+  diff -u "$target" "$source" || test "$?" -eq 1
+done
+read -r -p 'Review all diffs above. Type publish to replace these files: ' confirmation
+test "$confirmation" = publish
+mkdir -p "$backup/agents" "$backup/prompts"
+printf 'Backup: %s\n' "$backup"
+for source in "${files[@]}"; do
+  relative="${source#pi/agent/}"
+  cp -p "$HOME/.pi/agent/$relative" "$backup/$relative"
+done
+for source in "${files[@]}"; do
+  target="$HOME/.pi/agent/${source#pi/agent/}"
+  cp "$source" "$target"
+  cmp "$source" "$target"
+done
+```
+
+The confirmation approves the displayed differences; it cannot decide whether
+local edits are intentional. Cancel instead of approving any unreviewed change,
+and do not edit the destination files concurrently with publication.
+
+This is not a transactional multi-file update. If any copy fails, restore all
+nine files from the printed backup directory before retrying. The procedure
+expects an existing installation; use the full profile operation for bootstrap.
+
+Run `/reload` or restart Pi for prompt-template discovery. Verify the resolved
+agents with `subagent` list/get and run bounded smoke tasks. A tool allowlist or
+read-only acceptance label is not an OS sandbox, and inspection-only `bash`
+remains instruction-constrained.
+
+To roll back this asset-only update, copy the five agent files and four template
+files from that backup to their matching paths under `~/.pi/agent/`, then reload
+Pi. Leave settings, packages, and unrelated definitions alone.
+
 ## Guardrails
 
 Ponytail stays in lite mode. The apply script writes the versioned config

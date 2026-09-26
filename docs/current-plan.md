@@ -22,6 +22,94 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Subagent Contract Update 2026-09-24
+
+Status: Executed locally on 2026-09-26 after user approval
+
+Affected surfaces: subagents, safety, and delegation prompt templates.
+
+Approved scope:
+
+- keep the five existing roles and models; define responsibility and quality
+  without mandatory investigation procedures;
+- retain explicit handoff sections: scout evidence and starting point, reviewer
+  assessment dimensions and evidence labels, researcher sources/uncertainties,
+  planner file-level steps/validation, and worker outcome/checks/remaining work;
+- put task-specific context, scope, and success criteria in the parent brief;
+- enable trusted project-context inheritance and explicit fresh context for
+  planner and worker, matching the existing read-only roles;
+- give researcher the existing web owner's search/fetch/source-check tools;
+- retain worker's normal tool access deliberately for this prompt trial; neither
+  its fresh context nor inspection-only bash in other roles is a sandbox;
+- preserve the original request through handoffs, inspect blocked results before
+  continuing, and let the parent decide which review findings warrant fixes;
+- publish only the five agents and four prompt templates at local user scope;
+  keep package agents, models, packages, global instructions, settings, skills,
+  and the homelab unchanged. Pi Subagents remains the sole delegation owner.
+
+Design references: [Anthropic context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents),
+[Codex role examples](https://learn.chatgpt.com/docs/agent-configuration/subagents#example-custom-agents),
+and [Pi's worker example](https://github.com/earendil-works/pi/blob/main/packages/coding-agent/examples/extensions/subagent/agents/worker.md).
+These support a small role prompt plus a concrete task brief, not a prescribed
+sequence of tool calls. Broad behavioral effectiveness requires evaluation;
+smoke checks alone do not establish general reliability.
+
+Review and validation:
+
+- inspect the five files in `pi/agent/agents/` and four in `pi/agent/prompts/`;
+- check frontmatter, template placeholders, whitespace, and an independent
+  read-only review; these are static checks, not behavioral validation;
+- smoke-test project-instruction inheritance, public-web research, blocked
+  handoffs, review behavior, and a worker result with unavailable tests;
+- use the backed-up, file-only publication procedure in
+  `docs/operations/initialize-packages.md`; do not run the full apply script for
+  this batch because it also installs packages and republishes unrelated assets.
+
+Draft validation: YAML frontmatter, role/context fields, template arguments,
+and `git diff --check` passed. The initial draft received an independent review;
+the user's subsequent review restored useful reporting detail before approval.
+All nine live agent/template files matched the pre-update baseline immediately
+before publication. Missing-H1 style warnings reflect the existing prompt format.
+
+Observed local publication and smoke checks:
+
+- all nine files were backed up under
+  `~/.config/pi_harness_setup/backups/20260926T042213Z-subagent-contracts/`,
+  published, and byte-compared with the versioned sources;
+- live subagent discovery reports the revised descriptions and fresh defaults;
+- planner and worker returned the fixture's inherited project-context marker;
+  planner left its file unchanged, and worker changed only the assigned file
+  from `pending\n` to `ready\n` and reported the absent integration script as
+  unavailable, not passed;
+- scout made one read call, observed the missing required entry file, and
+  returned its structured blocked handoff without further tool calls;
+- researcher successfully fetched the specified IANA public source through its
+  web tools and returned a cited answer;
+- the independent reviewer found a missing explicit diff-review step in the
+  publication runbook. The runbook now displays differences and requires typed
+  confirmation before copying; the actual local publication had already checked
+  all destinations against the pre-update Git baseline;
+- the documented publication command passed isolated-HOME checks for approved
+  copies, backups, cancellation without writes, untouched settings, and aborting
+  before any copy when a destination is missing;
+- final independent re-review (`2afe99bc`) reported `No findings.` and separately
+  confirmed the fixture bytes and missing integration script. It did not claim
+  broad workflow coverage or independently repeat the live publication.
+
+Evidence: local subagent smoke run `fa9a8d0e-778a-45d6-899d-736d94458d98`;
+raw runtime artifacts stay host-local. The worker fixture's inferred acceptance
+was `review-required`, not a completed independent-review gate. A scout runtime
+log also emitted a cmux resume-binding warning; cmux reconnect behavior was not
+validated by this batch. Full workflow/eval coverage remains **Untested**.
+
+Trust and rollback: public-web research must not transmit private repo contents
+or access credentials/private services without explicit authorization. Read-only
+roles return text rather than writing reports themselves. Before publication,
+back up only the nine destination files under
+`~/.config/pi_harness_setup/backups/<timestamp>-subagent-contracts/`. Roll back by
+restoring those files from that backup, then reload Pi. Do not restore unrelated
+settings or packages.
+
 ## Public Repository Release Batch 2026-08-31
 
 Status: Executed on 2026-08-31
@@ -706,7 +794,7 @@ Local machine adjustment:
 | Advanced code exploration | Leaning | `pi-lens` first. |
 | Worktrees | Decided | Native Git worktrees own persistent PR lanes; `piwt` is the optional convenience function. |
 | Subagents | Initialized | `pi-subagents` owns the `subagent` tool; bundled example disabled. |
-| Read-only agent archetypes | Trial | Iterate user-scoped `researcher`, `scout`, and `reviewer` around bounded trajectories, evidence discipline, and explicit read-only runtime metadata. Prefer inherited project context and task contracts over same-name project shadows. |
+| Agent contracts | Decided | The September contract update covers all five user-scoped roles: flexible methods, explicit handoffs, inherited project context, and task-specific briefs. Bash-enabled read-only roles remain instruction-constrained, not sandboxed. Broader deterministic evals remain pending. |
 | Deterministic loops | Decided | Repo-owned SDK/RPC/JSON harness. |
 | Orchestrator loops | Rejected from default | Build explicit routing and eval runners under `automation/` when repeated work justifies them. |
 | Remote phone access | Deferred | cmux iOS pairs with the Mac and may view native SSH workspaces; keep Tailscale + SSH/Mosh + tmux as fallback until tested. |
@@ -717,7 +805,7 @@ Local machine adjustment:
 
 ## Agent Archetype Iteration 2026-08-03
 
-Status: Trial approved; versioned prompts updated, global apply and deterministic evals pending
+Status: Historical trial; superseded by the Subagent Contract Update above. The deterministic eval matrix remains pending.
 
 Affected surfaces: subagents, safety, orchestration, and observability.
 
