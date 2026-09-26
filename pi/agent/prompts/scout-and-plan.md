@@ -1,10 +1,12 @@
 ---
-description: Delegate read-only recon to scout, then ask planner for a concrete plan
+description: Gather local code context, then produce a grounded plan without implementing
 argument-hint: "<task>"
 ---
-Use the subagent tool with the chain parameter:
+Task: $@
 
-1. Run `scout` on: $@
-2. Run `planner` on the same task using the scout result via `{previous}`.
+Use `subagent` for these steps in order. Give each child the original task and relevant decisions, constraints, and success criteria from this conversation—not just the previous child's summary. Discover the available agents before launching.
 
-Do not implement. Return the final plan.
+1. Ask `scout` to map the code needed to understand the task, with evidence and unknowns.
+2. Inspect the result. If a blocker prevents planning, report it; otherwise give `planner` the task and scout findings to recommend an approach and validation.
+
+Keep both steps read-only. Return the plan and any decisions needed before implementation. Do not implement.
