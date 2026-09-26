@@ -22,6 +22,64 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Deep Research Prompt Trial 2026-09-26
+
+Status: Trial — source addition requested for PR review; live publication pending
+
+Affected surfaces: prompt templates, subagents, research continuity, safety, and
+HTML review delivery. Existing packages retain their authority; no new tools,
+skills, agents, or runtime hooks are introduced.
+
+Scope:
+
+- add [`deep-research.md`](../pi/agent/prompts/deep-research.md) for
+  `/deep-research <question>`; keep the compact `/research` template unchanged;
+- preserve the original goal and current tasks in a durable Markdown scratchpad,
+  with separate branch notes and isolated experiments where authorized;
+- leave investigation methods flexible while defining seven review landmarks,
+  first-principles teaching, evidence references, and revision handling;
+- make section 3 show the actual research trajectory, including failures,
+  inconclusive attempts, abandoned branches, recoveries, and changes in understanding;
+- borrow teach's HTML presentation, not its read-only/disposable-notes restrictions;
+- keep generated reports, experiment artifacts, and host-local paths out of this PR.
+
+Design references: [Anthropic's multi-agent research account](https://www.anthropic.com/engineering/multi-agent-research-system),
+[its public lead-agent prompt](https://github.com/anthropics/claude-cookbooks/blob/main/patterns/agents/prompts/research_lead_agent.md),
+and [OpenAI's deep research guidance](https://help.openai.com/en/articles/10500283-deep-research-in-chatgpt).
+These informed continuity, synthesis, and verifiable output; fixed agent counts
+and mandatory research procedures were deliberately not adopted.
+
+Publication and rollback:
+
+- this PR changes source only; do not run the full apply script or modify live Pi;
+- after approval, review and publish only this template to
+  `~/.pi/agent/prompts/deep-research.md`, backing up any existing destination;
+  reload Pi for discovery;
+- the full apply script already copies prompt assets for future rebuilds;
+  the nine-file subagent publication procedure does not include this new file;
+- roll back a later publication by restoring its backup or removing only the
+  newly added template, then reload Pi.
+
+Validation: check template frontmatter, argument expansion, the seven report
+sections, trajectory/failure coverage, whitespace, and an independent read-only
+review. After publication, smoke-test one bounded investigation for scratchpad
+resume, branch evidence, honest failed-test reporting, and HTML delivery locally
+and through remote cmux. End-to-end research, compaction recovery, and remote
+report delivery for this template remain **Untested**; prompt instructions alone
+cannot guarantee recovery from an abrupt interruption.
+
+Observed static validation: Pi's template loader parsed the frontmatter and
+expanded quoted/multiword and empty arguments; seven-section and trajectory
+checks passed. `/research` is unchanged, whitespace checks passed, and diagnostics
+reported no issues. Independent review prompted explicit agent discovery and a
+finite presentation-server lifetime/cleanup guard; final re-review found no issues.
+These checks did not execute a research task or publish the template.
+
+Trust: use existing tool permissions and delegation limits. Isolated directories
+are not an OS sandbox. Do not transmit private research material in public web
+queries, include secrets in reports, or expose a workspace through a public
+listener. Experiments needing broader authority require approval.
+
 ## Subagent Contract Update 2026-09-24
 
 Status: Executed locally on 2026-09-26 after user approval
