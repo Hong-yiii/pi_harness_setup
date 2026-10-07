@@ -1,7 +1,7 @@
 # cmux Setup Runbook
 
 Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
-Last updated: 2026-08-27
+Last updated: 2026-10-07
 
 ## Goal
 
@@ -91,6 +91,20 @@ Observed local state after setup:
 - tmux installed: `3.7b`.
 - mosh installed: `1.4.0`.
 - Neovim installed: `0.12.4`.
+
+### Latest Local Version Check — 2026-10-07
+
+- Installed cmux: `0.65.0 (108) [dda24fbd2]`, reported by `cmux --version`.
+- App bundle version/build also report `0.65.0` / `108`.
+- Live `~/.config/cmux/cmux.json` and `~/.config/ghostty/config` match the
+  repository templates byte-for-byte.
+- `cmux config check` passed JSONC syntax and semantic validation.
+- Adjacent configuration drift: local `~/.tmux.conf` lacks
+  `set -g extended-keys on`, which is already in `terminal/tmux/tmux.conf`.
+  This check did not change live configuration.
+- Native SSH reconnect, remote helper compatibility, and Pi hook behavior on
+  `0.65.0` remain `Untested`; the earlier `0.64.22` results below are historical
+  evidence, not validation of this release.
 
 Homebrew warning: local Homebrew has several untrusted taps. We did not broad-trust any taps. The installed packages came from Homebrew core. Treat tap cleanup/trust as a separate safety task.
 
