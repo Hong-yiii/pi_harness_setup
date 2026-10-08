@@ -18,5 +18,11 @@ Keep two concepts separate:
 - `pi-subagents` handles conversational delegation inside an interactive task.
 - `automation/` handles loops whose control flow and evaluation rules we own.
 
-Start with one small JSON-mode or RPC runner only after a real project exposes a
-repeated workflow worth automating.
+## cmux upgrade verification (trial)
+
+`cmux-upgrade.mjs` is the first explicit workflow: baseline, candidate and
+post-install **verification**, plus receipt comparison. It delegates to the
+native browser-routing tests; it cannot install, restart, or approve an upgrade.
+See [`../docs/operations/cmux-upgrade.md`](../docs/operations/cmux-upgrade.md)
+for prerequisites, exact commands, remaining gates and cleanup. Native Mac
+execution is **Untested**; hosted CI tests the harness only.

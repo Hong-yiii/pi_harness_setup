@@ -22,6 +22,56 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## cmux Upgrade Acceptance Trial 2026-10-07
+
+Status: Trial — user approved implementation and a PR; native Mac validation pending.
+
+Affected surfaces: remote/mobile, UI, deterministic automation, and safety.
+Native cmux remains the control-plane owner; explicit repo-owned test code is
+its acceptance oracle. No ambient extension, installer, CI daemon, or competing
+remote controller is introduced.
+
+Build the test-only gate first under `tests/cmux/`, with dependency-free Node
+fixtures and unit tests. Drive the native cmux browser rather than counting curl
+or a manual SSH tunnel as browser success. Reproduce the 0.65.0 regression using
+distinct Mac/Linux markers on the same loopback port, fresh requests, and a
+remote-origin shutdown check. Record exact inputs, version evidence, bounded
+outcomes, and cleanup. Unknown APIs, missing prerequisites, and unexercised
+required gates must remain BLOCKED, never silently pass.
+
+Use an explicitly selected, already-connected SSH workspace; do not bootstrap
+or replace its shared helper. Fixtures have independent deadlines and contain
+synthetic data only. Preserve existing tabs, terminals, configuration,
+credentials, and active sessions. Any reconnect test must be demonstrably
+isolated; no shared carrier/app restart is authorized by a smoke-test command.
+Receipts stay under ignored `tmp/`, not Git. Hosted CI exercises the harness and
+fixtures only, without Mac/homelab credentials or untrusted self-hosted jobs.
+
+The upgrade runbook covers pinned candidates, baseline comparison, genuine
+isolation, promotion approval, post-install verification, and migration-aware
+recovery. Installer automation follows only after the native verifier is proven
+on a Mac; creating a second workspace is not installation isolation. No cmux
+upgrade, downgrade, restart, or firewall change is part of this implementation.
+Rollback of this source-only trial is reverting its files; completed tests must
+remove only their own resources. Native acceptance remains **Untested** until a
+real Mac run supplies evidence; simulated CI results cannot authorize promotion.
+
+Implemented source: [`operations/cmux-upgrade.md`](operations/cmux-upgrade.md)
+is the runbook; `automation/cmux-upgrade.mjs` labels verification phases and
+compares private receipts. The executable gate covers native local/remote browser
+identity, origin loss, and owned-resource cleanup. Terminal/Pi, notification,
+isolated reconnect, running-app identity, and installation/recovery gates remain
+unautomated; every receipt retains `upgradeApproved: false`.
+
+Validation (2026-10-08 SGT): 25 Node self-tests passed on Linux, including the wrong-host oracle,
+independent fixture expiry, EOF/forced cleanup bounds, failed-baseline cleanup
+regression, and the native CLI's Linux BLOCKED guard. JavaScript syntax, primary
+LSP error checks and whitespace checks passed. Independent review found a
+comparison loophole in baseline cleanup/control handling; a red regression test
+reproduced it and the shared comparison gate was corrected; final re-review found
+no issues. No native cmux, SSH, model call, installation or live configuration
+change was used for these tests.
+
 ## Deep Research Prompt Trial 2026-09-26
 
 Status: Trial — source addition requested for PR review; live publication pending

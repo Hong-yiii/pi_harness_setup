@@ -1,0 +1,37 @@
+name: cmux harness self-tests (not native acceptance)
+
+on:
+  pull_request:
+    paths:
+      - 'tests/cmux/**'
+      - 'automation/cmux-upgrade.mjs'
+      - '.github/workflows/cmux-harness-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tests/cmux/**'
+      - 'automation/cmux-upgrade.mjs'
+      - '.github/workflows/cmux-harness-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  self-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Check JavaScript syntax
+        run: |
+          for file in tests/cmux/*.mjs automation/cmux-upgrade.mjs; do
+            node --check "$file"
+          done
+      - name: Test the fixture, protocol, safety gates and regression oracle
+        run: node --test --test-timeout=20000 tests/cmux/*.test.mjs
