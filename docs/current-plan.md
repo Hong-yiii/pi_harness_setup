@@ -681,6 +681,28 @@ Decision: `docs/decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-
 Runbook: `docs/guides/cmux-ssh-remote.md`.
 Execution log: `docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
 
+## cmux 0.65.1 Coordinated Upgrade — 2026-10-14
+
+Status: Executed with user-approved checkpointing and private rollback backups.
+
+Mac 0.65.1 (110) and its matching Linux cmux-tui helper are installed. Fresh
+native SSH, terminal I/O, public browsing, HTTP Linux-origin versus same-port
+Mac-decoy checks, origin-loss failure, and OSC notifications passed. Disposable
+test resources were cleaned up; old durable session owners remain preserved.
+
+The October 9 rollback to 0.64.25 is historical, not the current version.
+Manual native evidence does **not** validate the separate automated acceptance
+runner or produce its baseline/candidate/post-install receipts. Its native
+execution remains Untested. No assertions or backend guards were weakened.
+
+Open: remote `cmux` CLI PATH, automatic Pi hooks, full app quit/crash cleanup,
+reconnect/sleep-wake on this release, and broader browser HTTPS/WebSocket cases.
+Keep auto-updates disabled until a separately reviewed upgrade; do not retire
+old session owners without accounting for their dependents and recovery paths.
+
+Execution: `docs/operations/cmux-upgrade-0.65.1.md`.
+Historical rollback: `docs/operations/cmux-rollback.md`.
+
 ## cmux Setup Batch
 
 Status: Executed; remote-control portion superseded by ADR 0013

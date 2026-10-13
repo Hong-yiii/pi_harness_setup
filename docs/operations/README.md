@@ -7,6 +7,8 @@ Environment-sensitive procedures for installing, rebuilding, maintaining, and re
 | Apply the selected Pi package profile | [`initialize-packages.md`](initialize-packages.md) | User-level Pi configuration |
 | Provision or rebuild the Ubuntu homelab | [`ubuntu-homelab-setup.md`](ubuntu-homelab-setup.md) | Ubuntu x86_64 reference host |
 | Install or repair cmux integration | [`cmux-setup.md`](cmux-setup.md) | macOS cmux control surface |
+| Inspect the executed cmux 0.65.1 upgrade | [`cmux-upgrade-0.65.1.md`](cmux-upgrade-0.65.1.md) | Manual native evidence, retained owners, and limitations |
+| Inspect the historical cmux rollback | [`cmux-rollback.md`](cmux-rollback.md) | Superseded 0.64.25 rollback and private recovery guidance |
 | Verify a cmux upgrade candidate | [`cmux-upgrade.md`](cmux-upgrade.md) | Test-only routing gate; native Mac validation pending |
 | Validate or extend observability | [`observability.md`](observability.md) | Local status baseline active; trace backend open |
 

@@ -165,14 +165,17 @@ The normal architecture is:
 ```text
 native cmux on Mac
   -> SSH/Tailscale
-  -> Linux cmuxd-remote detachable PTY
+  -> Linux cmux-tui backend (native cmux 0.65.1)
   -> project shell and Pi
 ```
 
-Use the native workspace as the organizational and lifecycle boundary. Linux
-owns the process while macOS retains native panes, browser routing, Feed, and
-notifications. Transport drops reconnect to the same remote PID and terminal
-state.
+Use the native workspace to organize work, not as proof of remote process
+teardown. Linux owns the process; older durable owners may coexist with the new
+helper. Same-PID reconnect was validated on 0.64.22, not retested on 0.65.1.
+Fresh SSH, terminal I/O, IPv4 HTTP Linux-origin routing and OSC notifications
+passed on 0.65.1; remote CLI notifications, automatic Pi hooks, broader browser
+behavior and app-quit cleanup remain open. Follow the
+[current SSH runbook](cmux-ssh-remote.md) for version-specific limits.
 
 Fallback only:
 
