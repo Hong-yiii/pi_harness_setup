@@ -1,7 +1,11 @@
 # Native cmux SSH Remote Runbook
 
 Status: Primary Mac-to-homelab workflow
-Last updated: 2026-08-27
+Last updated: 2026-10-14
+
+Current tested installation: **cmux 0.65.1 (110)** with its matching Linux
+`cmux-tui` helper. See [upgrade evidence and limitations](../operations/cmux-upgrade-0.65.1.md).
+The 0.64.22 lifecycle results below are historical, not proof of current behavior.
 
 ## Daily Use
 
@@ -67,11 +71,19 @@ justifies more typing or an alias.
 
 ## Persistence
 
-The remote `cmuxd-remote` daemon owns a detachable PTY. The same cwd, shell,
+Current 0.65.1 uses `cmux-tui` as its remote session backend. Older Rust owners and
+legacy helpers may coexist during migration; installing a binary does not migrate
+live PTYs. Do not kill them or start duplicate agents merely to align versions.
+Same-process reconnect, app relaunch, and sleep/wake on this release remain
+**Untested** in our latest acceptance pass.
+
+### Historical 0.64.22 Behavior
+
+In the earlier backend, the remote `cmuxd-remote` daemon owned a detachable PTY. The same cwd, shell,
 terminal output, and Pi process survive an SSH transport interruption while
 cmux reconnects.
 
-Current documented/default transport behavior:
+Previously recorded transport behavior (0.64.22):
 
 ```text
 ServerAliveInterval=20
@@ -79,7 +91,7 @@ ServerAliveCountMax=2
 reconnect backoff: 3s, 6s, 12s, capped at 60s
 ```
 
-Safe expectation:
+Historical expectations (do not use as a 0.65.1 teardown contract):
 
 - network or SSH transport drop: remote process stays alive and reattaches;
 - temporary VPN/Tailscale interruption: reconnect automatically;
@@ -94,27 +106,30 @@ for critical sessions until those recovery cases are proven.
 
 ### Browser panes
 
-A browser pane created inside the remote workspace routes through the homelab
-network. Opening this in that workspace reaches a server bound on Linux:
+For 0.65.1, top-level HTTP loopback navigation is intended to reach the SSH host.
+We verified `127.0.0.1` against a same-port Mac decoy; the `localhost` alias remains
+untested in that manual pass. The normal upstream URL form is:
 
 ```text
 http://localhost:3000
 ```
 
-No manual `ssh -L` forwarding is required. Each remote workspace receives an
-isolated browser cookie store.
+No manual `ssh -L` forwarding was needed in the native test. Public pages also
+loaded, but do not assume they use Linux's network: the newer routing permits
+local public navigation. Remote HTTPS and absolute localhost subresource/WebSocket
+behavior remain unverified; do not assume full origin isolation from one page test.
 
 ### Notifications
 
-A process in the remote workspace can call:
+The legacy remote relay supported:
 
 ```bash
 cmux notify --title "Pi" --body "Needs attention"
 ```
 
-The notification appears in the native cmux Feed/sidebar. Notification behavior
-for Pi itself depends on its installed remote hooks; the relay command is
-available inside the native SSH workspace.
+In the fresh 0.65.1 test shell, `cmux` was **not on PATH**, so that command did
+not pass. Remote OSC 777 notification delivery did pass. Automatic Pi hook/Feed
+behavior remains unverified; do not infer it from OSC delivery.
 
 ### Files
 
@@ -123,7 +138,7 @@ connection.
 
 ## Inspect
 
-List native SSH PTY sessions without reading terminal content:
+Legacy helper session inspection (check installed command support first):
 
 ```bash
 cmux ssh-session-list --all-workspaces
@@ -136,7 +151,9 @@ cmux workspace list
 cmux tree --all
 ```
 
-The versioned Linux helper lives under:
+The current on-disk Linux helper is `~/.local/bin/cmux-tui`. Compare its
+`remote-probe --json` build identity with the Mac's bundled helper, not just their
+shared `0.1.0` display version. Retained legacy helpers live under:
 
 ```text
 ~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote
@@ -150,10 +167,12 @@ When work is complete:
 
 1. exit Pi cleanly;
 2. stop any project server that should not remain;
-3. exit the remote shell or close the native workspace.
+3. exit the remote shell, then close its native workspace.
 
-Closing the workspace is intentional teardown, not detach. The remote PTY
-process ends and the idle daemon exits after its last workspace is gone.
+Do not assume closing a native workspace stops its remote processes. Existing
+owners can outlive views. Our 0.65.1 test forward remained after workspace close
+and required scoped cleanup; app-quit cleanup was not tested. Never use a broad
+process kill to clean up a single workspace.
 
 ## Fallback
 
@@ -172,7 +191,7 @@ ssh -t homelab 'tmux attach-session -t pi-main'
 Do not run native SSH, Remote tmux, and cmux TUI as equal daily controllers.
 Native `cmux ssh homelab` is the normal path; the others are recovery/history.
 
-## Current Validation
+## Historical Validation
 
 Passed with native cmux `0.64.22`:
 

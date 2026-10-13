@@ -1,7 +1,14 @@
 # cmux Setup Runbook
 
 Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
-Last updated: 2026-10-07
+Last updated: 2026-10-14
+
+Current installation: **0.65.1 (110)**, with a matching Linux `cmux-tui` helper.
+See [executed upgrade and limitations](cmux-upgrade-0.65.1.md) and the
+[updated remote guide](../guides/cmux-ssh-remote.md). Older version observations,
+relay instructions, and helper paths below remain historical evidence; they do
+not establish 0.65.1 compatibility. In particular, remote `cmux notify` was not
+available on PATH in the latest test.
 
 ## Goal
 
@@ -24,7 +31,7 @@ The normal path is:
 ```text
 native cmux on Mac
   -> SSH/Tailscale
-  -> versioned cmuxd-remote on Linux
+  -> matching cmux-tui backend on Linux (0.65.1)
   -> detachable PTY
   -> project shell and Pi
 ```
@@ -199,11 +206,11 @@ Current cmux hook behavior:
 
 Start with `terminal.autoResumeAgentSessions` disabled. cmux will restore layout and metadata, but agent terminals stay idle until resumed manually. Turn auto-resume on only after it feels predictable.
 
-Remote caveat: native SSH exposes the cmux relay command inside its remote
-workspace, and remote notifications passed validation. The profile does not yet
-install native Pi lifecycle hooks on Ubuntu, so automatic remote Pi Feed/resume
-behavior is not assumed. `cmuxd-remote`, not the local Mac hook, owns transport
-persistence.
+Remote caveat: the legacy relay passed 0.64.22 validation, but `cmux` was absent
+from the fresh 0.65.1 remote shell PATH. Only OSC notification delivery passed in
+that release's manual test. The profile does not yet install native Pi lifecycle
+hooks on Ubuntu, so automatic remote Pi Feed/resume behavior is not assumed.
+The remote backend, not the local Mac hook, owns transport persistence.
 
 Executed locally:
 
@@ -279,18 +286,21 @@ From a terminal inside native cmux:
 cmux ssh homelab
 ```
 
-Then `cd` to the project and start Pi. The first connection installs the
-versioned `cmuxd-remote` helper. Browser panes use the homelab network, remote
-notifications reach the native Feed, and transport drops reattach to the same
-remote PTY.
+Then `cd` to the project and start Pi. cmux 0.65.1 uses its matching `cmux-tui`
+backend; bootstrap may install or update that helper. Our initial bootstrap timed
+out, so a checksum-verified helper was staged manually before the fresh connection.
+Top-level IPv4 HTTP reached Linux rather than a same-port Mac decoy, and remote
+OSC notifications arrived. Remote `cmux notify` was not on PATH. Reconnect,
+app-quit cleanup, automatic Pi hooks, and broader browser cases remain untested
+on this release; public-page success does not prove Linux network routing.
 
 Detailed use and implementation: `docs/guides/cmux-ssh-remote.md`.
 
 ## Remote tmux Fallback Flow
 
 Bootstrap the Linux host first with
-`docs/operations/ubuntu-homelab-setup.md`. The native app remains macOS-only; its
-versioned `cmuxd-remote` helper runs on Ubuntu. tmux 3.2+ continues to own
+`docs/operations/ubuntu-homelab-setup.md`. The native app remains macOS-only;
+its 0.65.1 SSH backend uses Linux `cmux-tui`. tmux 3.2+ continues to own
 existing fallback sessions.
 
 Keep the normal SSH alias:

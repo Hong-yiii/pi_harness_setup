@@ -72,8 +72,14 @@ Current refinements:
 - ADR 0013 adopts native `cmux ssh homelab`; local and remote carrier failures,
   a real Pi reconnect, native notifications, and remote browser routing passed.
 - ADR 0012 Remote tmux remains historical validation and break-glass recovery.
-- The Rust cmux TUI pilot was decommissioned after comparison; its execution log
-  remains under `docs/history/`.
+- The standalone Rust cmux TUI pilot was decommissioned after comparison; this
+  differs from the `cmux-tui` backend now bundled with native cmux 0.65.1.
+- Mac cmux 0.65.1 and its matching Linux helper passed manual fresh-SSH, terminal,
+  public-browser, HTTP Linux-origin/decoy/origin-loss, and OSC-notification checks.
+  Old durable owners remain preserved. Remote `cmux` CLI PATH, automatic Pi hooks,
+  app-quit cleanup and broader browser behavior remain open; see
+  `docs/operations/cmux-upgrade-0.65.1.md`. The automated upgrade runner's native
+  execution remains Untested; these manual results do not substitute for receipts.
 - Complete native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/guides/pi-harness-workflow-manual.md`.
