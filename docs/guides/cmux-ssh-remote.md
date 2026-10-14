@@ -1,211 +1,183 @@
 # Native cmux SSH Remote Runbook
 
-Status: Primary Mac-to-homelab workflow
-Last updated: 2026-10-14
-
-Current tested installation: **cmux 0.65.1 (110)** with its matching Linux
-`cmux-tui` helper. See [upgrade evidence and limitations](../operations/cmux-upgrade-0.65.1.md).
-The 0.64.22 lifecycle results below are historical, not proof of current behavior.
+Status: Primary Mac-to-homelab workflow; cmux-tui API delivery validated
+Last updated: 2026-10-15
 
 ## Daily Use
 
-From any terminal inside native cmux:
+From a local terminal inside native cmux:
 
 ```bash
 cmux ssh homelab
 ```
 
-A native workspace opens with a shell on the homelab. Work normally:
+In the remote shell:
 
 ```bash
 cd ~/pi_harness_setup
 pi --name "homelab main"
 ```
 
-That is the complete default workflow. `--name` and `--command` are optional.
+`homelab` is the owner's private SSH alias, not a portable default. Optional
+`--name` labels the new workspace; `--no-focus` opens it in the background.
+Each invocation creates new work, not an attachment to a workspace by title.
+Do not launch duplicate Pi writers when reconnecting to existing work.
 
-## Workspace Scope
+## Current Ownership Model
 
-Each `cmux ssh` invocation creates one native workspace and one detachable
-remote PTY session:
-
-```text
-native cmux workspace
-  -> SSH management/attachment
-  -> Linux remote PTY
-  -> shell
-  -> project and Pi process
-```
-
-The workspace name is only a label. It is not a security boundary or reusable
-session key. Running `cmux ssh homelab` twice creates two independent
-workspaces.
-
-Recommended convention:
-
-- one workspace per project or worktree;
-- panes/tabs within it for related terminals, agents, servers, and browsers;
-- one descriptive Pi session name per agent/task.
-
-All workspaces run as the same Linux account and share its filesystem and
-credentials.
-
-## Optional Convenience Forms
-
-Name the native workspace:
-
-```bash
-cmux ssh homelab --name "Harness"
-```
-
-Start Pi immediately:
-
-```bash
-cmux ssh homelab \
-  --name "Harness" \
-  --command 'export PATH="$HOME/.local/bin:$PATH"; cd "$HOME/pi_harness_setup"; exec pi --name "harness-main"'
-```
-
-These are conveniences only. Prefer the short command until repetition
-justifies more typing or an alias.
-
-## Persistence
-
-Current 0.65.1 uses `cmux-tui` as its remote session backend. Older Rust owners and
-legacy helpers may coexist during migration; installing a binary does not migrate
-live PTYs. Do not kill them or start duplicate agents merely to align versions.
-Same-process reconnect, app relaunch, and sleep/wake on this release remain
-**Untested** in our latest acceptance pass.
-
-### Historical 0.64.22 Behavior
-
-In the earlier backend, the remote `cmuxd-remote` daemon owned a detachable PTY. The same cwd, shell,
-terminal output, and Pi process survive an SSH transport interruption while
-cmux reconnects.
-
-Previously recorded transport behavior (0.64.22):
+Since cmux 0.65.0, managed persistent SSH uses cmux-tui rather than the legacy
+cmuxd-remote path:
 
 ```text
-ServerAliveInterval=20
-ServerAliveCountMax=2
-reconnect backoff: 3s, 6s, 12s, capped at 60s
+Linux: shell/Pi -> cmux-tui session socket -> durable resources and notifications
+                                                |
+                                      authenticated SSH link
+                                                |
+Mac: native workspace <- resource projection / notification synchronization
+     native WebKit browser -> cmux-managed HTTP forward -> Linux loopback server
 ```
 
-Historical expectations (do not use as a 0.65.1 teardown contract):
+The session **owner** keeps the PTYs and shared resource tree alive. The Mac is
+a **projection**: a native view of those resources, not the process owner. The
+installed helper and running owner can be different builds; replacing the file
+does not upgrade the process. Preserve old owners until their work is accounted
+for. An old owner is not the same component as an old CLI reverse relay.
 
-- network or SSH transport drop: remote process stays alive and reattaches;
-- temporary VPN/Tailscale interruption: reconnect automatically;
-- intentional workspace close: remote session and process end;
-- remote shell exit: remote session ends;
-- Ubuntu reboot: process ends unless another supervisor owns it.
+All workspaces under one Linux account share its filesystem and account
+permissions. Workspace names and IDs are routing identities, not security
+sandboxes.
 
-Complete cmux app quit/relaunch and Mac sleep/wake remain `Untested`. Keep tmux
-for critical sessions until those recovery cases are proven.
+## Which CLI To Use
 
-## Native Remote Features
+| Caller | CLI and target | Purpose |
+| --- | --- | --- |
+| Local Mac cmux terminal | Native `cmux` CLI | Mac UI, browser inspection, native workspace control |
+| Linux native SSH session | `~/.local/bin/cmux-tui --socket "$CMUX_TUI_SOCKET"` | Linux session resources; Mac projects supported changes |
+| Old legacy SSH context | `~/.cmux/bin/cmux` / cmuxd-remote | Separate authenticated reverse relay; not the new API |
 
-### Browser panes
+`CMUX_MUX_SOCKET` is the older fallback name for `CMUX_TUI_SOCKET`.
+`CMUX_TUI_TERMINAL_ID` identifies the calling Linux terminal. Never substitute
+the Mac socket, select a default session blindly, or alias the two CLIs.
+A missing `cmux` on Linux PATH does not imply missing cmux-tui support.
 
-For 0.65.1, top-level HTTP loopback navigation is intended to reach the SSH host.
-We verified `127.0.0.1` against a same-port Mac decoy; the `localhost` alias remains
-untested in that manual pass. The normal upstream URL form is:
-
-```text
-http://localhost:3000
-```
-
-No manual `ssh -L` forwarding was needed in the native test. Public pages also
-loaded, but do not assume they use Linux's network: the newer routing permits
-local public navigation. Remote HTTPS and absolute localhost subresource/WebSocket
-behavior remain unverified; do not assume full origin isolation from one page test.
-
-### Notifications
-
-The legacy remote relay supported:
+Read-only preflight from inside the remote session:
 
 ```bash
-cmux notify --title "Pi" --body "Needs attention"
+set -eu
+C="$HOME/.local/bin/cmux-tui"
+S="${CMUX_TUI_SOCKET:-${CMUX_MUX_SOCKET:-}}"
+[ -x "$C" ]
+[ -n "$S" ]
+[ -S "$S" ]
+"$C" --socket "$S" --json session current ping
 ```
 
-In the fresh 0.65.1 test shell, `cmux` was **not on PATH**, so that command did
-not pass. Remote OSC 777 notification delivery did pass. Automatic Pi hook/Feed
-behavior remains unverified; do not infer it from OSC delivery.
+A failed preflight is a stop condition, not permission to create another owner.
+A fresh plain SSH shell may lack these variables; do not guess its target.
 
-### Files
+## Open A Remote HTML Artifact
 
-Drag-and-drop into a remote terminal uses SCP through the existing SSH
-connection.
-
-## Inspect
-
-Legacy helper session inspection (check installed command support first):
+Use the shared [artifact-delivery recipe](../../skills/teach/references/artifact-delivery.md),
+also installed at `~/.agents/skills/teach/references/artifact-delivery.md`.
+It verifies the session, finds a unique pane containing the parent terminal,
+serves a dedicated directory on Linux loopback with a deadline, and runs:
 
 ```bash
-cmux ssh-session-list --all-workspaces
+"$C" --socket "$S" --json pane "$PANE" tab create browser --url "$URL"
 ```
 
-Inspect the native workspace tree:
+`PANE` must come from the recipe's identity check; `URL` is a top-level HTTP URL
+for the remote loopback server. Keep the receipt's Linux tab ID. Native handles
+may change during reconciliation; re-query instead of creating another tab.
+
+The Mac renders the native WebKit pane locally and forwards HTTP to Linux.
+Linux's TUI/browser-frame renderer is separate: its `starting` status does not
+prove native Mac rendering failed. Conversely, a creation receipt alone does
+not prove native rendering succeeded. Verify the unique artifact marker.
+
+Do not run `cmux browser open` through the stale Linux legacy wrapper. Do not
+open remote `file://` URLs on the Mac. Ordinary Mac browsers interpret localhost
+as the Mac; label the HTTP URL **cmux remote workspace only**. For files already
+on the Mac, use native `cmux browser open file:///...` without an HTTP server.
+
+Validated scope: self-contained top-level loopback HTTP. SSH-host HTTPS and
+absolute localhost subresources/WebSockets remain outside this recipe. Public
+pages may navigate locally on the Mac; successful public browsing does not
+prove Linux network egress or full remote-origin isolation.
+
+## Notifications
+
+From the Linux session, using the preflight above:
 
 ```bash
-cmux workspace list
-cmux tree --all
+"$C" --socket "$S" --json notification create \
+  --terminal "$CMUX_TUI_TERMINAL_ID" --title 'Pi' --body 'Needs attention'
 ```
 
-The current on-disk Linux helper is `~/.local/bin/cmux-tui`. Compare its
-`remote-probe --json` build identity with the Mac's bundled helper, not just their
-shared `0.1.0` display version. Retained legacy helpers live under:
+The Mac synchronizes the Linux ledger into the native Feed/sidebar. Clearing
+notifications for a terminal also withdraws their native records; it clears all
+rows for that target, not just the latest test. Automatic Pi hooks/resume remain
+separate and are not established by this manual notification test.
 
-```text
-~/.cmux/bin/cmuxd-remote/<version>/<os>-<arch>/cmuxd-remote
-```
+## Resolve The Exact Mac Workspace
 
-Do not copy runtime state or credentials into Git.
+On the Mac, query `cmux --json ssh-session-list --all-workspaces` and require a
+unique match on the Linux `session_id` and `backend == "cmux-tui"`. That row has
+**`workspace_ref`**, not `workspace_id`. Match it against `ref` from
+`cmux --json workspace list` to obtain the native UUID; confirm
+`remote.remote_workspace_id` against the Linux workspace ID. Never match only
+titles. Linux `ws_…`/`term_…` IDs are not Mac UUIDs.
 
-## Finish Or Close
+Use native pane/surface queries with that explicit workspace. Native browser
+inspection remains Mac-side; Linux session authority is not unrestricted Mac
+browser automation authority.
 
-When work is complete:
+## Persistence And Cleanup
 
-1. exit Pi cleanly;
-2. stop any project server that should not remain;
-3. exit the remote shell, then close its native workspace.
+- SSH loss/reconnect can leave the owner and remote processes running.
+  Same-PID reconnect was validated on 0.64.22; it remains **Untested** on 0.65.1
+  in this harness's acceptance. Do not infer it from a fresh connection.
+- A tab/pane/workspace **view** close is not equivalent to killing its PTY.
+  Use an exact `terminal <id> close` only when intentionally ending that process;
+  normal shell exit also ends it. Do not carry forward legacy teardown assumptions.
+- A host reboot ends unsupervised processes. Durable layout is not process memory.
+- Full app quit/relaunch and sleep/wake recovery remain **Untested** in this
+  harness's current acceptance, even where upstream promises support.
+- Closing an artifact tab does not stop its HTTP server. Stop the recorded task
+  or let its finite deadline expire.
+- cmux 0.65.1 may retain a browser forward after tab/workspace close. Cleanup may
+  stop only the exact verified test forward, never shared carriers or broad
+  process-name matches. App-exit forward cleanup was not exercised here.
 
-Do not assume closing a native workspace stops its remote processes. Existing
-owners can outlive views. Our 0.65.1 test forward remained after workspace close
-and required scoped cleanup; app-quit cleanup was not tested. Never use a broad
-process kill to clean up a single workspace.
+Keep the legacy wrapper/relay metadata untouched while old work may need it.
+A refused stale TCP port is not an authentication failure; loosening permissions
+or forwarding the raw Mac socket is not a repair.
 
 ## Fallback
 
-Existing critical work can remain in Remote tmux:
+For existing tmux work only:
 
 ```bash
 cmux ssh-tmux homelab
-```
-
-Direct break-glass recovery:
-
-```bash
 ssh -t homelab 'tmux attach-session -t pi-main'
 ```
 
-Do not run native SSH, Remote tmux, and cmux TUI as equal daily controllers.
-Native `cmux ssh homelab` is the normal path; the others are recovery/history.
+Do not promote a second standalone TUI controller. Using the cmux-tui **CLI API**
+for the native app's existing owner is not running a nested TUI or reviving the
+rejected August pilot.
 
-## Historical Validation
+## Evidence And History
 
-Passed with native cmux `0.64.22`:
-
-- versioned daemon bootstrap;
-- actual keepalive configuration;
-- local and remote carrier replacement;
-- same-PID remote process continuity;
-- real Pi response and same-PID reconnect;
-- native notification relay;
-- remote browser routing;
-- clean workspace/process teardown.
-
-Detailed log:
-`docs/history/2026-08-27-native-cmux-ssh-pilot.md`.
-
-Decision:
-`docs/decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md`.
+- 0.65.0 shipped the persistent SSH owner/projection migration; 0.65.1 added
+  browser-loading/HTTP forwarding and app-exit forward-cleanup fixes.
+- 2026-10-15: Linux-origin browser creation, native rendering versus a Mac decoy,
+  origin-loss behavior, notification delivery/clear, and scoped cleanup passed
+  without restarting the preserved owner.
+- [Upgrade and acceptance record](../operations/cmux-upgrade-0.65.1.md). These
+  manual checks do not establish a PASS from the separate
+  [automated upgrade runner](../operations/cmux-upgrade.md), whose native
+  execution and required receipt gates remain unvalidated.
+- [ADR 0013](../decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md)
+  preserves the primary native-SSH choice; its August backend details are historical.
+- [August pilot](../history/2026-08-27-native-cmux-ssh-pilot.md) records validation
+  against 0.64.22, not the current backend.

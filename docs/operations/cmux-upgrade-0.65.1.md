@@ -1,7 +1,8 @@
 # cmux 0.65.1 Coordinated Upgrade
 
 Status: Mac and Linux helper updated on 2026-10-14; core native acceptance passed.
-Remote CLI availability and the broader browser limitations below remain open.
+Linux session-API browser/notification delivery passed on 2026-10-15 (below).
+The legacy remote `cmux` wrapper was not repaired; broader browser limits remain.
 
 This is a record of manually driven native checks, not a PASS receipt from
 [`cmux-upgrade.md`](cmux-upgrade.md)'s automated runner. That runner was not
@@ -97,6 +98,71 @@ Exact backup directories and execution logs remain host-local; the Linux service
 registry was updated with activation, results, and recovery references. No test
 server or manual tunnel remains. Old session owners and private recovery material
 are intentionally retained.
+
+## Linux-Initiated Delivery Acceptance — 2026-10-15
+
+The old wrapper still targeted a dead legacy reverse-forward port. That did not
+mean the Linux owner or native SSH link was broken. The replacement is the
+existing cmux-tui session API, not a new tunnel or global CLI alias.
+
+### Upstream chronology
+
+- **0.65.0, October 5:** persistent `cmux ssh` moved to cmux-tui, unifying
+  reconnect, restore, splits, and tabs ([#12956](https://github.com/manaflow-ai/cmux/pull/12956)).
+  [Tag-pinned changelog](https://github.com/manaflow-ai/cmux/blob/v0.65.1/CHANGELOG.md).
+- Notification-ledger synchronization already existed in
+  [v0.65.0](https://github.com/manaflow-ai/cmux/blob/v0.65.0/Sources/Surfaces/CmuxTuiSurfaceProvider%2BNotifications.swift).
+  Its first introduction is not established here; it was not all added in 0.65.1.
+- **0.65.1, October 12:** native SSH browser loading/loopback forwarding
+  [#18956](https://github.com/manaflow-ai/cmux/pull/18956) and app-exit forward
+  cleanup [#19808](https://github.com/manaflow-ai/cmux/pull/19808) followed.
+- Managed SSH and [legacy relay configurations are distinct](https://github.com/manaflow-ai/cmux/blob/v0.65.1/Sources/RemoteTui/Workspace%2BSSHTui.swift).
+  The [legacy relay policy](https://github.com/manaflow-ai/cmux/blob/v0.65.1/daemon/remote/README.md#cli-relay)
+  denies browser methods; reviving it is not equivalent to adopting the new API.
+
+### Executed manual checks
+
+Created one uniquely named native SSH workspace with `--no-focus`, no Pi writer,
+and two ten-minute HTTP fixtures: Linux loopback and a same-port Mac decoy.
+They served synthetic markers only. Read-only identity checks established the
+old owner build `c18c5c…`, installed helper `5f39d4…`, and exact
+Linux-terminal/native-workspace mapping. The owner PID/generation were unchanged
+at cleanup. These are manual results, not the automated upgrade runner's receipts.
+
+| Check | Observed result |
+| --- | --- |
+| Explicit Linux socket ping and resource queries | Passed against the preserved owner with the new installed CLI |
+| `pane <test-pane> tab create browser --url <Linux-HTTP-URL>` | Returned Linux browser/tab/workspace IDs; native tab appeared without changing selected workspace |
+| Native body inspection | Rendered the unique Linux marker; Linux logged requests and Mac decoy logged none |
+| Origin loss | Stopped Linux fixture; fresh native navigation failed, not the still-running Mac decoy |
+| `notification create --terminal <test-terminal>` | Unique body appeared in the correct Mac workspace/terminal |
+| `notification clear --terminal <test-terminal>` | Removed the Linux row and native notification |
+| Scoped resource cleanup | Closed recorded browser tab, test terminal, and test workspace via Linux API; native test workspace disappeared |
+| Listener cleanup | Fixtures stopped; exact retained test forward stopped; fixture and forward ports verified closed |
+| Existing work | Original terminal remained present; shared owner was not restarted |
+
+Native browser handles changed during initial reconciliation. An early read
+using a stale handle failed; resolving the current UUID and reading `body` then
+succeeded. Keep Linux receipts and re-query native handles, not browser creation.
+Linux browser state remained `starting` while **Mac WebKit** rendered the page.
+The separate TUI/CDP renderer's state is not native render acceptance.
+
+Reproduce with the [delivery recipe](../../skills/teach/references/artifact-delivery.md)
+in a disposable workspace. Match terminal/resource identity, never title. Source:
+[native browser materialization/HTTP forwarding](https://github.com/manaflow-ai/cmux/blob/v0.65.1/Sources/Surfaces/CmuxTuiSurfaceProvider%2BPortForward.swift),
+[notification synchronization](https://github.com/manaflow-ai/cmux/blob/v0.65.1/Sources/Surfaces/CmuxTuiSurfaceProvider%2BNotifications.swift).
+
+Raw execution logs and receipts stay host-local. Tab/workspace close still left
+the cmux-managed forward alive; only that positively identified test forward was
+terminated. Full app-exit cleanup, reconnect while serving an artifact, HTTPS,
+and automatic Pi hooks were not tested. No acceptance-runner assertion or backend
+guard was weakened.
+
+`teach` and deep-research now share the instruction-only recipe. Their three
+asset files were backed up and published to both hosts, without full apply.
+See [the current plan](../current-plan.md#cmux-remote-artifact-delivery-migration--2026-10-15)
+for publication and rollback. Local Mac artifacts still open directly without
+an HTTP server; Linux artifacts use explicit session identity and loopback HTTP.
 
 ## Normal Use and Remaining Limits
 

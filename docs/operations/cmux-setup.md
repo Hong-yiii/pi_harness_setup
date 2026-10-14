@@ -1,14 +1,15 @@
 # cmux Setup Runbook
 
 Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
-Last updated: 2026-10-14
+Last updated: 2026-10-15
 
 Current installation: **0.65.1 (110)**, with a matching Linux `cmux-tui` helper.
 See [executed upgrade and limitations](cmux-upgrade-0.65.1.md) and the
 [updated remote guide](../guides/cmux-ssh-remote.md). Older version observations,
 relay instructions, and helper paths below remain historical evidence; they do
-not establish 0.65.1 compatibility. In particular, remote `cmux notify` was not
-available on PATH in the latest test.
+not establish 0.65.1 compatibility. Linux session-API browser/notification
+delivery passed on October 15; use cmux-tui with explicit session identity,
+not the legacy remote `cmux` wrapper.
 
 ## Goal
 
@@ -206,11 +207,13 @@ Current cmux hook behavior:
 
 Start with `terminal.autoResumeAgentSessions` disabled. cmux will restore layout and metadata, but agent terminals stay idle until resumed manually. Turn auto-resume on only after it feels predictable.
 
-Remote caveat: the legacy relay passed 0.64.22 validation, but `cmux` was absent
-from the fresh 0.65.1 remote shell PATH. Only OSC notification delivery passed in
-that release's manual test. The profile does not yet install native Pi lifecycle
-hooks on Ubuntu, so automatic remote Pi Feed/resume behavior is not assumed.
-The remote backend, not the local Mac hook, owns transport persistence.
+Remote caveat: the legacy relay passed 0.64.22 validation, but managed SSH now
+uses the cmux-tui session API. Manual Linux API notifications synchronized into
+the Mac Feed on 2026-10-15 without repairing the stale wrapper. The profile does
+not install native Pi lifecycle hooks on Ubuntu, so automatic remote Pi
+Feed/resume behavior is not assumed. The Linux session owner, not the local Mac
+hook, keeps PTYs alive. Follow the [remote runbook](../guides/cmux-ssh-remote.md)
+for explicit socket/terminal routing.
 
 Executed locally:
 
@@ -290,7 +293,8 @@ Then `cd` to the project and start Pi. cmux 0.65.1 uses its matching `cmux-tui`
 backend; bootstrap may install or update that helper. Our initial bootstrap timed
 out, so a checksum-verified helper was staged manually before the fresh connection.
 Top-level IPv4 HTTP reached Linux rather than a same-port Mac decoy, and remote
-OSC notifications arrived. Remote `cmux notify` was not on PATH. Reconnect,
+OSC notifications arrived. The October 15 follow-up also validated Linux-initiated
+browser creation and notifications through the cmux-tui API. Reconnect,
 app-quit cleanup, automatic Pi hooks, and broader browser cases remain untested
 on this release; public-page success does not prove Linux network routing.
 

@@ -39,6 +39,16 @@ state were removed after comparison.
 Keep Remote tmux and direct SSH/tmux as break-glass recovery for existing
 `pi-main` work, not competing daily interfaces.
 
+## Backend Evolution — 2026-10-15
+
+The native-SSH owner choice remains accepted. The architecture and validation
+below record the August cmuxd-remote implementation, not the current backend.
+Upstream 0.65.0 moved managed persistent SSH to cmux-tui; 0.65.1 repaired native
+HTTP browser routing. Linux resource/notification API delivery to the Mac passed
+on 2026-10-15 without restarting preserved owners. This backend API is not the
+rejected standalone/nested TUI pilot. Current commands and view-versus-process
+lifecycle rules are in [the remote runbook](../guides/cmux-ssh-remote.md).
+
 ## Why
 
 Native `cmux ssh` provides the desired thin-client split without nesting a
