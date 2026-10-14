@@ -100,9 +100,185 @@ reproduced it and the shared comparison gate was corrected; final re-review foun
 no issues. No native cmux, SSH, model call, installation or live configuration
 change was used for these tests.
 
+## Subagent Parallel Capacity 2026-10-12
+
+Status: Executed on homelab — owner requested 12 concurrent agents and 50 total
+agents; interpreted as 50 tasks per batch, with 12 running and the remainder queued.
+Existing Pi sessions need `/reload` to adopt the new config.
+
+Affected surface: subagents; Pi Subagents remains the sole owner. Set native
+`parallel.maxTasks=50` and `parallel.concurrency=12` in a versioned config and
+publish only that file to the homelab. Preserve the default 20-task per-run
+ceiling, unlimited session launches, models, tools, depth, and unrelated edits.
+Explicit per-call concurrency still overrides the default, subject to the
+per-run ceiling; this is not a machine-wide concurrency cap.
+
+Back up any existing config (record absence if new) before publication. Do not
+run full apply, install packages, restart sessions, or launch a model fleet.
+Verify source/live equality, native config resolution, and a no-model scheduler
+check with 50 items and peak concurrency 12. Reload Pi when children are idle
+before using the new limits. Keep one writer per checkout; use worktrees for
+parallel writers. Provider capacity and 12-agent real workload behavior remain
+**Untested**. Rollback removes only the two new fields, preserving later edits;
+remove the new config only if it still matches the deployment receipt.
+
+Observed: native loader resolves the published 50/12 values; a 50-item no-model
+scheduler check completed with peak concurrency 12. Source/live bytes match;
+settings, agent definitions, npm manifests/lockfile are unchanged. Retained check,
+absence record and hashed receipt:
+`~/.config/pi_harness_setup/backups/20261012T140645Z-subagent-parallel/`.
+No live model fleet or restart was performed. Rebuild/publication is a manual
+config merge, not full apply; see [parallel capacity operations](operations/initialize-packages.md#subagent-parallel-capacity--2026-10-12).
+
+## Subagent Default Model 2026-10-12
+
+Status: Executed on homelab — owner requested GPT 6.1 Sol for all subagents.
+
+Affected surface: subagents; Pi Subagents remains the owner. Set the native
+`subagents.defaultModel` to `openai-codex/gpt-6.1-sol` in versioned and live
+user settings. Replace the five role-specific model pins with their existing
+thinking levels so all nine discovered agents use the shared default. Preserve
+parent model, prompts, permissions, packages, and unrelated local edits.
+Back up the six live files first; publish only these configuration changes,
+not full apply. Verify registry availability, native discovery for every agent,
+source/live equality, and unchanged unrelated settings. No model call or service
+restart is required. Roll back only the changed settings field and five agent
+files from the backup after checking for subsequent edits. Existing sessions
+may need `/reload`; explicit future per-run/project model overrides still win.
+
+Observed: registry lists the exact model; native discovery and this session's
+live model mapping resolve all nine agents to Sol. The five role thinking levels
+and all unrelated settings are unchanged; deployed agents match source. No model
+inference was run (**Untested**). Backup:
+`~/.config/pi_harness_setup/backups/20261011T192826Z-subagent-sol/`.
+See [model-default operations](operations/initialize-packages.md#subagent-model-default--2026-10-12).
+
+## Coordinated cmux Rollback 2026-10-08
+
+Status: Historical Linux preparation on October 8; Mac rollback completed on
+October 9, then superseded by the [0.65.1 upgrade](operations/cmux-upgrade-0.65.1.md)
+on October 14. The preparation plan and observations below describe October 8,
+not current cutover instructions or live process state.
+
+Affected surfaces: remote/mobile, UI, session recovery, and safety. Target the
+official `0.64.25` Mac release and its matching Linux amd64 `cmuxd-remote`
+artifact, not an arbitrary older `cmux-tui` revision. `0.64.25` is the issue
+reporter's last-working release; this host's older verified helper is `0.64.22`.
+End-to-end `0.64.25` behavior is **Untested** here.
+
+Inspect and preserve this Pi session, its detached `cmux-tui` owner, the current
+on-disk helper, and the existing `0.64.22` helper. The daemon currently owns a
+deleted executable inode: preserve its executable bytes as recovery evidence,
+not its memory, credentials or terminal contents. Download and checksum-verify
+only the matching legacy helper/manifest into protected storage, then stage the
+binary in its version-specific native cmux location without overwriting anything.
+Do not stop a shared daemon, replace the active executable, alter relays/sockets,
+start a listener, or claim that staging switches the active transport.
+
+The Mac agent must checkpoint active work, back up the app/private settings,
+verify the official pinned DMG and embedded helper manifest, and perform the
+approved app downgrade from an independent local terminal. Fresh legacy SSH
+sessions are required; importing live `cmux-tui` PTYs into the old helper is not
+assumed. Verify terminal, remote-browser origin and notification behavior before
+calling the rollback working. Keep current helpers/state for recovery; remove a
+staged binary only if its recorded hash is unchanged and it has never been
+activated. No migration/destructive cleanup or Linux reboot is part of this pass.
+Record operations and the pending cutover in the host service registry and a
+private handoff. Preserve the unrelated dependency-repair edits and PR worktree.
+
+Observed: official `0.64.25` Linux amd64 helper staged without replacement at
+`~/.cmux/bin/cmuxd-remote/0.64.25/linux-amd64/cmuxd-remote`; release digest,
+checksum list and manifest agree, and `version` returns `0.64.25`. The original
+Rust daemon, Pi process, four workspace IDs and original executable hashes all
+remain unchanged. A bounded one-shot stdio hello handshake passed and exited 0;
+no persistent legacy daemon, PTY or listener was started. Protected recovery
+receipt and executable copies are under
+`~/.config/pi_harness_setup/backups/20261008T143017Z-cmux-rollback-lfmwkvn2/`,
+with a runnable read-only staging check and a private Mac-agent handoff.
+See [coordinated rollback](operations/cmux-rollback.md). The current v1 browser
+runner rejects legacy backends by design; its unit CI is not rollback acceptance.
+At preparation time, Mac cutover and native terminal/browser/notification
+acceptance were pending. The subsequent Mac installation is recorded in the
+rollback runbook; native browser acceptance on 0.64.25 remains **Untested**.
+Current release evidence belongs to the October 14 upgrade record.
+
+## Homelab Host-Dependency Repair 2026-10-07
+
+Status: Executed — user-authorized dependency-only backport; verified on homelab.
+
+Affected surfaces: web/search, code exploration, subagents, and shared runtime
+modules. Keep the existing owners and versions (`pi-web-access@0.17.1`,
+`pi-lens@3.8.74`, `pi-subagents@0.40.0`). The inspected host is now Pi `1.0.4`;
+this repair does not upgrade Pi or revise the repository's older runtime pin.
+
+Backport only the documented host dependency contract: move `typebox` and
+Lens's `@earendil-works/pi-tui` to wildcard peers; normalize Subagents' existing
+`pi-ai` peer to `"*"` too. Quarantine the three installed duplicate library
+directories without leaving symlinks in their place. A stricter regression
+proved even symlinks to the host's physical libraries bypass the bundled Pi
+runtime and duplicate its TUI class; that interim attempt was rolled back.
+Removal alone breaks Lens's standalone CLI, so preserve its three npm bin
+commands with a small standalone-only Node resolution launcher. Its hook maps
+the two host peers only within the separate CLI process, never inside Pi.
+Test first in a disposable package-tree copy; back up original manifests,
+libraries, and bin symlinks outside resource loading paths. Preserve settings,
+locks, credentials, session data, unrelated packages, and uncommitted docs.
+Do not run full apply, npm reconciliation, or restart active Pi sessions.
+
+Validation: reproduce all three warnings with Pi's native resource loader;
+require no warning/load errors, all 20 tool schemas, no native shadow copies,
+shared Lens/Pi TUI class identity, and a standalone graph build. Leave a runnable
+regression check in `scripts/check-pi-host-peers.mjs`; CLI launcher source is
+`scripts/pi-lens-host-cli.mjs`. No model call or persistent worker is needed.
+Rollback restores the three manifests, library directories, and original bin
+symlinks after checking for later changes. This is a local compatibility
+backport: reinstalling these pinned releases restores their original metadata
+and copies, so recheck after future package operations rather than claiming
+an upstream or lockfile fix.
+
+Observed: final fresh bundled load passes with zero warnings/errors, 20 compiled
+tool schemas, no shadow libraries, and identical Lens/Pi TUI classes. Standalone
+graph build and analyze-help pass through deployed wrappers. Settings and npm
+root/lockfile hashes are unchanged. No model call, persistent worker, or service
+restart occurred. MCP/full-session behavior remains **Untested**. The live
+interim symlink attempt was fully rolled back before applying the accepted fix;
+its failed identity evidence is retained. CLI help alone did not load factories
+and is not counted as validation. Backup and final receipts:
+`~/.config/pi_harness_setup/backups/20261007T065208Z-host-peers/`.
+See the [package runbook](operations/initialize-packages.md#homelab-host-dependency-backport--2026-10-07)
+for exact deployed paths, recheck, and drift-checked rollback. Existing sessions
+were left running; start fresh Pi processes when convenient.
+
+## Homelab Asset Publication 2026-09-26
+
+Status: Executed on homelab after the user's latest-pull/deploy request
+
+Affected surfaces: user-scoped agents and prompt templates only. Publish merged
+commit `3b7f931`: the five standard agents, four delegation templates, and new
+`deep-research` template. Pi Subagents remains the delegation owner.
+
+The nine existing destinations match the pre-pull `ac9b65a` baseline; the new
+template is absent. Back up all existing destinations before file-only publication.
+Do not run bootstrap/full apply, reinstall packages, change settings/skills, or
+restart active sessions. Leave observed Node `24.20.0` and Pi `0.84.4` unchanged.
+Verify deployed bytes, native template loading/argument expansion, resolved agent
+contracts, and a bounded read-only child smoke. Full research/HTML-delivery
+behavior remains **Untested**. Roll back the nine existing files from the backup
+and remove only the newly added template, then reload Pi.
+
+Observed: all ten deployed files byte-match `3b7f931`; settings and npm package
+manifest/lockfile hashes are unchanged. Pi's native loader discovered all five
+templates and passed quoted/empty argument expansion and seven-section checks.
+Live subagent discovery shows all five revised descriptions and fresh defaults;
+a fresh read-only planner child returned the required six-section handoff without
+implementing. This does not establish general behavioral or inheritance coverage.
+Backup: `~/.config/pi_harness_setup/backups/20260926T090850Z-homelab-assets/`
+(nine original files plus `deployment.json`). No daemon or listener was added;
+active sessions were not restarted. Use `/reload` for template discovery.
+
 ## Deep Research Prompt Trial 2026-09-26
 
-Status: Trial — source addition requested for PR review; live publication pending
+Status: Trial — merged and published on homelab on 2026-09-26; behavioral validation pending
 
 Affected surfaces: prompt templates, subagents, research continuity, safety, and
 HTML review delivery. Existing packages retain their authority; no new tools,
@@ -129,7 +305,8 @@ and mandatory research procedures were deliberately not adopted.
 
 Publication and rollback:
 
-- this PR changes source only; do not run the full apply script or modify live Pi;
+- the source PR did not modify live Pi; the subsequent user-authorized homelab
+  publication is recorded above; do not run the full apply script for this asset-only update;
 - after approval, review and publish only this template to
   `~/.pi/agent/prompts/deep-research.md`, backing up any existing destination;
   reload Pi for discovery;

@@ -1,7 +1,7 @@
 ---
 name: worker
 description: Implementation and validation of an assigned outcome; use when file changes are authorized
-model: openai-codex/gpt-5.5:xhigh
+thinking: xhigh
 acceptanceRole: writer
 inheritProjectContext: true
 defaultContext: fresh
