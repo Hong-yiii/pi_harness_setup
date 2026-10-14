@@ -6,8 +6,10 @@ import {
 	writeFileSync,
 	readFileSync,
 	existsSync,
+	readlinkSync,
 	rmSync,
 	symlinkSync,
+	unlinkSync,
 	readdirSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -64,8 +66,108 @@ function fixture(t, version = "1.2.0") {
 			encoding: "utf8",
 			cwd: root,
 		});
-	return { home, agent, run };
+	return { home, agent, run, env };
 }
+
+function forwardPiThroughShim(home, env) {
+	// Do not consult the developer's real npm installation or extra Pi launchers.
+	env.PATH = join(home, "bin");
+	unlinkSync(join(home, "bin/pi"));
+	put(join(home, "bin/pi"), '#!/bin/sh\nexec "$HOME/runtime/dist/cli.js" "$@"\n');
+	put(join(home, "bin/npm"), '#!/bin/sh\n[ "$*" = "root -g" ] || exit 92\nprintf "%s\\n" "$HOME/global/node_modules"\n');
+	execFileSync("chmod", ["700", join(home, "bin/pi"), join(home, "bin/npm")]);
+	const packagePath = join(home, "global/node_modules/@earendil-works/pi-coding-agent");
+	mkdirSync(resolve(packagePath, ".."), { recursive: true });
+	symlinkSync(join(home, "runtime"), packagePath);
+	return packagePath;
+}
+
+test("forwarding Pi launcher resolves the npm host; check stays read-only and apply converges", (t) => {
+	const { home, agent, run, env } = fixture(t);
+	forwardPiThroughShim(home, env);
+	put(join(agent, "settings.json"), { theme: "original", defaultModel: "keep" });
+	const before = readFileSync(join(agent, "settings.json"));
+	const check = run("--check");
+	assert.equal(check.status, 1, check.stdout + check.stderr);
+	assert.match(check.stdout, /DRIFT:/);
+	assert.equal(check.stderr, "");
+	assert.deepEqual(readFileSync(join(agent, "settings.json")), before);
+	const backups = join(home, ".config/pi_harness_setup/backups");
+	assert.equal(existsSync(backups), false);
+	const apply = run();
+	assert.equal(apply.status, 0, apply.stdout + apply.stderr);
+	assert.equal(json(join(agent, "settings.json")).defaultModel, "keep");
+	const after = run("--check");
+	assert.equal(after.status, 0, after.stdout + after.stderr);
+	const receipts = readdirSync(backups);
+	const repeat = run();
+	assert.equal(repeat.status, 0, repeat.stdout + repeat.stderr);
+	assert.deepEqual(readdirSync(backups), receipts);
+});
+
+test("forwarding launcher rejects missing, invalid or unavailable npm hosts before writes", (t) => {
+	for (const failure of ["missing", "name", "version", "manifest", "npm", "relative", "empty", "multiline"]) {
+		const { home, agent, run, env } = fixture(t);
+		const packagePath = forwardPiThroughShim(home, env);
+		put(join(agent, "settings.json"), { theme: "original" });
+		if (failure === "missing") unlinkSync(packagePath);
+		if (failure === "name" || failure === "version") {
+			put(join(home, "runtime/package.json"), {
+				name: failure === "name" ? "not-pi" : "@earendil-works/pi-coding-agent",
+				version: failure === "version" ? "0.83.0" : "1.2.0",
+			});
+		}
+		if (failure === "manifest") put(join(home, "runtime/package.json"), "INVALID JSON");
+		if (failure === "npm") put(join(home, "bin/npm"), "#!/bin/sh\nexit 93\n");
+		if (failure === "relative") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '%s\\n' relative/path\n");
+		if (failure === "empty") put(join(home, "bin/npm"), "#!/bin/sh\nexit 0\n");
+		if (failure === "multiline") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '/one\\n/two\\n'\n");
+		for (const args of [["--check"], []]) {
+			const result = run(...args);
+			assert.notEqual(result.status, 0, failure);
+			assert.match(result.stderr, /npm.*Pi|npm host|Cannot parse/i, failure);
+			assert.ok(!result.stderr.includes("unexpected installer"));
+			assert.deepEqual(json(join(agent, "settings.json")), { theme: "original" });
+			assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+		}
+	}
+});
+
+test("forwarding discovery accepts canonical aliases but rejects conflicting runtime roots", (t) => {
+	for (const conflict of [false, true]) {
+		const { home, agent, run, env } = fixture(t);
+		forwardPiThroughShim(home, env);
+		const extra = join(home, "extra-bin");
+		mkdirSync(extra);
+		let target = join(home, "runtime/dist/cli.js");
+		if (conflict) {
+			target = join(home, "other-runtime/dist/cli.js");
+			put(target, "#!/bin/sh\nexit 94\n");
+			put(join(home, "other-runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "1.2.0" });
+		}
+		symlinkSync(target, join(extra, "pi"));
+		env.PATH += `:${extra}`;
+		const result = run("--check");
+		assert.equal(result.status, 1);
+		if (conflict) assert.match(result.stderr, /Ambiguous npm Pi host/);
+		else assert.match(result.stdout, /DRIFT:/);
+		assert.equal(existsSync(join(agent, "settings.json")), false);
+		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+	}
+});
+
+test("direct runtime discovery never consults npm or masks a mismatched host manifest", (t) => {
+	for (const mismatch of [false, true]) {
+		const { home, run, env } = fixture(t);
+		env.PATH = join(home, "bin"); // No npm exists on this isolated PATH.
+		if (mismatch) put(join(home, "runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "0.83.0" });
+		const result = run("--check");
+		assert.equal(result.status, 1);
+		if (mismatch) assert.match(result.stderr, /npm Pi host version does not match/);
+		else assert.match(result.stdout, /DRIFT:/);
+		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+	}
+});
 
 test("Mac/Linux managed settings converge; host-local choices survive; check is read-only and repeat apply is a no-op", (t) => {
 	const states = [];
@@ -222,7 +324,9 @@ test("check detects restored shadow libraries and stale host links even with mat
 		version: "1.0.0",
 	});
 	const plan = join(agent, "extensions/plan-mode");
-	rmSync(plan);
+	const originalTarget = readlinkSync(plan);
+	unlinkSync(plan);
+	assert.ok(existsSync(originalTarget), "unlink must preserve the bundled plan-mode directory");
 	symlinkSync("/not-the-selected-runtime", plan);
 	const check = run("--check");
 	assert.equal(check.status, 1, check.stdout + check.stderr);

@@ -34,7 +34,17 @@ node scripts/apply-pi-setup.mjs
 node scripts/apply-pi-setup.mjs --check
 ```
 
-Apply refuses a runtime that differs from the profile pin. It installs only
+Apply refuses a runtime that differs from the profile pin. Direct npm launchers
+(including the versioned Linux prefix) resolve through their symlink target.
+For a forwarding launcher such as cmux's `pi` shim, discovery falls back to
+`npm root -g` and requires the exact Pi package name/version. The wrapper must
+forward to that global installation; arbitrary wrappers/custom prefixes are not
+inferred. If another discoverable Pi on PATH points to a different root, apply
+refuses the ambiguity. Expose the intended npm Pi CLI directly on PATH instead;
+do not edit or remove cmux's wrapper. Failed npm discovery or invalid host
+metadata stops before backups, installs, or publication.
+
+It installs only
 missing/different package pins (no blanket reinstall), preserves unrelated
 settings/packages/files, and makes managed values authoritative. JSON formatting
 or key order alone is not drift and does not trigger a rewrite. `--assets-only`
@@ -135,6 +145,22 @@ saved `plan-mode` link. Repoint the Pi launcher to its separately preserved old
 runtime when rolling back a runtime migration. Keep recovery receipts and do
 not remove runtimes used by active processes. Validate the restored loader and
 start a fresh session when convenient; no daemon/network restart is needed.
+
+## Mac review fixes (no deployment)
+
+PR #17's initial Mac review reproduced two failures: runtime discovery behind
+cmux's regular forwarding launcher and `rmSync` rejecting a directory symlink
+in a test fixture. Follow-up for [issue #18](https://github.com/Hong-yiii/pi_harness_setup/issues/18)
+adds validated npm-host discovery with conflict refusal and uses `unlinkSync`
+for the known test symlink, explicitly checking that its target survives.
+
+On macOS / Node 24.4.1, both regression cases failed before the fixes. The
+updated full suite passed 35 tests with two Linux-only skips and no failures.
+Normal cmux PATH now reaches the expected read-only drift report without
+rewriting settings or manifests or creating a recovery snapshot. That check
+**does not mean the Mac is deployed**: managed asset/compatibility drift remains.
+CI now runs the self-tests on both Ubuntu and macOS; provider calls and full
+interactive acceptance are still separate gates.
 
 ## Deployment evidence
 

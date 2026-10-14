@@ -22,6 +22,30 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Shared Harness Mac Review Fixes — 2026-10-15
+
+Status: Implemented in open PR #17; independent review found no findings;
+updated cross-host CI pending. Do not merge or deploy.
+Tracking: [issue #18](https://github.com/Hong-yiii/pi_harness_setup/issues/18).
+
+Fix runtime discovery behind a regular cmux forwarding launcher while retaining
+exact package/version checks and direct npm symlink support. Add isolated-HOME
+regressions for successful forwarding and invalid/missing host resolution before
+writes. Replace removal of the known test directory symlink with unlinking, and
+assert its target survives. Run the Mac tests, Linux CI, and the live read-only
+Mac drift check without changing PATH; obtain independent review. Keep the
+existing stash and installed settings/packages untouched. PR #17 should close
+issue #18 only when the owner merges it.
+
+Observed on macOS / Node 24.4.1: both regression cases failed before the fix;
+the full suite now reports 35 passed, zero failed, and two Linux-only skips.
+The native cmux PATH read-only check now reaches the expected drift report;
+protected config/package-file hashes and backup inventory remained unchanged.
+Independent read-only review found no actionable findings; it did not rerun the
+checks or certify CI. Syntax, workflow YAML, changed-document links, whitespace,
+and redacted patch secret scan also passed. CI now includes macOS and Ubuntu.
+No package install, live apply, provider call, session restart, or stash restore.
+
 ## Cross-Host Harness Parity — 2026-10-15
 
 Status: Implemented and applied on Linux; source publication under review, Mac application pending.
