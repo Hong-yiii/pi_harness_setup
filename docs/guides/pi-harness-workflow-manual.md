@@ -173,8 +173,10 @@ Use the native workspace to organize work, not as proof of remote process
 teardown. Linux owns the process; older durable owners may coexist with the new
 helper. Same-PID reconnect was validated on 0.64.22, not retested on 0.65.1.
 Fresh SSH, terminal I/O, IPv4 HTTP Linux-origin routing and OSC notifications
-passed on 0.65.1; remote CLI notifications, automatic Pi hooks, broader browser
-behavior and app-quit cleanup remain open. Follow the
+passed on 0.65.1. Linux session-API browser creation and notification synchronization
+also passed on 2026-10-15; use the inherited socket/terminal identity, not the
+legacy reverse CLI relay. Automatic Pi hooks, broader browser behavior and
+app-quit cleanup remain open. Follow the
 [current SSH runbook](cmux-ssh-remote.md) for version-specific limits.
 
 Fallback only:

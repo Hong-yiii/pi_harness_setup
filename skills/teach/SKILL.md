@@ -36,18 +36,18 @@ only an openable link/command, a one-line summary, and the teach-back question.
 - First decide whether the HTML path is local to the cmux browser process:
   - local cmux/Mac: open `file:///abs/path.html` directly in cmux; do not start
     a loopback server or tunnel;
-  - remote cmux SSH/Linux: the Mac browser cannot read remote `file://` paths;
-    use a remote loopback HTTP server only as the file transport, then open it
-    with `cmux browser open http://localhost:<port>/<file>.html` from the same
-    remote workspace;
-  - no cmux: return a `file://` link plus the platform opener command.
+  - remote cmux SSH/Linux: serve only the presentation directory on remote
+    loopback, then create a browser tab through the owning **cmux-tui session
+    API**; follow `references/artifact-delivery.md`;
+  - no integration: report the artifact's actual host and give a local opener
+    or explicit private-copy handoff; a Linux `file://` link does not open on Mac.
 - Do not present a bare `localhost`/`127.0.0.1` URL as if it is portable. It only
   resolves to the remote host inside the cmux browser surface opened from that
   remote workspace; outside it, loopback means the user's local machine.
-- Always print the exact command used or needed, e.g.
-  `cmux browser open file:///abs/path.html`,
-  `cmux browser open http://localhost:<port>/<file>.html`, or
-  `xdg-open /abs/path.html`.
+- Print the actual command and delivery status. Local Mac uses
+  `cmux browser open file:///abs/path.html`; Linux uses the verified session
+  socket, owning pane, and `cmux-tui ... tab create browser --url ...`.
+  Do not substitute the obsolete Linux `cmux browser open` relay command.
 - Do not write lessons, learning records, or Markdown session docs unless the
   user explicitly asks for persistent learning state.
 - Keep CSS inline. Use tables, anchors, callouts, `<details>`, and diagrams when
@@ -60,43 +60,23 @@ only an openable link/command, a one-line summary, and the teach-back question.
 
 ## Open flow
 
-After writing the HTML, make it viewable immediately. Do this check first:
+After writing the HTML, read [the artifact delivery recipe](references/artifact-delivery.md)
+and make it viewable using the appropriate host path. That recipe is shared
+with the deep-research prompt; it does not change teach's disposable-output rule.
 
-```bash
-cmux_ok=0
-command -v cmux >/dev/null 2>&1 && cmux ping >/dev/null 2>&1 && cmux_ok=1
-os=$(uname -s 2>/dev/null || echo unknown)
-remote_cmux=0
-[ "$cmux_ok" = 1 ] && [ "$os" != Darwin ] && remote_cmux=1
-```
-
-For this harness, `remote_cmux=1` means the artifact is probably on the Ubuntu
-homelab inside native `cmux ssh`; the Mac browser cannot read remote
-`file:///tmp/...`. `cmux_ok=1` with `os=Darwin` means local Mac cmux; open the
-file path directly and skip the HTTP server.
-
-1. If local cmux is available, open the artifact directly:
-   `cmux browser open file:///abs/path.html`.
-2. If running in remote cmux SSH, try no undocumented `file://` shortcut. `file://`
-   paths are local to the browser process; the supported remote path is HTTP/WS
-   through the cmux browser relay.
-3. For remote cmux SSH, serve the temp directory on remote loopback:
-   `python3 -m http.server <port> --bind 127.0.0.1 --directory /tmp/pi-teach`.
-   Prefer `bg_run` with a finite timeout, e.g. `timeoutSeconds: 7200`; otherwise
-   use `timeout 2h ... &` and capture the PID.
-4. Prefer port `8765`; if occupied, use the next free high port.
-5. Open the remote artifact in a cmux browser pane from the same remote workspace:
-   `cmux browser open http://localhost:<port>/<file>.html`.
-6. The cmux browser relay has no separate lesson expiry; it is scoped to the
-   remote workspace and reconnects with that workspace. The teach HTTP server is
-   separate: browser-tab close does **not** kill it, so always set a timeout and
-   include the server task/PID or cleanup note in the reply.
-7. Reply with the `file://` URI for local mode, or with the HTTP URL clearly
-   labeled `cmux remote browser only` for remote mode. Include the exact open
-   command, the temp file path, the server lifetime/cleanup note when HTTP was
-   used, and the teach-back question.
-8. If `cmux` is unavailable, return a `file://` link plus the local opener command
-   (`open`, `xdg-open`, or `gio open`, whichever exists).
+- On Mac, open the local file directly; no server.
+- On Linux, require the inherited `CMUX_TUI_SOCKET` (or `CMUX_MUX_SOCKET`) and
+  `CMUX_TUI_TERMINAL_ID`, verify the API, and resolve a unique owning pane.
+  Never classify the session solely by whether `cmux ping` succeeds.
+- Start a loopback-only presentation server with a finite timeout and retained
+  task ID/PID. Create one browser tab and retain its Linux receipt for cleanup.
+- Verify the rendered artifact on the Mac or label rendering unverified.
+  A mutation receipt proves creation, not that the user can see the page.
+- Include the exact open command, artifact path, URL labeled **cmux remote
+  workspace only**, server deadline/cleanup, and teach-back question.
+- If identity or delivery is unavailable, report the blocker and use an explicit
+  Mac-controller/private-copy handoff. Do not restart owners or repair a stale
+  legacy relay merely to deliver the artifact.
 
 ## Learner calibration
 
