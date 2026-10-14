@@ -22,6 +22,39 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Local BTW Side-Question Trial 2026-10-15
+
+Status: Trial — installed locally at user request; interactive acceptance pending.
+
+Affected surfaces: side-question UI, model context, and filesystem authority.
+Install only `npm:pi-btw@0.8.0` at local user scope on Pi 1.2.0; disable its
+optional bundled skill. Use `/btw:ask` for structurally read-only side questions.
+Plain `/btw` and `/side` retain upstream write/bash authority and must not be
+used as a concurrent writer in the main agent's working directory.
+
+Keep Pi Subagents as the delegation owner and Open TUI as the persistent UI
+owner. No child extension configuration, new model/provider, background-task
+upgrade, homelab change, or full-profile apply. Leave the shared Pi 0.83 profile
+unchanged because this package requires Pi >=0.85.1 and <2.
+
+Observed: installed exactly 0.8.0, filtered its bundled skill, and passed the
+exact settings-delta check. All existing direct and lockfile package versions
+were unchanged. Pi 1.2's real loader registered ten commands and no ambient
+model tools in an isolated agent directory. Source inspection confirmed the
+read-only allowlist; live provider/UI integration remains **Untested**.
+
+npm audit reported two pre-existing dependency findings (one high, one moderate),
+and npm warned about an existing ast-grep install script pending approval.
+No automatic fixes or script approvals were made. Reproduction, backup,
+validation limits, usage, and rollback: [Side questions](guides/side-questions.md).
+Roll back with `pi remove npm:pi-btw@0.8.0`, preserving unrelated settings and
+session history; reload only after background jobs finish.
+
+Trust: the extension executes with the Pi process's permissions. Read-only tool
+selection prevents normal side-agent writes, not arbitrary extension code or
+reading sensitive files. Inherited conversation context is sent to the selected
+provider; side history is persisted locally even when excluded from main context.
+
 ## cmux Remote Artifact Delivery Migration — 2026-10-15
 
 Status: Executed and published on Mac and homelab; active sessions should `/reload`.

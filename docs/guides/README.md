@@ -7,6 +7,7 @@ Task-oriented instructions for using the harness.
 | Understand the overall workflow | [`pi-harness-workflow-manual.md`](pi-harness-workflow-manual.md) | Draft; reflects the current lean model |
 | Use native cmux SSH with the homelab | [`cmux-ssh-remote.md`](cmux-ssh-remote.md) | Primary Mac-to-homelab workflow |
 | Review changes with Hunk | [`hunk.md`](hunk.md) | Adopted |
+| Ask a side question without derailing main | [`side-questions.md`](side-questions.md) | Local BTW trial; interactive acceptance pending |
 | Use a phone as a control surface | [`mobile-access.md`](mobile-access.md) | Draft; partially untested |
 
 Installation and recovery procedures live under [`../operations/`](../operations/). Start with the guide for normal use; follow an operation only when installing, rebuilding, or diagnosing the relevant layer.
