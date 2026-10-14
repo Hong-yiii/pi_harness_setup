@@ -1,7 +1,9 @@
-# Local Open TUI Setup and Background-Task Review
+# Open TUI Setup and Background-Task Review
 
-Date: 2026-10-14
-Status: Local settings applied; full interactive acceptance remains **Untested**.
+Date: 2026-10-14; shared-policy update 2026-10-15
+Status: UI selection promoted to the shared Mac/Linux profile by ADR 0015.
+Full interactive acceptance remains **Untested**. The original Mac observation
+below is historical; use [Shared harness sync](shared-harness-sync.md) to apply.
 
 ## What changed
 
@@ -23,19 +25,18 @@ not a duplicate-name collision. The installed Pi rejects its custom `link`,
 `statusLine*`, and `pythonMode` color keys. `neon-sakura` passes that schema
 unchanged. No vendor theme files were patched.
 
-## Reproduce the local selection
+## Reproduce the shared selection
 
-This is a manual local override for Pi >=1.0, **not** a change to the older
-shared package profile or homelab. Back up `~/.pi/agent/settings.json` first.
-Merge the following entries into the existing configuration; do not replace
-unrelated settings or the rest of the package list:
+Use `node scripts/apply-pi-setup.mjs` on each host after reviewing its `--check`
+output and matching Pi 1.2.0. The authoritative profile selects these resources
+without replacing unrelated user settings:
 
 ```json
 {
   "theme": "neon-sakura",
   "packages": [
     {
-      "source": "npm:awesome-pi-themes",
+      "source": "npm:awesome-pi-themes@1.2.19",
       "themes": ["themes/neon-sakura.json"],
       "extensions": []
     },
@@ -43,20 +44,19 @@ unrelated settings or the rest of the package list:
       "source": "npm:pi-observability@1.3.2",
       "extensions": []
     },
-    "npm:pi-open-tui"
+    "npm:pi-open-tui@0.3.11"
   ]
 }
 ```
 
-These are the actual local declarations; the unversioned sources do not pin
-future installations. The versions above record what was inspected this session.
-Keep `"enabled": true` in `~/.pi/agent/open-tui.json`; other Open TUI preferences
-were left unchanged. Restart Pi after changing UI owners. Use `/reload` for a
+The former unversioned Mac declarations are normalized to these exact pins.
+Apply merges `"enabled": true` from `pi/agent/open-tui.json`; other Open TUI
+preferences remain host-local until deliberately added to that template. Restart Pi after changing UI owners. Use `/reload` for a
 subsequent palette change, `/settings` → Theme for colors, and `/open-tui` for
 layout preferences.
 
-A full `scripts/apply-pi-setup.mjs` run may restore the shared profile's
-observability entry. Do not run it merely to apply this local selection.
+Apply now preserves Observability's disabled state and makes the shared theme
+authoritative. A second apply is a no-op; `--check` reports subsequent drift.
 
 ## Verification and rollback
 

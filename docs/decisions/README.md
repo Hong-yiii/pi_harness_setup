@@ -4,6 +4,8 @@ Numbered ADR-style records preserve durable choices and their tradeoffs. Status 
 
 ## Current Decisions To Read First
 
+- [`0015`](0015-enforce-cross-host-harness-parity.md) — authoritative portable harness parity, shared UI/BTW, host-local private state.
+
 - [`0009`](0009-adopt-lean-default-and-separate-automation.md) — lean default package ownership and explicit automation boundary.
 - [`0010`](0010-use-native-worktrees-for-pr-lanes.md) — native Git worktrees for persistent PR lanes.
 - [`0011`](0011-use-shared-harness-with-host-local-linux-runtime.md) — shared harness with host-local runtime state; partly superseded only for the Mac control plane.
@@ -28,6 +30,7 @@ Numbered ADR-style records preserve durable choices and their tradeoffs. Status 
 | [0012](0012-adopt-cmux-remote-tmux-as-primary-homelab-control-plane.md) | cmux Remote tmux control plane | Superseded by ADR 0013 |
 | [0013](0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md) | Native cmux SSH control plane | Accepted |
 | [0014](0014-organize-documentation-by-reader-intent.md) | Documentation organized by reader intent | Accepted |
+| [0015](0015-enforce-cross-host-harness-parity.md) | Enforce cross-host harness parity | Accepted |
 
 For current operational state, consult [`../current-plan.md`](../current-plan.md). An accepted ADR explains a durable choice; it does not replace the relevant guide or operation.
 

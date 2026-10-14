@@ -1,7 +1,10 @@
 # Initialize The Lean Pi Profile
 
-Status: Lean profile adopted on 2026-08-03
-Date: 2026-08-03
+Status: Shared cross-host profile; current procedure updated 2026-10-15
+
+For normal refresh, drift checks, exact managed boundaries, runtime migration
+and recovery, follow [Shared harness sync](shared-harness-sync.md). Dated
+publication/repair records below are historical evidence, not competing defaults.
 
 ## Scope
 
@@ -23,36 +26,20 @@ It intentionally excludes:
 
 ## Runtime
 
-The selected profile expects and has been verified against:
-
-```bash
-@earendil-works/pi-coding-agent@0.83.0
-```
-
-Upgrade command:
-
-```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
-```
-
-Verify:
-
-```bash
-pi --version
-```
-
-Expected:
-
-```text
-0.83.0
-```
+The shared profile pins Pi **1.2.0**. Follow the host-specific runtime migration
+in [Shared harness sync](shared-harness-sync.md#runtime-migration); do not
+replace a running runtime or rerun the old 0.83 bootstrap. `pi --version` must
+match the profile before apply. Open TUI/neon-sakura and BTW with its bundled
+skill are shared defaults, not Mac-only overrides.
 
 ## Apply The Profile
 
 From the repo root:
 
 ```bash
+node scripts/apply-pi-setup.mjs --check
 node scripts/apply-pi-setup.mjs
+node scripts/apply-pi-setup.mjs --check
 ```
 
 The target package state is recorded in:
@@ -149,9 +136,8 @@ per-run ceiling is unchanged. Explicit call/group concurrency overrides the
 share a machine-wide semaphore. Keep one writer per checkout; use isolated
 worktrees for parallel writers. Provider quotas and RAM still constrain usage.
 
-Source: `pi/agent/extensions/subagent/config.json`. The full apply script does
-not publish this config: on rebuild, back up and review any existing destination,
-then merge only `parallel.maxTasks` and `parallel.concurrency` from the template.
+Source: `pi/agent/extensions/subagent/config.json`. Since the October 15 parity
+fix, apply backs up and merges these two fields from the template on both hosts.
 Do not replace unrelated configuration, or write through an old bundled-example
 symlink. The config-only directory does not install a second extension.
 
@@ -199,8 +185,9 @@ All nine discovered homelab subagents now default to
 standard agents omit `model` and retain their former suffixes as `thinking`:
 scout/researcher medium, planner/reviewer high, worker xhigh. Parent model,
 prompts, tools, packages, credentials, and active sessions were not changed.
-The full apply script was not run; it preserves existing host settings, so
-other hosts must deliberately merge this field as well as publish the agents.
+The full apply script was not run for that historical publication. Since the
+October 15 parity fix, apply enforces the shared subagent model while preserving
+the parent model selection and unrelated settings.
 
 Verification: `pi --list-models 6.1`, native agent discovery (all nine), source/live
 byte equality, unchanged-unrelated-settings assertions, and the live `subagent`
@@ -387,6 +374,10 @@ Pi starts, keeping the parent session and subagents on one cwd.
 
 ## Rollback
 
+Current shared-profile/runtime rollback uses the receipt and snapshot layout in
+[Shared harness sync](shared-harness-sync.md#rollback). The remaining notes
+below describe the original August layout only; do not use them for new receipts.
+
 Restore the timestamped files under
 `~/.config/pi_harness_setup/backups/`, including `settings.json`, optional
 `project-settings.json`, and `ponytail/config.json`, then restart Pi. Package
@@ -404,13 +395,9 @@ directory exists, first preserve it outside extension discovery and remove the
 verified config and empty directory deliberately; do not nest the old extension
 inside it.
 
-If the global Pi runtime upgrade itself needs to be rolled back:
-
-```bash
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.82.0
-```
-
-Then rerun:
+For a runtime rollback, restore the separately preserved launcher/runtime from
+the deployment receipt. Do not install an arbitrary historical version or
+replace files still used by active Pi sessions. Then rerun:
 
 ```bash
 pi --version

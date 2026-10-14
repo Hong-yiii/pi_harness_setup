@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Bounded load/schema/identity check for the homelab Pi 1.0.4 backport; no session/model call.
+// Bounded Pi 1.0.4/1.2.0 backport and optional shared-resource check; no session/model call.
 import assert from "node:assert/strict";
 import {
 	mkdtempSync,
@@ -13,10 +13,18 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const [hostArg, modulesArg] = process.argv.slice(2);
+function readJson(path) {
+	try {
+		return JSON.parse(readFileSync(path, "utf8"));
+	} catch (cause) {
+		throw new Error(`Cannot parse ${path}`, { cause });
+	}
+}
+
+const [hostArg, modulesArg, agentArg] = process.argv.slice(2);
 if (!hostArg || !modulesArg) {
 	throw new Error(
-		"Usage: check-pi-host-peers.mjs <Pi package root> <extension node_modules>",
+		"Usage: check-pi-host-peers.mjs <Pi package root> <extension node_modules> [agent directory]",
 	);
 }
 const host = resolve(hostArg);
@@ -38,7 +46,7 @@ const { DefaultResourceLoader, SettingsManager } =
 const names = ["pi-web-access", "pi-lens", "pi-subagents"];
 for (const name of names) {
 	const file = join(modules, name, "package.json");
-	const manifest = JSON.parse(readFileSync(file, "utf8"));
+	const manifest = readJson(file);
 	for (const peer of [
 		"typebox",
 		...(name === "pi-lens" ? ["@earendil-works/pi-tui"] : []),
@@ -97,6 +105,78 @@ export default function () { assert.equal(LensText, Text, 'Lens/Pi TUI class ide
 	console.log(
 		"PASS: no warnings/errors, 20 tool schemas, wildcard peers, no shadow copies, shared TUI class",
 	);
+	if (agentArg) {
+		const agent = resolve(agentArg);
+		const settings = readJson(join(agent, "settings.json"));
+		const profile = readJson(
+			join(import.meta.dirname, "../pi/package-profiles/lean-default.json"),
+		);
+		// Check deployed filters before resolving locally; never fetch unmanaged extras.
+		const packageName = (entry) =>
+			(typeof entry === "string" ? entry : entry.source)
+				.replace(/^npm:/, "")
+				.replace(/@[^@/]+$/, "");
+		for (const { surface: _surface, ...entry } of profile.packages) {
+			const actual = settings.packages.filter(
+				(item) => packageName(item) === packageName(entry),
+			);
+			assert.deepEqual(
+				actual,
+				[Object.keys(entry).length === 1 ? entry.source : entry],
+				`deployed filters: ${entry.source}`,
+			);
+		}
+		settings.packages = profile.packages.map(
+			({ surface: _surface, ...entry }) => ({
+				...entry,
+				source: join(
+					modules,
+					entry.source.slice(4, entry.source.lastIndexOf("@")),
+				),
+			}),
+		);
+		const full = new DefaultResourceLoader({
+			cwd: scratch,
+			agentDir: agent,
+			settingsManager: SettingsManager.inMemory(settings),
+			noContextFiles: true,
+		});
+		await full.reload();
+		const loaded = full.getExtensions();
+		assert.deepEqual(loaded.errors, []);
+		assert.deepEqual(loaded.warnings ?? [], []);
+		const commands = loaded.extensions.flatMap((extension) => [
+			...extension.commands.keys(),
+		]);
+		assert.ok(commands.includes("btw:ask"));
+		assert.ok(commands.includes("open-tui"));
+		assert.ok(!commands.includes("obs"), "Observability UI must be disabled");
+		for (const { definition } of loaded.extensions.flatMap((extension) => [
+			...extension.tools.values(),
+		]))
+			VIRTUAL_MODULES["typebox/compile"].Compile(definition.parameters);
+		for (const resources of [
+			full.getSkills(),
+			full.getPrompts(),
+			full.getThemes(),
+		])
+			assert.deepEqual(resources.diagnostics, []);
+		const skills = full.getSkills().skills.map((skill) => skill.name);
+		for (const name of [...profile.skills, "btw"])
+			assert.equal(skills.filter((skill) => skill === name).length, 1, name);
+		assert.deepEqual(
+			full.getThemes().themes.map((theme) => theme.name),
+			["neon-sakura"],
+		);
+		assert.ok(
+			full
+				.getPrompts()
+				.prompts.some((prompt) => prompt.name === "deep-research"),
+		);
+		console.log(
+			"PASS: shared profile loads, BTW command + skill, Open TUI alone, neon-sakura, selected skills/prompts; no resource warnings",
+		);
+	}
 } finally {
 	rmSync(scratch, { recursive: true, force: true });
 }

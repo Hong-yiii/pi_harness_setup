@@ -22,9 +22,59 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Cross-Host Harness Parity — 2026-10-15
+
+Status: Implemented and applied on Linux; source publication under review, Mac application pending.
+
+Mac and Linux must apply the same portable harness, not independently selected
+features. Promote Open TUI, neon-sakura, and BTW (including its reviewed skill)
+into the shared pinned profile. Pi Subagents remains the delegation owner;
+Open TUI replaces the active Observability footer. Preserve Observability's
+installed state but disable its extensions. Pin Pi 1.2.0 after isolated Linux
+compatibility checks; do not upgrade unrelated extensions or background tasks.
+
+Root cause: the profile/bootstrap still targeted Pi 0.83, new capabilities were
+recorded as host-only exceptions, and apply let existing settings override
+managed intent while omitting subagent capacity. A Git pull alone cannot deploy
+configuration. Make apply converge the managed settings/assets on either host,
+add a read-only drift check, and test both from isolated HOME directories.
+
+Keep credentials, sessions, browser data, generated dependencies, OS paths,
+transport hooks, and interactive model selection host-local. Back up all changed
+files before deployment; retain the existing Linux runtime/package tree for
+rollback. Protect the October host-peer repair from npm reconciliation; test
+fresh loading without credentials or inference before promotion. No active Pi,
+cmux owner, shared service, networking, or system-package restart is authorized.
+The Mac must run the same check/apply after publication; no Mac deployment is
+claimed from Linux. Reload only with background jobs idle; UI changes should
+be accepted in a fresh session. Record untested interactive behavior explicitly.
+
+Observed: 33 dependency-free tests pass, including mismatched host starting
+states, JSON formatting/key-order invariance, idempotence, read-only check,
+symlink/preflight refusal, restored-shadow
+and stale-link detection, partial fresh-install recovery, and downgrade refusal.
+Both clean-install and existing-tree rehearsals passed the real Pi 1.2 loader.
+Independent review findings were fixed; final re-review found no findings.
+Live publication task `b4ac9e425` passed shared drift and native loader checks:
+BTW skill/commands, Open TUI alone, neon-sakura, selected skills/prompts, 20 core
+schemas and shared TUI identity. Follow-up `be0c88d26` passed a one-file Lens
+graph, native 50/12 limits and no-op reapply. No model/provider call or session restart.
+Only theme/package settings changed; parent model and all pre-existing dependency
+versions were preserved. The prior runtime remains intact. One pre-existing high
+brace-expansion DoS finding remains; no unrelated audit fix was run.
+
+Recovery: `~/.config/pi_harness_setup/backups/2026-10-14T20-13-09-219Z-shared-parity/`
+(config/npm snapshot), and `20261015-parity-runtime-9B3cX5/` under the same backup
+root (old launcher, source/evidence and runtime receipt). Host registry updated.
+Merge this source revision before Mac pull/apply/check. Mac has not applied
+this shared revision; full interactive UI/BTW behavior remains **Untested**.
+Current operation: [Shared harness sync](operations/shared-harness-sync.md).
+
 ## Local BTW Side-Question Trial 2026-10-15
 
-Status: Trial — installed locally at user request; interactive acceptance pending.
+Status: Historical local trial; its host-only scope and disabled skill are
+superseded by the cross-host parity batch above. Interactive acceptance pending.
+The following records the original operation, not current reconstruction.
 
 Affected surfaces: side-question UI, model context, and filesystem authority.
 Install only `npm:pi-btw@0.8.0` at local user scope on Pi 1.2.0; disable its
@@ -103,7 +153,9 @@ Acceptance, upstream chronology, and untested limits:
 
 ## Local Open TUI Selection and Background-Task Review 2026-10-14
 
-Status: Decided and configured locally; full interactive acceptance pending.
+Status: Historical local selection, promoted to the shared profile by the
+cross-host parity batch above. Full interactive acceptance pending. The following
+records the original local operation; its host-only scope is superseded.
 
 Affected surfaces: local UI and human-visible status. The user-selected
 `pi-open-tui@0.3.11` owns the header/editor/footer and turn stats on local Pi
@@ -621,7 +673,7 @@ Build a reproducible personal Pi harness for:
 | Package policy | Lean default accepted. | Keep normal sessions small; move orchestration and remote controls out of the default. |
 | Safety | Underdefined. | Needs explicit package audit checklist and secret/log policy before autonomy increases. |
 | Terminal/session interface | Native `cmux ssh homelab` is the primary Mac-to-homelab path over Tailscale/SSH. | Linux cmux-tui owns detachable PTYs/resources; native Mac projection replaces legacy CLI-relay assumptions. Remote tmux remains break-glass recovery. |
-| Observability | `pi-observability` installed as first local status layer. | Trial behavior in real interactive sessions before adding sidebar/status packages. |
+| Observability | Open TUI is the shared active UI/status owner. | Observability stays installed with extensions disabled; trace backend remains open. |
 | Web research | `pi-web-access` installed. | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens` installed. | Trial alone before any read/edit replacement package. |
 | Read/edit replacement | Stock Pi first. | `pi-hashline-readmap` or `pi-readseek` later, one at a time. |
@@ -634,7 +686,7 @@ Build a reproducible personal Pi harness for:
 | Remote/mobile | Native cmux SSH on Mac; cmux iOS companion through the Mac; SSH/Mosh + tmux fallback. | Direct iOS-to-Linux remains `Untested`. `pi-phone` and Usher remain excluded. |
 | Minimalism/taste | Ponytail remains in the default at `lite`. | Its bundled command skills are hidden from the default skill catalog. |
 | Background commands | Add a focused background-task owner. | Pin `pi-background-tasks@0.6.0`; later releases add unrelated always-on orchestration. |
-| Skills | Eight general skills. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `teach`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. Other package skills are disabled. |
+| Skills | Eight repo skills plus BTW's bundled skill. | `diagnose`, `caveman`, `grill-with-docs`, `handoff`, `teach`, `to-prd`, `to-issues`, and `zoom-out`. Pi Lens also injects four tool-specific guides that cannot be filtered without disabling or forking Pi Lens. BTW is the explicit package-skill exception; other package skills remain disabled. |
 | Context/memory | `context-mode` is interesting. | Experimental until measured on real research tasks. |
 
 ## Surface Ownership
@@ -650,7 +702,7 @@ Pick one active owner per high-authority surface:
 | Structured user decisions | stock Pi UI prompts | `pi-ask-user` | Multiple tools or skills enforcing competing decision gates |
 | Persistent PR worktrees | native Git CLI, optionally through `piwt` | a package only after a new compatibility review | Starting Pi before entering the real worktree |
 | Temporary child worktrees | `pi-subagents` with explicit `worktree: true` | repo-owned automation later | Letting two orchestrators own branch cleanup |
-| Human status | `pi-observability` | sidebar/dashboard packages | Multiple footers/sidebars/cost widgets |
+| Human status | `pi-open-tui` | trace backend after review | Multiple footers/sidebars/cost widgets |
 | Remote/mobile | Native `cmux ssh homelab` | Mosh transport and cmux iOS after separate validation | Public listeners, TUI nesting, or multiple promoted daily controllers |
 
 ## Teach Skill Trial 2026-09-01

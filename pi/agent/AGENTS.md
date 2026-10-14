@@ -30,6 +30,12 @@ Useful prompt templates:
 - `/implement <task>`
 - `/implement-and-review <task>`
 
+## Side Questions
+
+- Use `/btw:ask` for side questions while the main agent is working; it exposes only read-only tools.
+- The bundled `btw` skill also describes writable `/btw` and `/side` modes. Do not recommend those as a concurrent writer in the same checkout.
+- `/btw:inject` and `/btw:summarize` send material to the main conversation; they are explicit handoff actions, not draft previews.
+
 ## Planning
 
 Use `/plan` for read-only exploration before risky or ambiguous changes.

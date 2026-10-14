@@ -1,7 +1,11 @@
 # 0009: Adopt A Lean Default And Separate Automation
 
 Date: 2026-08-03
-Status: Accepted
+Status: Accepted; active UI and package-skill selection superseded by ADR 0015
+
+The six-owner list below records the original batch. The current shared profile
+adds Open TUI, neon-sakura and BTW with its skill; Observability is retained but
+disabled. The explicit automation and one-owner principles remain unchanged.
 
 ## Decision
 

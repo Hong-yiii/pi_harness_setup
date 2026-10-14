@@ -3,7 +3,6 @@ set -euo pipefail
 
 readonly NODE_VERSION="24.20.0"
 readonly NODE_SHA256="2f2c0da162318f0de47665410c7c8c2ed3d36c8f3105de4bbc61176c70a7cbf2"
-readonly PI_VERSION="0.83.0"
 readonly HUNK_VERSION="0.20.0"
 readonly SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 readonly REPO_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd)"
@@ -50,7 +49,7 @@ ubuntu | debian) ;;
 *) die "supported distributions are Ubuntu and Debian; found ${ID:-unknown}" ;;
 esac
 
-for command in curl git install ln mktemp mv readlink sha256sum tar xz; do
+for command in curl git install ln mktemp mv readlink sha256sum sort tail tar xz; do
 	require_command "$command"
 done
 
@@ -107,9 +106,35 @@ for command in node npm npx corepack; do
 done
 export PATH="$LOCAL_BIN:$PATH"
 
-"$LOCAL_BIN/npm" install --global --ignore-scripts "@earendil-works/pi-coding-agent@$PI_VERSION"
+readonly PI_VERSION="$("$LOCAL_BIN/node" -p "JSON.parse(require('fs').readFileSync(process.argv[1])).runtime.pi" "$REPO_ROOT/pi/package-profiles/lean-default.json")"
+readonly PI_ROOT="$HOME/.local/opt/pi-$PI_VERSION"
+readonly PI_CLI="$PI_ROOT/node_modules/@earendil-works/pi-coding-agent/dist/cli.js"
+# Refuse an accidental downgrade when an older checkout is bootstrapped.
+if [[ -x "$LOCAL_BIN/pi" ]]; then
+	current_pi="$("$LOCAL_BIN/pi" --version)"
+	[[ $current_pi =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "cannot compare current Pi version"
+	[[ $(printf '%s\n' "$current_pi" "$PI_VERSION" | sort -V | tail -n 1) == "$PI_VERSION" ]] ||
+		die "refusing runtime downgrade from $current_pi to $PI_VERSION"
+fi
+# Retain old runtimes: active Pi sessions can still lazily import their files.
+if [[ ! -e $PI_ROOT ]]; then
+	"$LOCAL_BIN/npm" install --prefix "$PI_ROOT" --ignore-scripts --no-audit --no-fund "@earendil-works/pi-coding-agent@$PI_VERSION"
+fi
+[[ -f $PI_CLI ]] || die "incomplete runtime at $PI_ROOT; inspect instead of overwriting"
+[[ $("$LOCAL_BIN/node" "$PI_CLI" --version) == "$PI_VERSION" ]] || die "runtime pin mismatch"
+if [[ -L "$LOCAL_BIN/pi" && $(readlink "$LOCAL_BIN/pi") != "$PI_CLI" ]]; then
+	old_pi="$(readlink "$LOCAL_BIN/pi")"
+	case "$old_pi" in
+	"$NODE_ROOT/bin/pi" | "$HOME/.local/opt/pi-"*/node_modules/@earendil-works/pi-coding-agent/dist/cli.js)
+		mkdir -p "$BACKUP_DIR"
+		cp -a "$LOCAL_BIN/pi" "$BACKUP_DIR/pi-link"
+		rm "$LOCAL_BIN/pi"
+		;;
+	*) die "review unmanaged Pi link before replacement: $old_pi" ;;
+	esac
+fi
+install_managed_link "$PI_CLI" "$LOCAL_BIN/pi"
 "$LOCAL_BIN/npm" install --global --ignore-scripts "hunkdiff@$HUNK_VERSION"
-install_managed_link "$NODE_ROOT/bin/pi" "$LOCAL_BIN/pi"
 install_managed_link "$NODE_ROOT/bin/hunk" "$LOCAL_BIN/hunk"
 install_managed_link "$NODE_ROOT/bin/hunkdiff" "$LOCAL_BIN/hunkdiff"
 

@@ -1,13 +1,14 @@
 # Side Questions with BTW
 
-Status: Local trial installed on 2026-10-15 (local date; backup timestamp is UTC).
+Status: Promoted to the shared Mac/Linux profile on 2026-10-15, including the bundled skill.
 Package: [`pi-btw@0.8.0`](https://github.com/dbachelder/pi-btw), by dbachelder.
 Host checked: Pi 1.2.0 on macOS. Provider calls and interactive behavior with
 Open TUI remain **Untested**.
 
 ## Recommended use
 
-After installation, run `/reload` in Pi, then ask a read-only side question:
+After installation, start a fresh Pi (or `/reload` with background jobs idle),
+then ask a read-only side question:
 
 ```text
 /btw:ask why did you choose that approach?
@@ -45,38 +46,34 @@ No separate model, provider, SSH workspace, or child extensions were configured.
 The side model/thinking level inherit from main unless explicitly overridden.
 Pi Subagents still owns delegated agent work; Open TUI owns the persistent UI.
 
-## Install or reconstruct locally
+## Install or reconstruct on either host
 
-Requires Pi >=0.85.1 and <2. Do not apply to the repository's older shared
-Pi 0.83 profile or assume the homelab has a compatible runtime.
-
-Back up `~/.pi/agent/settings.json` and the npm manifests under
-`~/.pi/agent/npm/`, then install only this pinned package:
-
-```bash
-pi install npm:pi-btw@0.8.0
-```
-
-Replace its new string entry in the existing settings `packages` array with:
+The common runtime pin is Pi 1.2.0 (upstream BTW supports >=0.85.1 and <2).
+Follow [Shared harness sync](../operations/shared-harness-sync.md), not the
+old host-only install. Apply owns the pinned package and this resource filter:
 
 ```json
 {
   "source": "npm:pi-btw@0.8.0",
-  "skills": []
+  "skills": ["skills/btw"]
 }
 ```
 
-Preserve all other settings/package entries. The optional bundled skill is
-unnecessary for slash commands and is hidden to keep the ambient skill catalog
-small. The extension registered no model-callable tools in the loader check;
-its commands and event hooks still run inside the Pi process.
+`/skill:btw` provides workflow guidance; it is separate from the actual `/btw:*`
+commands. The skill is now intentionally enabled on both hosts. It documents
+writable modes too; shared global guidance recommends `/btw:ask` during main
+work. The extension has no ambient model-callable tools; its commands and event
+hooks still run inside the Pi process.
 
 Reload only after active background jobs are finished: the pinned background-task
 manager cleans up running jobs on reload. Then test `/btw:ask` while main is busy,
 a follow-up, focus switching, cancel/dismiss, and explicit handoff. Confirm the
 palette and Open TUI remain intact. These interactive checks are still pending.
 
-## Observed validation and limits
+## Historical Mac trial validation and limits
+
+The first trial disabled the skill; the shared profile supersedes that filter.
+Current cross-host validation is recorded in the shared-sync operation.
 
 - Installed exactly 0.8.0; its npm manifest has no runtime dependencies or
   install lifecycle scripts.
@@ -101,7 +98,9 @@ Settings/npm-manifest backup:
 
 ## Rollback
 
-After side work is finished:
+A host-only removal creates reported drift and the next shared apply reinstalls
+BTW. For permanent removal, review and change the shared profile on both hosts.
+For emergency local rollback, after side work is finished:
 
 ```bash
 pi remove npm:pi-btw@0.8.0

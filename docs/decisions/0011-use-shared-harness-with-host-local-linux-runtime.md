@@ -4,7 +4,10 @@ Date: 2026-08-26
 Status: Superseded in part by ADR 0013
 
 ADR 0013 replaces only the Mac control-plane choice. The shared profile,
-host-local state, and Remote tmux fallback remain active.
+host-local state, and Remote tmux fallback remain active. ADR 0015 strengthens
+the shared-profile contract: selected daily features, UI, skills and pins must
+converge on both hosts through check/apply. Host-only experiments cannot silently
+become permanent configuration forks.
 
 ## Decision
 

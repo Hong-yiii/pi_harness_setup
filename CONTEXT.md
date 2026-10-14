@@ -33,8 +33,12 @@ The best shape is a layered harness:
   Linux automation uses the inherited session socket and terminal identity.
 - Keep Remote tmux and direct SSH/tmux only as break-glass recovery for existing
   sessions.
-- Reuse the versioned lean profile across hosts while keeping credentials,
-  package state, and sessions host-local.
+- Mirror the managed harness on Mac and Linux using one versioned profile:
+  Pi 1.2.0, Open TUI, neon-sakura, BTW commands and its skill, and the existing
+  web/Lens/subagent/Ponytail/background owners. Keep credentials, package state,
+  sessions, interactive parent model choices and OS paths host-local. Run check
+  and apply on each host; pulling Git alone does not publish. See ADR 0015 and
+  `docs/operations/shared-harness-sync.md`.
 - Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"
 - Avoid public web terminals at first.
@@ -67,7 +71,9 @@ Current refinements:
 - Native Git worktrees own persistent PR lanes; start Pi inside each real worktree, optionally through `piwt`.
 - Pi Phone, Usher, and dynamic workflows are outside the lean default.
 - Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
-- The general skill shelf is pinned in `skills/`; `teach` is a local manual teaching/review trial that emits disposable temp HTML, and Pi Lens contributes four additional tool-specific guides.
+- Eight shared general skills are pinned in `skills/`; `teach` emits disposable
+  temp HTML. BTW contributes its enabled bundled skill; Pi Lens contributes four
+  tool-specific guides. Use `/btw:ask` while the main agent works.
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
   checksum-pinned Node/Pi, shared lean profile, authenticated smoke, and Pi
   running inside a named tmux session all passed.
