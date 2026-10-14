@@ -2,7 +2,7 @@
 name: reviewer
 description: Independent read-only review of changes or findings against the original request and evidence
 tools: read, grep, find, ls, bash
-model: openai-codex/gpt-5.5:high
+thinking: high
 acceptanceRole: read-only
 completionGuard: false
 inheritProjectContext: true

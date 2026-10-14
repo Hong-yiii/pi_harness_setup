@@ -2,7 +2,7 @@
 name: scout
 description: Read-only local code exploration; use to understand a code path before planning or editing
 tools: read, grep, find, ls, bash
-model: openai-codex/gpt-5.5:medium
+thinking: medium
 acceptanceRole: read-only
 completionGuard: false
 inheritProjectContext: true

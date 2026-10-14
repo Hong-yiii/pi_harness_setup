@@ -2,7 +2,7 @@
 name: planner
 description: Read-only implementation planning; use when a change needs decisions, sequencing, or risk assessment
 tools: read, grep, find, ls
-model: openai-codex/gpt-5.5:high
+thinking: high
 acceptanceRole: read-only
 inheritProjectContext: true
 defaultContext: fresh

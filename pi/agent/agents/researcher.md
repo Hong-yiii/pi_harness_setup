@@ -2,7 +2,7 @@
 name: researcher
 description: Read-only evidence gathering from local sources and the public web; use to verify facts, APIs, or options
 tools: read, grep, find, ls, bash, web_search, fetch_content, get_search_content, source_check
-model: openai-codex/gpt-5.5:medium
+thinking: medium
 acceptanceRole: read-only
 completionGuard: false
 inheritProjectContext: true
