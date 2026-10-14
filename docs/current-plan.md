@@ -22,6 +22,34 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Local Open TUI Selection and Background-Task Review 2026-10-14
+
+Status: Decided and configured locally; full interactive acceptance pending.
+
+Affected surfaces: local UI and human-visible status. The user-selected
+`pi-open-tui@0.3.11` owns the header/editor/footer and turn stats on local Pi
+1.2.0. Retain the existing `neon-sakura` palette, allow only that theme from
+`awesome-pi-themes`, and disable its companion extensions. Disable
+`pi-observability` extensions to avoid a competing footer; its package/state
+remain installed, but `/obs` is unavailable while disabled.
+
+The shared profile and homelab are unchanged. This local override requires
+Pi >=1.0 and is not yet a cross-host rollout. Backed-up settings changes passed
+exact-delta checks; the selected theme passed Pi's schema. A full profile apply
+may re-enable the shared observability owner. Restart/interactive acceptance
+and rollback are documented in the linked operation.
+
+The background-task update notice was investigated, not applied:
+`pi-background-tasks@0.6.0` remains pinned. Version 2.6.10 supports process-only
+mode, but its stale peer range and incomplete latest-Pi compatibility testing
+need an isolated Pi 1.2.0 check before a live upgrade. No replacement was chosen,
+no peer constraints were forced, and the update notice was not suppressed.
+
+Scope and trust: no new installs by the agent, vendor patches, credential or
+session reads, remote changes, or full-profile apply. Live settings remain
+host-local. Reproduction, source evidence, validation limits, and selective
+rollback: [Open TUI local setup](operations/open-tui-local-setup.md).
+
 ## cmux Upgrade Acceptance Trial 2026-10-07
 
 Status: Trial — user approved implementation and a PR; native Mac validation pending.
