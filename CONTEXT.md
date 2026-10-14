@@ -27,8 +27,10 @@ The best shape is a layered harness:
 
 - Use native `cmux ssh homelab` as the single normal Mac-to-homelab path over
   Tailscale.
-- Let Linux own detachable remote PTYs through the native app's versioned helper
-  while macOS retains the native workspace, Feed, browser, and notification UI.
+- Let Linux's cmux-tui owner keep detachable PTYs and shared resources while
+  macOS projects native workspaces, Feed, browsers, and notifications. Since
+  0.65.0, managed SSH no longer depends on the legacy cmuxd-remote CLI relay.
+  Linux automation uses the inherited session socket and terminal identity.
 - Keep Remote tmux and direct SSH/tmux only as break-glass recovery for existing
   sessions.
 - Reuse the versioned lean profile across hosts while keeping credentials,
@@ -76,10 +78,14 @@ Current refinements:
   differs from the `cmux-tui` backend now bundled with native cmux 0.65.1.
 - Mac cmux 0.65.1 and its matching Linux helper passed manual fresh-SSH, terminal,
   public-browser, HTTP Linux-origin/decoy/origin-loss, and OSC-notification checks.
-  Old durable owners remain preserved. Remote `cmux` CLI PATH, automatic Pi hooks,
-  app-quit cleanup and broader browser behavior remain open; see
+  Old durable owners remain preserved. Linux session-API browser/notification
+  delivery passed on 2026-10-15 without reviving the legacy CLI wrapper.
+  Automatic Pi hooks, app-quit cleanup and broader browser behavior remain open; see
   `docs/operations/cmux-upgrade-0.65.1.md`. The automated upgrade runner's native
   execution remains Untested; these manual results do not substitute for receipts.
+- `teach` and deep-research share `skills/teach/references/artifact-delivery.md`:
+  local Mac files open directly; Linux uses a bounded loopback server and
+  session API browser creation, not `cmux browser open` through a stale relay.
 - Complete native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/guides/pi-harness-workflow-manual.md`.

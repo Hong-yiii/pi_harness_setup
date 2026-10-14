@@ -55,6 +55,52 @@ selection prevents normal side-agent writes, not arbitrary extension code or
 reading sensitive files. Inherited conversation context is sent to the selected
 provider; side history is persisted locally even when excluded from main context.
 
+## cmux Remote Artifact Delivery Migration — 2026-10-15
+
+Status: Executed and published on Mac and homelab; active sessions should `/reload`.
+
+Affected surfaces: remote UI, skills, prompt templates, and operating guidance.
+Keep native cmux SSH as the owner; replace obsolete remote CLI-relay assumptions
+with the existing cmux-tui session API and native Mac projection. No new relay,
+package, global `cmux` alias, socket-policy change, or owner upgrade.
+
+Approved scope:
+
+- validate Linux-initiated browser creation and notification delivery in one
+  disposable native SSH workspace, with loopback-only fixtures and deadlines;
+- preserve existing terminals/owners and remove only recorded test resources;
+- update `teach`, deep-research, and current remote guidance;
+- back up and publish only the changed skill, shared reference, and prompt to
+  both hosts; do not run full apply or change the remote checkout.
+
+Observed: the Linux-created browser rendered the Linux marker rather than the
+same-port Mac decoy; origin loss failed closed. Notification creation/clear
+synchronized to the correct native workspace. Test tabs, terminal, workspace,
+fixtures, and the exact retained forward were removed. The original terminal
+and owner PID/generation remained intact. Native handles changed during initial
+reconciliation, so the recipe retains Linux receipts and re-queries native
+handles instead of retrying creation.
+
+Validation: Pi skill/template loading and argument expansion passed, with one
+manual teach skill and no accidental reference discovery. The exact preflight
+resolved the live terminal read-only. `python3 scripts/check-cmux-artifact-delivery.py`
+checks shell syntax, six target-resolution cases, and missing/invalid socket
+guards. Independent source review found no issues; it did not independently
+observe live acceptance. Publication rehearsal checked stale-content abort,
+backups, intended files, and unrelated-file preservation. All three published
+files on both hosts matched source hashes.
+
+Host-local backups are under
+`~/.config/pi_harness_setup/backups/20261015-cmux-delivery-<private-run-id>/`.
+The receipt identifies the two previous files and new reference. Rollback restores
+only those two files and removes the new `teach/references/artifact-delivery.md`,
+after checking for later edits, then `/reload`. No unrelated settings, packages,
+credentials, sessions, or legacy relay metadata were changed. The existing apply
+script already copies skill directories recursively; no profile entry is needed.
+
+Acceptance, upstream chronology, and untested limits:
+[cmux 0.65.1 operations](operations/cmux-upgrade-0.65.1.md).
+
 ## Local Open TUI Selection and Background-Task Review 2026-10-14
 
 Status: Decided and configured locally; full interactive acceptance pending.
@@ -574,7 +620,7 @@ Build a reproducible personal Pi harness for:
 | Repo as source of truth | Active. | Config, decisions, runbooks, prompts, agents, and future scripts live here. |
 | Package policy | Lean default accepted. | Keep normal sessions small; move orchestration and remote controls out of the default. |
 | Safety | Underdefined. | Needs explicit package audit checklist and secret/log policy before autonomy increases. |
-| Terminal/session interface | Native `cmux ssh homelab` is the primary Mac-to-homelab path over Tailscale/SSH. | Linux `cmuxd-remote` owns detachable PTYs; Remote tmux remains break-glass recovery for existing sessions. |
+| Terminal/session interface | Native `cmux ssh homelab` is the primary Mac-to-homelab path over Tailscale/SSH. | Linux cmux-tui owns detachable PTYs/resources; native Mac projection replaces legacy CLI-relay assumptions. Remote tmux remains break-glass recovery. |
 | Observability | `pi-observability` installed as first local status layer. | Trial behavior in real interactive sessions before adding sidebar/status packages. |
 | Web research | `pi-web-access` installed. | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens` installed. | Trial alone before any read/edit replacement package. |
@@ -933,7 +979,8 @@ Manual native evidence does **not** validate the separate automated acceptance
 runner or produce its baseline/candidate/post-install receipts. Its native
 execution remains Untested. No assertions or backend guards were weakened.
 
-Open: remote `cmux` CLI PATH, automatic Pi hooks, full app quit/crash cleanup,
+The October 15 batch validated Linux session-API delivery instead of repairing
+the legacy `cmux` wrapper. Open: automatic Pi hooks, full app quit/crash cleanup,
 reconnect/sleep-wake on this release, and broader browser HTTPS/WebSocket cases.
 Keep auto-updates disabled until a separately reviewed upgrade; do not retire
 old session owners without accounting for their dependents and recovery paths.

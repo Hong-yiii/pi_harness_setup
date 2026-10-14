@@ -1,14 +1,14 @@
 # Ubuntu Homelab Setup
 
 Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
-Last updated: 2026-08-27
+Last updated: 2026-10-15
 
 ## Goal
 
 Run the same lean Pi harness on Ubuntu through native cmux SSH:
 
 ```text
-Mac native cmux -> SSH/Tailscale -> Linux cmuxd-remote PTY -> Pi
+Mac native cmux -> SSH/Tailscale -> Linux cmux-tui session/PTY -> Pi
 fallback: Mac -> cmux Remote tmux -> tmux -> Pi
 phone fallback: Tailscale -> SSH/Mosh -> tmux -> Pi
 ```
@@ -36,7 +36,7 @@ Host-local and never copied into Git:
 - `~/.pi/agent/auth.json` and API keys;
 - `~/.pi/agent/sessions/`;
 - machine-generated package state under `~/.pi/agent/npm/`;
-- native cmux helper/runtime files under `~/.cmux/`;
+- native cmux helpers, cmux-tui session/runtime state, and legacy `~/.cmux/` state;
 - private SSH or Tailscale state.
 
 The bootstrap does not alter Tailscale, SSH, firewall, or system Node. It
@@ -172,7 +172,7 @@ cmux hook skipped: cmux is not installed or not available.
 ```
 
 That message refers to the native cmux hook CLI, which is not installed globally
-on Ubuntu. Native `cmux ssh` installs `cmuxd-remote` on demand; it does not make
+on Ubuntu. Managed `cmux ssh` now bootstraps cmux-tui on demand; it does not make
 the macOS hook CLI available during profile application. Record the timestamped
 backup path printed by the apply script.
 
@@ -291,9 +291,13 @@ cd ~/pi_harness_setup
 pi --name "homelab main"
 ```
 
-The first connection installs a versioned, manifest-verified helper under
-`~/.cmux/bin/cmuxd-remote/`. It owns the detachable remote PTY; native cmux
-reattaches after SSH transport loss.
+Managed SSH now bootstraps the manifest-verified cmux-tui helper, installed in
+this deployment at `~/.local/bin/cmux-tui`. The Linux owner keeps detachable
+PTYs; the Mac projects their resources. Existing owners can remain older than
+the installed executable. Use the inherited session socket/terminal identity
+for Linux API calls; do not reactivate the legacy `~/.cmux/bin/cmux` wrapper
+or restart owners to align versions. Browser and notification delivery through
+the session API passed on 2026-10-15.
 
 Daily behavior and implementation details:
 `docs/guides/cmux-ssh-remote.md`.
