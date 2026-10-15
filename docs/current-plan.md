@@ -22,10 +22,33 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Shared Harness Deployment — 2026-10-15
+
+Status: Executed — the owner subsequently authorized necessary execution and
+merge, superseding the earlier review-only hold. PR #17 is merged at `50e9aea`;
+issue #18 closed automatically. Both macOS and Ubuntu CI passed on `3b641c0`.
+
+Mac applied the merged profile with a full config/npm recovery snapshot. Drift,
+the real no-model loader and no-op reapply passed. Parent model preferences,
+unrelated `pi-diff`, retained dependency versions and the existing stash survived;
+no new packages were installed. This changes no package pins or surface owners.
+
+The homelab's live profile was already current. Its dirty checkout remained on
+`fix/shared-harness-parity` at `c8bedbc`; an uncommitted test edit was preserved.
+A temporary detached worktree at `50e9aea` passed all 37 tests, drift, no-op apply
+and the real no-model loader. The worktree was removed; the original checkout's
+HEAD, status and test diff hash were unchanged. Do not force-pull/reset that
+checkout: its local edit still needs deliberate reconciliation before Git sync.
+
+Credentials and sessions remain host-local. No active session/service restart,
+provider smoke call or speculative npm audit fix occurred. See the
+[sync operation](operations/shared-harness-sync.md) for recovery/evidence.
+Interactive UI/BTW acceptance remains a separate user check.
+
 ## Shared Harness Mac Review Fixes — 2026-10-15
 
-Status: Implemented in open PR #17; independent review found no findings;
-updated cross-host CI pending. Do not merge or deploy.
+Status: Merged in PR #17 after independent review found no findings and both
+macOS/Ubuntu CI passed. The following is pre-deployment review evidence.
 Tracking: [issue #18](https://github.com/Hong-yiii/pi_harness_setup/issues/18).
 
 Fix runtime discovery behind a regular cmux forwarding launcher while retaining
@@ -48,7 +71,9 @@ No package install, live apply, provider call, session restart, or stash restore
 
 ## Cross-Host Harness Parity — 2026-10-15
 
-Status: Implemented and applied on Linux; source publication under review, Mac application pending.
+Status: Merged and deployed on Mac; Linux verified against the same merged
+revision. The following records the initial Linux rollout; current evidence is
+in the deployment section above and the sync operation.
 
 Mac and Linux must apply the same portable harness, not independently selected
 features. Promote Open TUI, neon-sakura, and BTW (including its reviewed skill)
@@ -90,8 +115,8 @@ brace-expansion DoS finding remains; no unrelated audit fix was run.
 Recovery: `~/.config/pi_harness_setup/backups/2026-10-14T20-13-09-219Z-shared-parity/`
 (config/npm snapshot), and `20261015-parity-runtime-9B3cX5/` under the same backup
 root (old launcher, source/evidence and runtime receipt). Host registry updated.
-Merge this source revision before Mac pull/apply/check. Mac has not applied
-this shared revision; full interactive UI/BTW behavior remains **Untested**.
+These are the original Linux recovery records, retained after the subsequent
+Mac deployment. Full interactive UI/BTW behavior remains **Untested**.
 Current operation: [Shared harness sync](operations/shared-harness-sync.md).
 
 ## Local BTW Side-Question Trial 2026-10-15

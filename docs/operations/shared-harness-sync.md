@@ -146,7 +146,7 @@ runtime when rolling back a runtime migration. Keep recovery receipts and do
 not remove runtimes used by active processes. Validate the restored loader and
 start a fresh session when convenient; no daemon/network restart is needed.
 
-## Mac review fixes (no deployment)
+## Mac review fixes (historical, before deployment)
 
 PR #17's initial Mac review reproduced two failures: runtime discovery behind
 cmux's regular forwarding launcher and `rmSync` rejecting a directory symlink
@@ -157,16 +157,50 @@ for the known test symlink, explicitly checking that its target survives.
 On macOS / Node 24.4.1, both regression cases failed before the fixes. The
 updated full suite passed 35 tests with two Linux-only skips and no failures.
 Normal cmux PATH now reaches the expected read-only drift report without
-rewriting settings or manifests or creating a recovery snapshot. That check
-**does not mean the Mac is deployed**: managed asset/compatibility drift remains.
+rewriting settings or manifests or creating a recovery snapshot. That review
+check alone did not deploy the Mac; the later deployment is recorded below.
 CI now runs the self-tests on both Ubuntu and macOS; provider calls and full
 interactive acceptance are still separate gates.
 
 ## Deployment evidence
 
-2026-10-15: Linux was applied from local parity changes based on `de00774`
-before source publication. Mac shared-apply acceptance remains pending; merge
-this revision, then pull/apply/check on Mac before claiming cross-host parity.
+### Merged-source verification — 2026-10-15
+
+[PR #17](https://github.com/Hong-yiii/pi_harness_setup/pull/17) merged as `50e9aea`
+and closed issue #18. [Both hosted CI jobs passed](https://github.com/Hong-yiii/pi_harness_setup/actions/runs/38638201092)
+on its reviewed head `3b641c0`. Subsequent execution used merged source `50e9aea`.
+
+- **Mac:** normal cmux PATH apply succeeded on Pi 1.2.0 / Node 24.4.1. Managed
+  changes were `settings.json`, global `AGENTS.md`, and host-peer compatibility
+  repair (quarantined shadow libraries and standalone Lens wrappers). No package
+  installation or retained dependency-version upgrade was needed. The real
+  no-model loader passed all 20 core tool schemas, TUI identity, shared resources
+  and filters without warnings/errors. Drift check passed; repeat apply reported
+  `Already current; no writes or installs.` without creating another snapshot.
+  Parent provider/model/thinking and unrelated `pi-diff` were preserved.
+- **Mac recovery:** complete npm snapshot plus changed configuration and repair
+  originals at
+  `~/.config/pi_harness_setup/backups/2026-10-15T06-14-12-552Z-shared-parity/`.
+  Its receipt records `applied` with an empty package-install list. The prior
+  source-work stash was not restored or changed.
+- **Linux homelab:** Pi 1.2.0 / Node 24.20.0 was already current. A temporary
+  detached worktree at the same merge passed **37 tests, zero failures/skips**,
+  managed drift, no-op apply and the real no-model loader. No deployment writes
+  were needed. The original checkout remains on `fix/shared-harness-parity`
+  at `c8bedbc` with an uncommitted `tests/apply-pi-setup.test.mjs` edit. Its HEAD,
+  status and test-diff hash were preserved; the temporary worktree was removed.
+  Reconcile that existing edit deliberately before pulling in the primary
+  homelab checkout; do not reset or overwrite it merely to match Git branches.
+
+Both live managed installations now pass against the same merged source. This
+is runtime/configuration parity, not identical Git working trees or private
+state. No credentials/session files, transport, active sessions or services were
+changed; no model/provider smoke call or speculative npm audit fix was run.
+
+### Earlier Linux rollout (historical)
+
+Linux was initially applied from local parity changes based on `de00774`
+before source publication. Its earlier validation and recovery evidence follows.
 
 - Final PR gate `b39072ab5`: 33 tests passed, clean workflow YAML/script syntax,
   live drift check and native no-model loader. A formatting-only false drift
@@ -196,7 +230,9 @@ this revision, then pull/apply/check on Mac before claiming cross-host parity.
   resolved newer transitive dependencies and audited clean; this is not a claim
   that the existing Linux dependency tree is vulnerability-free.
 
-Full interactive UI/BTW and real Mac shared-apply behavior remain **Untested**.
-Open a fresh Pi to use the new runtime/UI; this publication left existing
-sessions intact. The original Mac UI/BTW records are historical evidence, not
-proof of application of this shared revision.
+Full interactive UI/BTW behavior remains **Untested** on the shared revision;
+real Mac shared apply and native resource loading now pass as recorded above.
+Once background jobs are idle, open a fresh Pi (or `/reload`) and verify one
+footer, neon-sakura, `/skill:btw`, `/open-tui`, and a deliberate `/btw:ask` question
+with focus/cancel/handoff. Existing sessions were left intact. The original
+host-only Mac UI/BTW records remain historical, not the deployment evidence.
