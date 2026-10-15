@@ -55,7 +55,10 @@ Read-only inspection on 2026-08-26 found:
 - no passwordless sudo;
 - Tailscale using a Singapore DERP relay rather than a direct peer path.
 
-The repository-pinned Pi `0.83.0` requires Node `>=22.19.0`. The bootstrap installs Node `24.20.0` LTS for this user without replacing `/usr/bin/node`.
+The current shared Pi pin is `1.2.0` (Node >=22.19.0). The bootstrap reads it
+from the profile and installs a versioned Pi prefix. Node `24.20.0` remains
+user-scoped without replacing `/usr/bin/node`. The observations below are
+historical; normal refresh follows [Shared harness sync](shared-harness-sync.md).
 
 ## Observed Rollout
 
@@ -85,9 +88,8 @@ TUI pilot was removed after comparison. Remote tmux remains fallback; Mosh,
 complete app relaunch, Mac sleep/wake, iOS, remote reboot, and direct rather
 than DERP Tailscale connectivity remain `Untested`.
 
-The native SSH pilot observed remote Pi `0.84.3`, while this repository still
-documents pin `0.83.0`. Reconcile that version drift as a separate reviewed
-change.
+The native SSH pilot observed remote Pi `0.84.3` against the then-current
+0.83 pin. ADR 0015 resolves that policy drift with a common 1.2.0 target.
 
 ## 1. Publish Before Pulling
 
@@ -143,7 +145,7 @@ Then rerun the bootstrap. It will:
 3. verify the official checksum for the pinned Node tarball;
 4. install Node under `~/.local/opt/`;
 5. expose Node, npm, Pi, and Hunk through user-owned `~/.local/bin/` at mode `0755`;
-6. install Pi `0.83.0` with npm lifecycle scripts disabled;
+6. install the shared Pi pin into `~/.local/opt/pi-<version>/` with lifecycle scripts disabled, preserving old runtimes;
 7. install `hunkdiff@0.20.0` from npm with lifecycle scripts disabled;
 8. back up and install `terminal/tmux/tmux.conf` as `~/.tmux.conf`.
 
@@ -165,16 +167,10 @@ cd ~/pi_harness_setup
 node scripts/apply-pi-setup.mjs
 ```
 
-Expected Linux-specific behavior:
-
-```text
-cmux hook skipped: cmux is not installed or not available.
-```
-
-That message refers to the native cmux hook CLI, which is not installed globally
-on Ubuntu. Managed `cmux ssh` now bootstraps cmux-tui on demand; it does not make
-the macOS hook CLI available during profile application. Record the timestamped
-backup path printed by the apply script.
+Apply no longer invokes a cmux hook CLI on either host. Managed `cmux ssh`
+bootstraps cmux-tui separately. Record the private backup path, run apply with
+`--check`, then follow the no-model loader verification in the shared-sync
+operation. A fresh Pi is needed for runtime/UI acceptance; preserve active jobs.
 
 ## 5. Authenticate Without Sharing Secrets
 
@@ -232,7 +228,7 @@ Expected runtime pins:
 
 ```text
 Node v24.20.0
-Pi 0.83.0
+Pi 1.2.0
 Hunk 0.20.0
 ```
 
@@ -341,14 +337,25 @@ Update only through reviewed repository changes:
 cd ~/pi_harness_setup
 git status --short
 git pull --ff-only
-bash scripts/bootstrap-ubuntu-homelab.sh
+node scripts/apply-pi-setup.mjs --check
 node scripts/apply-pi-setup.mjs
+node scripts/apply-pi-setup.mjs --check
 ```
 
-The bootstrap is idempotent for the pinned Node, Pi, and Hunk versions and
-preserves a differing tmux config before replacement.
+If the runtime pin differs, stop and follow the separate runtime migration in
+[Shared harness sync](shared-harness-sync.md). Do not rerun bootstrap for routine
+refresh: it also manages Hunk, tmux and Node. Do not reinstall all extensions
+or erase the retained host-peer compatibility repair.
 
 ## Rollback
+
+For current configuration/runtime rollback, follow the receipt-based
+[shared-sync recovery](shared-harness-sync.md#rollback). Keep old runtimes and
+active sessions; no cmux workspace close is required.
+
+The rest of this section is **historical full-provisioning teardown**, only for
+explicitly abandoning the original installation after its sessions have ended.
+It is not a normal update rollback and does not remove newer versioned Pi trees.
 
 Exit Pi and close the native SSH workspace, then return to the existing fallback:
 

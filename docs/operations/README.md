@@ -4,6 +4,7 @@ Environment-sensitive procedures for installing, rebuilding, maintaining, and re
 
 | Operation | Document | Scope |
 | --- | --- | --- |
+| Sync/check the shared Mac/Linux harness | [`shared-harness-sync.md`](shared-harness-sync.md) | Current parity, runtime migration and recovery |
 | Apply the selected Pi package profile | [`initialize-packages.md`](initialize-packages.md) | User-level Pi configuration |
 | Provision or rebuild the Ubuntu homelab | [`ubuntu-homelab-setup.md`](ubuntu-homelab-setup.md) | Ubuntu x86_64 reference host |
 | Install or repair cmux integration | [`cmux-setup.md`](cmux-setup.md) | macOS cmux control surface |

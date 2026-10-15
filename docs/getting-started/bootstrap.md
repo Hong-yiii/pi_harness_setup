@@ -1,10 +1,10 @@
 # Bootstrap Runbook
 
-Status: macOS executed; Ubuntu homelab rollout approved
+Status: Shared Mac/Linux baseline; deployment evidence in the shared-sync operation
 
 ## Shared Runtime
 
-The repository pins Pi `0.83.0`, which requires Node `>=22.19.0`. Keep live
+The shared profile pins Pi `1.2.0`, which requires Node `>=22.19.0`. Keep live
 credentials, package installation state, and sessions host-local; Git carries
 the reproducible settings and profile.
 
@@ -15,7 +15,7 @@ mkdir -p ~/Projects
 cd ~/Projects
 git clone <repo-url> pi_harness_setup
 cd pi_harness_setup
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0
 brew install tmux neovim hunk
 node scripts/apply-pi-setup.mjs
 ```
@@ -66,11 +66,18 @@ On either host, from the repository root:
 node scripts/apply-pi-setup.mjs
 ```
 
-The script installs the pinned lean package profile, publishes the seven
-versioned skills and the optional `piwt` zsh helper, copies agent/prompt assets,
-filters Pi's skill catalog, enables bundled plan mode, and installs the cmux
-hook when cmux is available. It preserves unrelated settings/packages and
-writes timestamped backups under `~/.config/pi_harness_setup/backups/`.
+The script checks the common runtime pin, installs only missing package pins,
+publishes eight repo skills plus the enabled bundled BTW skill, global guidance,
+agents/prompts, subagent defaults/capacity and Open TUI enablement. It enforces
+neon-sakura with one UI owner, preserves unrelated settings/packages/files, and
+writes private timestamped backups. Host-peer compatibility and bundled plan
+mode are checked separately from package versions. cmux hooks remain an explicit
+OS-specific operation, not an apply side effect.
+
+For existing installations, use [Shared harness sync](../operations/shared-harness-sync.md).
+Start with `node scripts/apply-pi-setup.mjs --check`; a Git pull or `/reload`
+alone does not deploy changes. Never rerun a full bootstrap just to refresh
+assets or copy credentials/session state between machines.
 
 Enable the native-worktree helper in zsh:
 

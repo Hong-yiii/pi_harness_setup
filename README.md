@@ -4,7 +4,7 @@
 
 **A reproducible coding-agent control plane built for inspection, remote durability, and deliberate autonomy.**
 
-[![Pi 0.83.0](https://img.shields.io/badge/Pi-0.83.0-f06292?style=flat-square)](https://github.com/badlogic/pi-mono) ![macOS + Ubuntu](https://img.shields.io/badge/runtime-macOS%20%2B%20Ubuntu-38bdf8?style=flat-square) [![ADR-driven](https://img.shields.io/badge/architecture-ADR--driven-a78bfa?style=flat-square)](docs/decisions/README.md) [![last commit](https://img.shields.io/github/last-commit/Hong-yiii/pi_harness_setup?style=flat-square&color=64748b)](https://github.com/Hong-yiii/pi_harness_setup/commits/main)
+[![Pi 1.2.0](https://img.shields.io/badge/Pi-1.2.0-f06292?style=flat-square)](https://github.com/badlogic/pi-mono) ![macOS + Ubuntu](https://img.shields.io/badge/runtime-macOS%20%2B%20Ubuntu-38bdf8?style=flat-square) [![ADR-driven](https://img.shields.io/badge/architecture-ADR--driven-a78bfa?style=flat-square)](docs/decisions/README.md) [![last commit](https://img.shields.io/github/last-commit/Hong-yiii/pi_harness_setup?style=flat-square&color=64748b)](https://github.com/Hong-yiii/pi_harness_setup/commits/main)
 
 </div>
 
@@ -69,7 +69,9 @@ high-impact capability should be visible, versioned, testable, and reversible.
 The repository carries portable intent. Each host keeps its own credentials,
 OAuth state, package installation state, browser data, and live sessions. This
 lets the two runtimes converge without turning Git into a secret store or a
-machine image.
+machine image. Mac and Linux mirror the same managed features, theme, skills,
+and pins—not private state. A Git pull is not deployment: run the shared
+[check/apply procedure](docs/operations/shared-harness-sync.md) on each host.
 
 ## Design Rules
 
@@ -89,11 +91,13 @@ The lean profile deliberately has a small number of named owners:
 
 | Surface | Owner | Boundary |
 | --- | --- | --- |
-| Agent runtime | upstream Pi `0.83.0` | Small documented base; OMP is a separate trial lane. |
+| Agent runtime | upstream Pi `1.2.0` | Small documented base; OMP is a separate trial lane. |
 | Web and fetch | `pi-web-access@0.17.1` | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens@3.8.74` | No competing semantic index or read/edit replacement in the default. |
 | Conversational delegation | `pi-subagents@0.40.0` | Bounded scout, research, plan, worker, and review roles. |
-| Human-visible status | `pi-observability@1.3.2` | First status layer; no stack of competing sidebars and cost widgets. |
+| Human-visible status | `pi-open-tui@0.3.11` | Single persistent UI; Observability retained but disabled. |
+| Palette | `awesome-pi-themes@1.2.19` | Only neon-sakura; companion extensions disabled. |
+| Side questions | `pi-btw@0.8.0` + bundled skill | Prefer read-only `/btw:ask`; not a concurrent writer. |
 | Background commands | `pi-background-tasks@0.6.0` | Pinned before later releases added unrelated always-on orchestration. |
 | Implementation taste | `@dietrichgebert/ponytail@4.8.4` | Runs at `lite`; it does not own research or orchestration. |
 | Persistent PR lanes | native Git worktrees + optional `piwt` | One real cwd and one writer per lane. |
@@ -154,14 +158,14 @@ Tailscale path. See [`CONTEXT.md`](CONTEXT.md) and the
 ## Quick Start
 
 The smallest useful path applies only the portable, user-level Pi harness.
-Pi `0.83.0` requires Node `>=22.19.0`.
+Pi `1.2.0` requires Node `>=22.19.0`.
 
 ```bash
 git clone https://github.com/Hong-yiii/pi_harness_setup.git
 cd pi_harness_setup
 
 # Install the repository-pinned Pi version if needed.
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@0.83.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0
 
 # Install selected packages and publish versioned assets.
 node scripts/apply-pi-setup.mjs
@@ -171,10 +175,11 @@ The apply script:
 
 - preserves unrelated Pi settings and packages;
 - writes timestamped backups before changing user configuration;
-- installs pinned package versions;
-- publishes the selected skills, agents, prompts, and optional `piwt` helper;
-- applies the Pi-only skill allowlist without removing shared skill files;
-- enables bundled plan mode and the cmux lifecycle hook when available.
+- installs only missing/different pinned packages and preserves the reviewed host-peer backport;
+- publishes selected skills, agents, prompts, global guidance, subagent limits, Open TUI enablement and `piwt`;
+- applies the Pi-only skill allowlist without removing unrelated shared files;
+- supports read-only `--check` and config-only `--assets-only` modes;
+- keeps bundled plan mode host-local; cmux transport/hooks are a separate operation.
 
 Enable the optional native-worktree helper with:
 

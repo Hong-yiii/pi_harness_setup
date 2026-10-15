@@ -9,6 +9,12 @@ Seven skills are pinned from `mattpocock/skills` at commit
 renamed or removed several selected skills. Review upstream changes deliberately
 before refreshing them.
 
+The same eight repo skills are published on Mac and Linux. The shared package
+profile additionally enables `pi-btw@0.8.0`'s bundled `btw` skill; it remains in
+the installed package, not a duplicated source copy here. Use `/btw:ask` for
+read-only side questions while main works. Check discovery with the shared-sync
+operation; pulling the repository alone does not publish resources.
+
 Local additions:
 
 - `teach`: manual, instruction-only teaching/review mode with simple and

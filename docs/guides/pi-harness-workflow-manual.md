@@ -1,7 +1,7 @@
 # Pi Harness Workflow Manual
 
 Status: Draft
-Last updated: 2026-08-03
+Last updated: 2026-10-15
 
 ## What This Harness Is
 
@@ -46,7 +46,9 @@ The reusable profile is in `pi/package-profiles/lean-default.json`. The older
 
 Installed user-level packages:
 
-- `pi-observability`: first local observability/status layer.
+- `pi-open-tui@0.3.11`: shared active UI/status owner; Observability retained but disabled.
+- `awesome-pi-themes@1.2.19`: neon-sakura only; companion extensions disabled.
+- `pi-btw@0.8.0`: side questions and its bundled skill; prefer `/btw:ask`.
 - `pi-web-access`: web search and fetch surface.
 - `pi-lens`: code exploration and graph/index trial.
 - `pi-subagents`: day-to-day subagent owner.
@@ -207,8 +209,9 @@ existing fallback sessions.
 
 ## Skill Shelf
 
-Pi keeps seven general skills: `diagnose`, `caveman`, `grill-with-docs`,
-`handoff`, `to-prd`, `to-issues`, and `zoom-out`.
+Pi keeps eight repo skills: `diagnose`, `caveman`, `grill-with-docs`,
+`handoff`, `teach`, `to-prd`, `to-issues`, and `zoom-out`, plus BTW's bundled
+`btw` skill. `/skill:btw` teaches usage; `/btw:ask` starts a read-only side thread.
 
 The shared files remain under `~/.agents/skills`; Pi filters its own discovery,
 so Codex and other agents are unaffected. Pi Lens injects four additional
@@ -246,7 +249,9 @@ Apply the user-level profile with:
 node scripts/apply-pi-setup.mjs
 ```
 
-Package initialization is documented in `docs/operations/initialize-packages.md`.
+Run `node scripts/apply-pi-setup.mjs --check` before and after apply on **both**
+hosts. Git pull is not publication. Runtime pins, managed boundaries, recovery
+and no-model checks are in `docs/operations/shared-harness-sync.md`.
 
 Core checks:
 

@@ -54,6 +54,7 @@ state, or private paths to another installation.
 
 - Never commit credentials, API keys, OAuth tokens, private session logs, browser data, or machine-private paths that are not required to rebuild the harness.
 - Store templates and documented commands rather than raw secrets.
+- Mac and Linux mirror one managed harness (ADR 0015). Promote daily UI, package, skill and agent changes into the shared profile/apply path, not permanent host-only overrides. Run `node scripts/apply-pi-setup.mjs --check` on each host; a Git pull is not publication. Keep credentials, sessions, OS paths and interactive parent model choices host-local; never copy live `.pi` trees between hosts.
 - If a file should be copied into `~/.pi/agent`, mirror its relative path under `pi/agent/`.
 - If behavior must be enforced, prefer a Pi extension over a prompt-only instruction.
 - Before installing packages or making substantial harness changes, update `docs/current-plan.md`, identify the affected surface, and confirm the change belongs in the next reviewed build batch.

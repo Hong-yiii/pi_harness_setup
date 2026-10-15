@@ -1,10 +1,14 @@
 # Observability
 
-Status: `pi-observability` installed as the first local status layer; trace backend remains open
+Status: Open TUI is the shared active status/UI owner; trace backend remains open
 
 ## Current Baseline
 
-The lean profile installs `pi-observability` as the single human-status owner for normal Pi sessions. Its package pin lives in `pi/package-profiles/lean-default.json` and is applied by `scripts/apply-pi-setup.mjs`.
+The shared profile enables `pi-open-tui@0.3.11` for the header/editor/footer and
+turn stats on both hosts. `pi-observability@1.3.2` is retained with extensions
+disabled, preserving its state without a competing footer; `/obs` is unavailable.
+Pins and resource filters live in `pi/package-profiles/lean-default.json`.
+Apply and verify with [Shared harness sync](shared-harness-sync.md).
 
 Verify the installed baseline with:
 
