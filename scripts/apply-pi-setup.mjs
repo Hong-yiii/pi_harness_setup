@@ -180,8 +180,7 @@ const piPackage = "@earendil-works/pi-coding-agent";
 function findPiHost(bin) {
 	if (!bin) return undefined;
 	for (let path = dirname(realpathSync(bin)); ; path = dirname(path)) {
-		if (readJson(join(path, "package.json"), {}).name === piPackage)
-			return path;
+		if (readJson(join(path, "package.json"), {}).name === piPackage) return path;
 		if (path === dirname(path)) return undefined;
 	}
 }
@@ -199,30 +198,21 @@ if (!host) {
 			timeout: 10000,
 		}).trim();
 	} catch (cause) {
-		throw new Error(
-			"Cannot resolve npm Pi host behind this launcher; expose the npm Pi CLI directly on PATH",
-			{ cause },
-		);
+		throw new Error("Cannot resolve npm Pi host behind this launcher; expose the npm Pi CLI directly on PATH", { cause });
 	}
 	if (!isAbsolute(npmRoot) || /[\r\n]/.test(npmRoot))
 		throw new Error("Invalid npm Pi host root: expected one absolute path");
 	const candidate = join(npmRoot, piPackage);
 	const manifest = readJson(join(candidate, "package.json"), {});
 	if (manifest.name !== piPackage || manifest.version !== profile.runtime.pi)
-		throw new Error(
-			`npm Pi host must be ${piPackage}@${profile.runtime.pi}; expose the intended npm Pi CLI directly on PATH`,
-		);
+		throw new Error(`npm Pi host must be ${piPackage}@${profile.runtime.pi}; expose the intended npm Pi CLI directly on PATH`);
 	host = realpathSync(candidate);
 	const otherHosts = bins.slice(1).map(findPiHost).filter(Boolean);
 	if (otherHosts.some((path) => path !== host))
-		throw new Error(
-			"Ambiguous npm Pi host: PATH and npm resolve different installations; expose the intended npm Pi CLI directly on PATH",
-		);
+		throw new Error("Ambiguous npm Pi host: PATH and npm resolve different installations; expose the intended npm Pi CLI directly on PATH");
 }
 if (readJson(join(host, "package.json"), {}).version !== profile.runtime.pi)
-	throw new Error(
-		`npm Pi host version does not match shared pin ${profile.runtime.pi}`,
-	);
+	throw new Error(`npm Pi host version does not match shared pin ${profile.runtime.pi}`);
 const compat = join(config, "compat/shared-host-peers");
 const peerDrift = inspectHostPeers(host, modules, compat);
 const planSource = join(host, "examples/extensions/plan-mode");

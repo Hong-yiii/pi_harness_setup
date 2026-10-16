@@ -63,5 +63,5 @@ Stop only `pi-browser.service` before changing its release. Preserve profile
 state and prior releases; restore the previous unit/release and copied Pi assets
 using the recorded backups. Do not restore private profiles across machines.
 See [Shared browser operation](../operations/shared-browser.md) for checks and
-residual limits; the original [trial](../operations/linux-browser-trial.md) is
+residual limits; the original [trial](../history/2026-10-15-linux-browser-trial.md) is
 historical evidence rather than the new lifecycle owner.

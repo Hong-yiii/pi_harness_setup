@@ -3,6 +3,7 @@
 set -euo pipefail
 umask 077
 src=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+source "$src/dependencies.sh"
 root="$HOME/.local/share/pi-browser"
 state="$HOME/.local/state/pi-browser"
 unit="$HOME/.config/systemd/user/pi-browser.service"
@@ -45,25 +46,14 @@ if [[ ! -d $root/dependencies ]]; then
 		exit 1
 	}
 	trap 'rm -rf -- "$dependency_stage"' EXIT
-	PI_BROWSER_INSTALL_ROOT="$dependency_stage" bash "$src/../browser-trial/install.sh"
+	install_dependencies "$dependency_stage"
+	check_dependencies "$dependency_stage"
 	mv "$dependency_stage" "$root/dependencies"
 	trap - EXIT
+else
+	# Revalidate extracted files, not just their retained archives.
+	check_dependencies "$root/dependencies"
 fi
-# Revalidate extracted artifacts and runtime; never assume a partial installation is complete.
-(cd "$root/dependencies/debs" && sha256sum --check ../debs.sha256 >/dev/null)
-"$HOME/.local/bin/node" --input-type=module - "$root/dependencies" <<'JS'
-import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
-import { pathToFileURL } from 'node:url';
-const root = process.argv[2];
-assert.equal(JSON.parse(await readFile(`${root}/node_modules/playwright/package.json`, 'utf8')).version, '1.64.1');
-await import(pathToFileURL(`${root}/node_modules/playwright/index.mjs`));
-JS
-for binary in Xvfb x11vnc; do
-	if LD_LIBRARY_PATH="$root/dependencies/sysroot/usr/lib/x86_64-linux-gnu" \
-		ldd "$root/dependencies/sysroot/usr/bin/$binary" | grep 'not found'; then exit 1; fi
-done
-PYTHONPATH="$root/dependencies/sysroot/usr/lib/python3/dist-packages" python3 -c 'import websockify, numpy'
 if [[ -e $release ]]; then
 	for name in service.mjs protocol.mjs cli.mjs; do cmp "$src/$name" "$release/$name"; done
 else

@@ -100,8 +100,9 @@ Current refinements:
   session API browser creation, not `cmux browser open` through a stale relay.
 - ADR 0016 assigns the shared Linux browser to an on-demand user systemd service,
   with a thin Pi client and separate `shared-browser` / native `cmux-browser`
-  skills. Pi reload does not own the browser lifetime. See
-  `docs/operations/shared-browser.md` for deployment and acceptance status.
+  skills. Pi reload does not own the browser lifetime. PR #20's review follow-up
+  fixes are source-only; host publication/native revalidation are still pending.
+  See `docs/operations/shared-browser.md` for deployment and acceptance status.
 - Session-preserving native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/guides/pi-harness-workflow-manual.md`.

@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { spawnSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
 	LEASE_MS,
 	assertLoopback,
@@ -51,6 +56,48 @@ function fixture() {
 		},
 	};
 }
+
+test("dependency validation rejects missing/non-executable binaries and failed/unresolved ldd", (t) => {
+	const home = mkdtempSync(join(tmpdir(), "browser-dependencies-"));
+	t.after(() => rmSync(home, { recursive: true, force: true }));
+	const root = join(home, "dependencies");
+	const bin = join(home, "bin");
+	const put = (path, body, mode = 0o700) => {
+		mkdirSync(dirname(path), { recursive: true });
+		writeFileSync(path, body, { mode });
+	};
+	mkdirSync(join(root, "debs"), { recursive: true });
+	// Isolate external inspections; only the production shell validator executes.
+	for (const path of [join(home, ".local/bin/node"), join(bin, "sha256sum"), join(bin, "python3")])
+		put(path, "#!/bin/sh\nexit 0\n");
+	put(join(bin, "ldd"), `#!/bin/sh
+case "$LDD_CASE" in
+  failure) echo 'inspection failed' >&2; exit 1 ;;
+  unresolved) echo 'libfixture.so => not found' ;;
+  valid) echo 'libfixture.so => /fixture/libfixture.so' ;;
+esac
+`);
+	const helper = fileURLToPath(new URL("../scripts/browser-service/dependencies.sh", import.meta.url));
+	for (const scenario of ["missing-Xvfb", "missing-x11vnc", "non-executable", "failure", "unresolved", "valid"]) {
+		for (const name of ["Xvfb", "x11vnc"]) {
+			const path = join(root, "sysroot/usr/bin", name);
+			rmSync(path, { force: true });
+			if (scenario !== `missing-${name}`)
+				put(path, "#!/bin/sh\nexit 0\n", scenario === "non-executable" ? 0o600 : 0o700);
+		}
+		const result = spawnSync("/bin/bash", ["-c", 'source "$1"; check_dependencies "$2"', "check", helper, root], {
+			env: { HOME: home, PATH: bin, LDD_CASE: scenario },
+			encoding: "utf8",
+			timeout: 2000,
+		});
+		assert.ifError(result.error);
+		if (scenario === "valid") assert.equal(result.status, 0, result.stderr);
+		else {
+			assert.notEqual(result.status, 0, scenario);
+			assert.match(result.stderr, /Missing executable|Cannot inspect|Unresolved libraries/, scenario);
+		}
+	}
+});
 
 const clientId = randomUUID();
 test("request validation rejects unsafe protocols, ambiguity and unknown operations", () => {

@@ -22,172 +22,37 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
-## Coordinated cmux Maintenance and Browser PR — 2026-10-16
+## Shared Browser PR Review Follow-up — 2026-10-16
 
-Status: Executed binary/publication cutover; targeted manual checks passed.
-Automated native routing acceptance failed and is not upgrade approval. Upstream
-artifacts became available at 08:38 UTC; the owner renewed maintenance authority.
-The owner is controlling this pass from iTerm and explicitly permits ending
-cmux sessions on both hosts. Update the native Mac app and its
-manifest-matched Linux helper/owners, publish/check the shared Pi/browser setup
-on both hosts, and open a PR against `main` with this session's changes. This is
-permission for a maintenance cutover, not deletion of profiles, credentials,
-private session history, unrelated processes, or the remote checkout's local edit.
+Status: Implemented and source-validated; PR #20 update authorized by the owner.
+No merge or live host publication/restart in this pass.
 
-Affected surfaces: remote/mobile, UI, browser automation and shared publication.
-Require a downloadable official stable artifact and signing/digest verification;
-changelog/appcast advertising alone is insufficient. Preserve private app/helper
-and configuration/state backups before replacement. Keep `cmuxOnly` intact and
-run native checks from a cmux-owned terminal while iTerm remains the independent
-controller. Retire only positively identified cmux owners during this approved
-window; do not terminate tmux or unrelated agents by name. Recheck the shared
-profile, native SSH terminal/browser/notification path and browser client, with
-untested gates called out. Keep the Linux dirty checkout intact by deploying
-reviewed source from an isolated snapshot/worktree. Open the reviewed branch's PR
-against `main`; do not assume that opening a PR authorizes automatic merge.
+Affected surfaces: viewer authentication, dependency validation, tests and docs.
+Fix same-URL viewer reload reauthentication without replacing owned panes;
+require successful dependency inspection before publication. Relocate the reused
+dependency installer before removing the obsolete trial launcher/checker. Keep
+lease/consent, sandbox, secret isolation, bounded operations and cgroup cleanup.
+Consolidate executed narratives into history and remove unrelated formatting churn.
+Validation: full Mac source suite **64 passed / two expected skips**, JS/shell
+syntax, local doc links and actual Pi source loading in an isolated HOME passed.
+Independent review found a tunnel-loss/readiness race; its fix and regression
+passed re-review with no remaining findings. Native revalidation of this
+follow-up remains **Untested**. Revert the source follow-up commit if needed;
+no live runtime rollback is part of this pass.
 
-Earlier 02:03 UTC preflight: GitHub announces v0.65.2 and the stable appcast advertises
-build 111, but the release has no assets and its exact arm64 DMG URL returns 404.
-At that initial check, Mac 0.65.1 (110) and the on-disk Linux helper matched the
-signed manifest, but old Linux processes retained a previous executable. A normal
-Mac AppleScript quit returned `User canceled`; no force or owner termination
-followed then. This initial blocker was superseded by the authorized cutover below;
-see [maintenance record](history/2026-10-16-cmux-maintenance.md).
+## Shared Browser and cmux Maintenance — Current Status
 
-Executed cutover: verified the official arm64 DMG SHA-256
-`281f20bc0caf5dc8d0f8d683145992972abc886ddc954545c400ea1854af928d`,
-strict code signature and notarization. Backed up app/helper/private state locally,
-then stopped the verified old Mac app and 23 hash-identified Linux cmux processes.
-Installed Mac **0.65.2 (111), `9d01f956c`**, and Linux helper **`a9b104f3…`**;
-observed live helper hashes match the candidate manifest. Kept `cmuxOnly` and used
-a local cmux-owned terminal for native checks. No unrelated process or private
-profile/state tree was reset.
+The on-demand service/client and both browser skills were published on Mac/Linux.
+Mac cmux **0.65.2 (111)** and its manifest-selected Linux helper **`a9b104f3…`**
+were installed under explicit maintenance authority, with private recovery copies
+and scoped owner retirement. Targeted manual checks passed; **both automated
+native routing receipts failed**. Keep that trial runner away from active work.
+No merge authorization is implied by publication or source CI.
 
-Both native routing receipts failed; retain them, do not compare them as passing,
-and keep the trial runner away from active work. Scoped removal of its recorded
-disposable Linux workspace restored SSH after an `invalid resource response`
-error; the underlying vendor cause is not established. Separate targeted manual
-checks passed fresh SSH/Node/Pi startup, native notification delivery/clear,
-same-PID/nonce explicit reconnect, and authenticated shared viewer/VNC input.
-Manual native HTTP routing also passed Mac control, Linux IPv4/localhost versus
-a same-port decoy, origin loss and owned-workspace cleanup, using Linux resource
-creation/fresh projected handles and explicit test-browser focus—not the failed
-v1 setup. Public HTTPS and browser survival after client shutdown passed.
-Shared service release **`61055e777105cd44`**, source equality and native smoke
-passed. Both hosts passed publication/real Pi loading; source suites passed
-**56 + 2 skips** on Mac and **58 + 0 skips** on Linux. The dirty remote checkout
-and existing edit hash were preserved. Remaining limits are in the maintenance
-record; no full automated upgrade approval or merge authorization is implied.
-
-## Shared Browser Service, Extension and Skills — 2026-10-15
-
-Status: Implemented and natively accepted — owner explicitly requested browser
-skills and the service / thin-extension experience. This is a bounded, on-demand
-v1, not boot-time autostart. Browser automation remains separate from pi-web-access
-research. See [ADR 0016](decisions/0016-use-a-service-owned-shared-browser.md) and
-[operation / evidence](operations/shared-browser.md).
-
-Affected surfaces: browser automation, remote UI, skill/extension publication,
-and safety. Add `cmux-browser` guidance for native Mac panes and `shared-browser`
-for the dedicated Linux Chrome. Publish both skills and a thin `shared-browser`
-Pi extension through the same shared apply/check path on Mac and Linux.
-
-Use user systemd as service/lifecycle owner (available, lingering already enabled),
-not Pi or an SSH subprocess. Reuse sandboxed system Chrome and reviewed Ubuntu
-Xvfb/VNC dependencies; evaluate maintained packaging before adding another runtime.
-Keep a dedicated persistent profile, private Unix control socket, authenticated
-loopback-only VNC, and loopback CDP. Never import personal profiles. On-demand
-start/stop is explicit; no automatic restart, host reboot, cmux upgrade or system
-package change. The default service run is capped at eight hours.
-
-The extension attaches via the Linux CLI locally or over the reviewed SSH alias;
-Mac viewer commands own only their SSH tunnel/native viewer, never the service.
-Use one bounded browser tool with explicit tab handles, input validation, image
-results, serialized operations and an exclusive expiring controller lease.
-Human handoff releases automation control; it cannot prevent physical viewer
-input, so users and agents still take turns. Lifecycle/connection secrets must
-not appear in model results, command arguments, URLs or public listeners.
-
-Install into versioned user-scoped service releases with dependency inventory,
-lockfile and rollback; use systemd cgroup cleanup instead of bespoke orphan
-tracking. Keep host-local connection configuration and browser state out of Git.
-Do not overwrite the dirty homelab checkout or unrelated Pi settings/packages.
-Back up changed live assets before publishing. Validate protocol/lease/tab/error
-paths, service stop/reconnect, same-browser screenshots/actions, native viewer,
-real no-model Pi loading and shared publication checks; record untested cases.
-Rollback stops only this service/tunnel, restores the previous release and copied
-Pi assets, and preserves the dedicated profile unless explicitly discarded.
-
-Observed: native service smoke passed lease/handoff, sandbox, DOM/PNG, forced
-controller-death cgroup cleanup, restart/stale tabs, refused-file preservation,
-and stop. Real Pi-loaded command/tool handlers passed SSH automation, authenticated
-native cmux viewing without focus steal, VNC keyboard input into the same Linux
-tab, viewer reuse, and shutdown-without-service-destruction. Tests exposed and
-fixed two readiness mistakes: CDP available before HTTP navigation, and a hidden
-noVNC form having layout before a real credential request. Independent source
-reviews found no remaining blockers. Full source suite: 56 passed, two expected
-skips. Service remains stopped/on-demand; profiles, existing cmux workspaces and
-the dirty homelab checkout were preserved. Reboot/suspend, mobile viewing,
-long-duration use and heavy-site capacity remain **Untested**.
-
-## cmux Next Release and Visible Linux Browser — 2026-10-15
-
-Status: Historical trial installed and exercised — superseded by the shared
-service and October 16 maintenance sections above. The cmux publication blocker
-below describes the October 15 preflight, not the current installed version.
-
-Affected surfaces: remote/mobile, browser automation, UI, and safety. Keep cmux
-as the control plane and pi-web-access as the web-research owner. Playwright is
-explicit browser automation, not a replacement web/search package or an ambient
-MCP installation.
-
-Preflight: Mac is 0.65.1 (110); the installed Linux cmux-tui reports the matching
-`5f39d4fc6dcbe25ce117bb476e939b6c23959109` build. The official stable appcast and
-GitHub latest release still name 0.65.1, and the 0.65.2 release API returns 404,
-despite its [published changelog](https://cmux.com/docs/changelog/0.65.2).
-No update or owner restart was performed. When the stable artifact exists, use
-[the upgrade operation](operations/cmux-upgrade.md), with an independent
-controller, checkpoint/maintenance approval, private backups, manifest-matched
-helper, routing acceptance, and documented recovery. Preserve old live owners.
-
-Approved browser trial: Linux Playwright controls a dedicated headed Chrome
-profile; reuse installed Chrome with its sandbox enabled rather than download a
-second browser. Pin Playwright 1.64.1 under `~/.local/share/pi-browser-trial`.
-Without passwordless sudo, extract official Ubuntu display/VNC packages into
-that dedicated directory, without changing system packages. Xvfb plus VNC/noVNC
-exposes the same browser in a local Mac cmux pane through an explicit SSH tunnel.
-Use VNC authentication, loopback listeners, X11 authorization/no TCP, a bounded
-lifetime, and Chrome's loopback CDP endpoint for subsequent Playwright clients.
-CDP has no authentication against other local users; do not forward its port.
-Keep its generated endpoint receipt private and verify a second client controls
-the existing persistent context rather than creating a separate browser. This is
-remote viewing, not cookie synchronization or native WebKit attaching to Chromium.
-Linux already had Chrome and managed Node 24.20.0; noninteractive SSH instead
-selected system Node 18. Playwright/display packages were absent from the checked
-locations before installation.
-
-Record installed browser/dependency versions and hashes; do not change the
-system Chrome installation. Document the user-scoped dependency extraction.
-Do not import personal browser profiles,
-expose CDP/VNC publicly, disable the browser sandbox, or add persistent services
-by default. Smoke-test automation and manual input against one synthetic page
-in the same browser process. Rollback stops only trial-owned processes/tunnels
-and removes only its dedicated tooling/profile; existing browser data and cmux
-sessions remain untouched. A simpler alternative is native cmux browser control
-when Linux-owned browser execution and Playwright compatibility are unnecessary.
-
-Observed: Playwright 1.64.1 installed under the dedicated Linux root; official
-Ubuntu packages were extracted without sudo/system changes. Native cmux noVNC
-rendering, pointer/keyboard delivery to the original page, and second-client
-Playwright control passed. An initial IPv6 wildcard VNC listener was caught and
-stopped; explicit IPv6 disabling plus fail-closed listener assertions now guard
-startup/check. Startup cancellation, full launch/check/shutdown, and final
-process-group cleanup checks passed. No existing browser/cmux owner was restarted.
-Initial mostly-idle Linux PSS was about 533 MiB total, including about 80 MiB for
-display/VNC. Mac per-pane cost and sustained interactive bandwidth remain
-**Untested**. One-hour trial only; no computer-use plugin, MCP, or model calls.
-Install/start/control/rollback and limits:
-[Visible Linux browser trial](operations/linux-browser-trial.md).
+- Architecture and trust boundaries: [ADR 0016](decisions/0016-use-a-service-owned-shared-browser.md).
+- Current install/use/recovery: [shared browser operation](operations/shared-browser.md).
+- Cutover, publication evidence and unresolved transport cause: [maintenance record](history/2026-10-16-cmux-maintenance.md).
+- Superseded proof of concept and measurements: [browser trial evidence](history/2026-10-15-linux-browser-trial.md).
 
 ## Shared Harness Deployment — 2026-10-15
 

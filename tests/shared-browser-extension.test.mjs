@@ -438,18 +438,52 @@ test("native socket JSON RPC is addressed, bounded, and sanitizes failures", asy
 	);
 });
 
-test("viewer creates a local no-focus browser, sends secrets only over native socket, reuses and preserves panes", async () => {
+function viewerPage() {
+	const page = {
+		location: { href: "http://127.0.0.1:4567/vnc.html?autoconnect=1&resize=scale" },
+		classes: new Set(["noVNC_connecting"]),
+		prompt: true,
+		disconnected: false,
+		sent: [],
+	};
+	const input = { value: "", getClientRects: () => [1] };
+	page.submit = () => {
+		page.prompt = false;
+		page.classes = new Set(["noVNC_connected"]);
+	};
+	const elements = {
+		noVNC_password_input: input,
+		noVNC_credentials_dlg: { classList: { contains: () => page.prompt } },
+		noVNC_connect_dlg: { classList: { contains: () => page.disconnected } },
+		noVNC_credentials_button: { click: () => {
+			page.sent.push(input.value);
+			page.submit();
+		} },
+	};
+	page.evaluate = (script) => runInNewContext(script, {
+		location: page.location,
+		document: {
+			documentElement: { classList: { contains: (name) => page.classes.has(name) } },
+			getElementById: (id) => elements[id],
+		},
+	});
+	return page;
+}
+
+test("viewer creates a local no-focus browser, reauthenticates same-URL reloads, and preserves panes", async () => {
 	const cliCalls = [];
 	const rpcCalls = [];
 	let forwards = 0;
 	let stopped = 0;
 	let loss;
 	let notices = 0;
-	let repurposed = false;
+	const page = viewerPage();
 	const viewer = createViewer({
 		config: async () => mac,
 		cli: async (spec) => {
 			cliCalls.push(spec);
+			page.classes = new Set(["noVNC_connecting"]);
+			page.prompt = true;
 			return spec.args.includes("identify")
 				? { app: "cmux", socket_path: "/synthetic/cmux.sock" }
 				: { workspace_id: ID, surface_id: OTHER };
@@ -460,7 +494,7 @@ test("viewer creates a local no-focus browser, sends secrets only over native so
 			assert.equal(params.workspace_id, ID);
 			assert.equal(params.surface_id, OTHER);
 			rpcCalls.push(params.script);
-			return { value: !repurposed };
+			return { value: page.evaluate(params.script) };
 		},
 		tunnel: async (_config, port, onLoss) => {
 			assert.equal(port, 6080);
@@ -487,13 +521,20 @@ test("viewer creates a local no-focus browser, sends secrets only over native so
 	assert(!rpcCalls[0].includes("synthetic-private"));
 	assert(rpcCalls[1].includes("synthetic-private"));
 	await viewer.open(connection, () => notices++);
+	assert.equal(page.sent.length, 1, "Connected reuse must not resubmit credentials");
+	page.classes = new Set(["noVNC_connecting"]); // Same-URL reload, new credential request.
+	page.prompt = true;
+	await viewer.open(connection, () => notices++);
+	assert.equal(page.sent.length, 2, "Reload must authenticate again");
+	assert.ok(page.classes.has("noVNC_connected"));
+	assert.equal(cliCalls.length, 2, "Reuse must not create or focus another workspace");
 	assert.equal(forwards, 1);
 	loss();
 	assert.equal(notices, 1);
 	await viewer.open({ ...connection, generation: OTHER }, () => {});
 	assert.equal(forwards, 2);
 	assert.equal(stopped, 1);
-	repurposed = true;
+	page.location.href = "https://decoy.invalid/";
 	await assert.rejects(
 		viewer.open({ ...connection, generation: OTHER }, () => {}),
 		code("VIEW_REPURPOSED"),
@@ -507,6 +548,49 @@ test("viewer creates a local no-focus browser, sends secrets only over native so
 			),
 		),
 	);
+});
+
+test("viewer requires connection after submission, bounds retries and guards navigation races", async (t) => {
+	for (const scenario of ["rejected", "prompt-again", "pre-init", "lost-tunnel", "lost-on-connected", "repurposed"]) {
+		await t.test(scenario, async (t) => {
+			const page = viewerPage();
+			let clock = 0, alive = true, stopped = 0;
+			t.mock.method(Date, "now", () => clock);
+			page.submit = () => {
+				if (scenario === "rejected") {
+					page.classes.clear();
+					page.prompt = false;
+					page.disconnected = true;
+				}
+				if (scenario === "lost-tunnel") alive = false;
+				if (scenario === "lost-on-connected") {
+					page.prompt = false;
+					page.classes = new Set(["noVNC_connected"]);
+				}
+			};
+			if (scenario === "pre-init") page.prompt = false;
+			const viewer = createViewer({
+				config: async () => mac,
+				cli: async (spec) => spec.args.includes("identify")
+					? { app: "cmux", socket_path: "/synthetic/cmux.sock" }
+					: { workspace_id: ID, surface_id: OTHER },
+				tunnel: async () => ({ port: 4567, alive: () => alive, stop: async () => stopped++ }),
+				rpc: async (_socket, _method, { script }, { timeoutMs }) => {
+					assert.ok(timeoutMs > 0 && timeoutMs <= 5000);
+					if (scenario === "repurposed" && script.includes("input.value ="))
+						page.location.href = "https://decoy.invalid/";
+					const value = page.evaluate(script);
+					if (scenario === "lost-on-connected" && value === "connected") alive = false;
+					if (value === "pending" || (value === "credentials" && page.sent.length)) clock += 10_000;
+					return { value };
+				},
+			});
+			await assert.rejects(viewer.open(connection, () => {}),
+				code(scenario === "repurposed" ? "VIEW_REPURPOSED" : "VIEW_UNAVAILABLE"));
+			assert.equal(page.sent.length, ["pre-init", "repurposed"].includes(scenario) ? 0 : 1);
+			assert.equal(stopped, 1);
+		});
+	}
 });
 
 test("viewer tunnel binds only loopback viewer port, checks readiness, reports loss, and owns its child", async () => {

@@ -1,7 +1,8 @@
 # Shared Linux Browser
 
-Status: implemented, published on Mac/Linux, and natively accepted on 2026-10-15.
-The service is deliberately left stopped; reload Pi before first use. Decision:
+Status: initial service/client published and natively exercised on 2026-10-15–16.
+The PR #20 review follow-up changes are source-only: host publication and native
+reload/installer revalidation remain **Untested**. Decision:
 [ADR 0016](../decisions/0016-use-a-service-owned-shared-browser.md).
 
 ## Ownership and Scope
@@ -41,8 +42,11 @@ The installer refuses an active service and existing destination symlinks where
 unsafe, stages and validates dependencies before publishing them, retains the
 old service/current-release link in a dated backup, and never starts/enables the
 unit. It extracts user-scoped Ubuntu packages instead of modifying apt's system
-installation. These copies **do not receive automatic apt security updates**;
-refresh them deliberately during a reviewed maintenance pass.
+installation. `scripts/browser-service/dependencies.sh` owns extraction and
+validation; no trial scripts are needed. Missing/non-executable binaries, failed
+`ldd` inspection and unresolved libraries fail before dependency publication.
+These copies **do not receive automatic apt security updates**; refresh them
+deliberately during a reviewed maintenance pass.
 
 On Mac, publish the portable extension and skills with the same apply/check
 commands. Create `~/.config/pi-browser/client.json`, mode `0600` in a private
@@ -86,6 +90,14 @@ silently opening another browser. With the normal `cmuxOnly` socket policy,
 run `/browser view` from a **local Pi terminal inside cmux**, not iTerm or a
 managed SSH terminal. Browser automation over SSH can still run from iTerm;
 viewer creation must not bypass the native socket policy.
+
+`view` checks connection readiness for new and reused viewers, including a
+same-URL page reload. Credentials are submitted at most once per invocation;
+clicking the password button alone is not success. The readiness probe uses the
+default noVNC UI's `noVNC_connected` class, checked in upstream
+[v1.3.0](https://github.com/novnc/noVNC/blob/v1.3.0/app/ui.js) and
+[v1.6.0](https://github.com/novnc/noVNC/blob/v1.6.0/app/ui.js), not a stable public
+DOM API. Revalidate it when updating extracted noVNC packages.
 
 Ask Pi to use `shared_browser`: list tabs, open/navigate an HTTP(S) URL, inspect
 visible DOM text, click/fill/press, take a PNG screenshot, or close an explicitly
@@ -182,43 +194,16 @@ To remove the client, back up/move `~/.pi/agent/extensions/shared-browser` outsi
 Pi discovery on **both hosts**, restore the prior reviewed profile/apply source,
 then reload Pi. Do not delete profiles, credentials or unrelated extensions.
 
-## Observed Evidence / Limits
+## Evidence / Limits
 
-- Current service release **`61055e777105cd44`** was republished on October 16;
-  installed CLI/protocol/service source equality and native smoke passed. Initial
-  release `b224d30a153851cf` is superseded. Staged dependency-install failure/retry
-  and unit verification passed.
-- Native service smoke passed all checks above; the first run exposed premature
-  network readiness, fixed centrally rather than by weakening browser assertions.
-- Source integration tests: 32 passed, one expected platform-specific skip. Full
-  harness suite: 56 passed, two expected skips. Independent service and extension
-  reviews completed; reported file-preservation/install-retry findings were fixed.
-  Final focused readiness/security review reported no findings. The workspace LSP
-  cannot resolve two host-provided Pi imports; real Pi loaders validate them on
-  both hosts, without adding a duplicate repository dependency tree.
-- Both hosts passed apply/check and full no-model resource loading, including one
-  `/browser` command, one `shared_browser` tool and both browser skills. Publication
-  used an isolated Linux source snapshot, not the dirty remote checkout.
-- A no-model SDK harness loaded the **published** Mac extension and invoked its
-  actual command/tool handlers: SSH DOM access, PNG image result, native cmux
-  authentication, no focus steal, viewer reuse, explicit handoff, and VNC keyboard
-  input into the same Linux tab all passed. Pi shutdown released its lease/tunnel
-  while the browser survived; explicit confirmed stop then stopped the service.
-- Native viewer acceptance initially caught early password injection into a
-  hidden/pre-init form. A regression test failed before the fix; checking noVNC's
-  actual credential-request state fixed it and the complete native flow passed.
-- The published Linux client separately passed local service control, handoff,
-  Linux-view guidance and shutdown survival. Final unit state: `inactive`,
-  `MainPID=0`, `UnitFileState=static`; no boot enablement or acceptance tunnel left.
-  Interactive command handlers were exercised without a provider call; an
-  already-running user Pi still needs reload/new-session resource discovery.
-- Earlier bounded trial: approximately 533 MiB total idle PSS and 0.6% of one core
-  for display/VNC. This is not a new-service benchmark. Mac overhead, bandwidth,
-  heavy-site capacity, long-duration stability, host reboot/suspend, and mobile
-  viewer behavior remain **Untested**.
-- October 16 revalidation: Mac **56 passed / two skips**, Linux **58 passed / no
-  skips**; both apply/check and real Pi loaders passed. After verified cmux 0.65.2
-  installation, the published client again passed authenticated viewing and VNC
-  input into the same Playwright-controlled Linux tab. This is separate from the
-  failed native cmux routing runner; see the
-  [maintenance record](../history/2026-10-16-cmux-maintenance.md).
+- The [October 16 maintenance record](../history/2026-10-16-cmux-maintenance.md)
+  records deployed release **`61055e777105cd44`**, native service smoke, both-host
+  publication/loaders and manual viewer/input/lifetime checks. These precede the
+  source-only review follow-up; they do not validate its reload behavior or new
+  dependency helper. The separate automated cmux routing gate **failed**.
+- Isolated source regressions exercise same-URL reload, connected reuse, rejected
+  authentication, bounded submission, navigation races and dependency inspection.
+  They use synthetic DOM/process fixtures, not a live cmux/noVNC installation.
+- Earlier idle measurements belong to the [superseded trial](../history/2026-10-15-linux-browser-trial.md),
+  not a service capacity benchmark. Mac overhead, bandwidth, heavy-site capacity,
+  long-duration stability, host reboot/suspend and mobile remain **Untested**.

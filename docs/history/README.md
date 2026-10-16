@@ -12,6 +12,8 @@ Completed rollout plans and experiment logs retained as bookkeeping and validati
 
 ## Trials
 
+- [`2026-10-15-linux-browser-trial.md`](2026-10-15-linux-browser-trial.md) — same-browser proof of concept and measurements; superseded by the service.
+
 - [`2026-08-27-native-cmux-ssh-pilot.md`](2026-08-27-native-cmux-ssh-pilot.md) — evidence supporting ADR 0013 and the current native cmux SSH workflow.
 - [`2026-08-27-cmux-tui-remote-pilot.md`](2026-08-27-cmux-tui-remote-pilot.md) — successful technical pilot that was rejected as the daily control surface.
 

@@ -527,82 +527,92 @@ export function createViewer({
 				)
 					fail("VIEW_UNAVAILABLE");
 				if (
-					ownView?.tunnel.alive() &&
-					ownView.generation === connection.generation
+					!ownView?.tunnel.alive() ||
+					ownView.generation !== connection.generation
 				) {
-					const current = await rpc(ownView.socket, "browser.eval", {
-						...ownView.target,
-						script: `location.href === ${JSON.stringify(ownView.url)}`,
-					});
-					if (current.value === true) return;
 					await stop();
-					fail("VIEW_REPURPOSED");
+					const local = await config();
+					if (local.platform !== "darwin") fail("VIEW_UNAVAILABLE");
+					const identity = await cli(
+						{
+							file: "cmux",
+							args: ["--json", "--id-format", "uuids", "identify", "--no-caller"],
+						},
+						"",
+						{ timeoutMs: 5000 },
+					);
+					if (
+						identity.app !== "cmux" ||
+						typeof identity.socket_path !== "string" ||
+						!identity.socket_path.startsWith("/")
+					)
+						fail("VIEW_UNAVAILABLE");
+					const forward = await tunnel(local, connection.port, onLoss);
+					ownView = { tunnel: forward, generation: connection.generation };
+					const url = `http://127.0.0.1:${forward.port}/vnc.html?autoconnect=1&resize=scale`;
+					// Verified against cmux 0.65.1 (8a853dcc9): native local browser-only layout, focus:false.
+					const created = await cli(
+						{
+							file: "cmux",
+							args: [
+								"--json",
+								"--id-format",
+								"uuids",
+								"rpc",
+								"workspace.create",
+								JSON.stringify({
+									title: "Shared browser",
+									focus: false,
+									layout: { pane: { surfaces: [{ type: "browser", url }] } },
+								}),
+							],
+						},
+						"",
+						{ timeoutMs: 5000 },
+					);
+					if (!UUID.test(created.workspace_id) || !UUID.test(created.surface_id))
+						fail("VIEW_UNAVAILABLE");
+					const target = {
+						workspace_id: created.workspace_id,
+						surface_id: created.surface_id,
+					};
+					Object.assign(ownView, { socket: identity.socket_path, target, url });
 				}
-				await stop();
-				const local = await config();
-				if (local.platform !== "darwin") fail("VIEW_UNAVAILABLE");
-				const identity = await cli(
-					{
-						file: "cmux",
-						args: ["--json", "--id-format", "uuids", "identify", "--no-caller"],
-					},
-					"",
-					{ timeoutMs: 5000 },
-				);
-				if (
-					identity.app !== "cmux" ||
-					typeof identity.socket_path !== "string" ||
-					!identity.socket_path.startsWith("/")
-				)
-					fail("VIEW_UNAVAILABLE");
-				const forward = await tunnel(local, connection.port, onLoss);
-				ownView = { tunnel: forward, generation: connection.generation };
-				const url = `http://127.0.0.1:${forward.port}/vnc.html?autoconnect=1&resize=scale`;
-				// Verified against cmux 0.65.1 (8a853dcc9): native local browser-only layout, focus:false.
-				const created = await cli(
-					{
-						file: "cmux",
-						args: [
-							"--json",
-							"--id-format",
-							"uuids",
-							"rpc",
-							"workspace.create",
-							JSON.stringify({
-								title: "Shared browser",
-								focus: false,
-								layout: { pane: { surfaces: [{ type: "browser", url }] } },
-							}),
-						],
-					},
-					"",
-					{ timeoutMs: 5000 },
-				);
-				if (!UUID.test(created.workspace_id) || !UUID.test(created.surface_id))
-					fail("VIEW_UNAVAILABLE");
-				const target = {
-					workspace_id: created.workspace_id,
-					surface_id: created.surface_id,
-				};
-				Object.assign(ownView, { socket: identity.socket_path, target, url });
+				const { socket, target, url, tunnel: forward } = ownView;
 				const deadline = Date.now() + 10_000;
+				const evaluate = async (script) => {
+					const remaining = deadline - Date.now();
+					if (remaining <= 0 || !forward.alive()) fail("VIEW_UNAVAILABLE");
+					const result = await rpc(
+						socket, "browser.eval", { ...target, script },
+						{ timeoutMs: Math.min(5000, remaining) },
+					);
+					if (!forward.alive() || Date.now() >= deadline) fail("VIEW_UNAVAILABLE");
+					return result;
+				};
+				let submitted = false;
 				while (Date.now() < deadline && forward.alive()) {
-					const form = await rpc(identity.socket_path, "browser.eval", {
-						...target,
-						script: `(() => {
-            if (location.href !== ${JSON.stringify(url)}) return false;
+					// Default noVNC UI contract (1.3/1.6); button submission alone is not readiness.
+					const state = await evaluate(`(() => {
+            if (location.href !== ${JSON.stringify(url)}) return 'repurposed';
+            const classes = document.documentElement.classList;
+            if (classes.contains('noVNC_connected')) return 'connected';
             const input = document.getElementById('noVNC_password_input');
             const dialog = document.getElementById('noVNC_credentials_dlg');
-            return !!(dialog?.classList.contains('noVNC_open') && input && input.getClientRects().length && document.getElementById('noVNC_credentials_button'));
-          })()`,
-					});
-					if (form.value === true) {
-						const result = await rpc(identity.socket_path, "browser.eval", {
-							...target,
-							script: credentialsScript(url, connection.password),
-						});
-						if (result.value === true) return;
-						fail("VIEW_REPURPOSED");
+            if (dialog?.classList.contains('noVNC_open') && input?.getClientRects().length && document.getElementById('noVNC_credentials_button')) return 'credentials';
+            const pending = ['noVNC_loading', 'noVNC_connecting', 'noVNC_reconnecting'].some(name => classes.contains(name));
+            if (!pending && document.getElementById('noVNC_connect_dlg')?.classList.contains('noVNC_open')) return 'disconnected';
+            return 'pending';
+          })()`);
+					if (state.value === "repurposed") fail("VIEW_REPURPOSED");
+					if (state.value === "connected") return;
+					if (state.value === "disconnected") fail("VIEW_UNAVAILABLE");
+					if (state.value === "credentials" && !submitted) {
+						submitted = true;
+						const result = await evaluate(
+							credentialsScript(url, connection.password),
+						);
+						if (result.value !== true) fail("VIEW_REPURPOSED");
 					}
 					await delay(100);
 				}

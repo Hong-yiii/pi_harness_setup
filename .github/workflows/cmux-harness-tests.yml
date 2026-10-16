@@ -44,13 +44,14 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           for file in tests/*.mjs tests/cmux/*.mjs scripts/*.mjs \
-            scripts/browser-service/*.mjs scripts/browser-trial/*.mjs \
+            scripts/browser-service/*.mjs \
             pi/agent/extensions/shared-browser/*.mjs \
             automation/cmux-upgrade.mjs; do
             node --check "$file"
           done
-          bash -n scripts/browser-service/install.sh \
-            scripts/browser-trial/install.sh
+          for file in scripts/browser-service/*.sh; do
+            bash -n "$file"
+          done
       - name: Test the fixture, protocol, safety gates and regression oracle
         run: |
           node --test --test-timeout=20000 \
