@@ -22,6 +22,38 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Shared Browser PR Review Follow-up — 2026-10-16
+
+Status: Implemented and source-validated; PR #20 update authorized by the owner.
+No merge or live host publication/restart in this pass.
+
+Affected surfaces: viewer authentication, dependency validation, tests and docs.
+Fix same-URL viewer reload reauthentication without replacing owned panes;
+require successful dependency inspection before publication. Relocate the reused
+dependency installer before removing the obsolete trial launcher/checker. Keep
+lease/consent, sandbox, secret isolation, bounded operations and cgroup cleanup.
+Consolidate executed narratives into history and remove unrelated formatting churn.
+Validation: full Mac source suite **64 passed / two expected skips**, JS/shell
+syntax, local doc links and actual Pi source loading in an isolated HOME passed.
+Independent review found a tunnel-loss/readiness race; its fix and regression
+passed re-review with no remaining findings. Native revalidation of this
+follow-up remains **Untested**. Revert the source follow-up commit if needed;
+no live runtime rollback is part of this pass.
+
+## Shared Browser and cmux Maintenance — Current Status
+
+The on-demand service/client and both browser skills were published on Mac/Linux.
+Mac cmux **0.65.2 (111)** and its manifest-selected Linux helper **`a9b104f3…`**
+were installed under explicit maintenance authority, with private recovery copies
+and scoped owner retirement. Targeted manual checks passed; **both automated
+native routing receipts failed**. Keep that trial runner away from active work.
+No merge authorization is implied by publication or source CI.
+
+- Architecture and trust boundaries: [ADR 0016](decisions/0016-use-a-service-owned-shared-browser.md).
+- Current install/use/recovery: [shared browser operation](operations/shared-browser.md).
+- Cutover, publication evidence and unresolved transport cause: [maintenance record](history/2026-10-16-cmux-maintenance.md).
+- Superseded proof of concept and measurements: [browser trial evidence](history/2026-10-15-linux-browser-trial.md).
+
 ## Shared Harness Deployment — 2026-10-15
 
 Status: Executed — the owner subsequently authorized necessary execution and

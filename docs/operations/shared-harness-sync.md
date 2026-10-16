@@ -8,9 +8,12 @@ Source of truth: `pi/package-profiles/lean-default.json`, `pi/agent/`, `skills/`
 Both hosts target Pi **1.2.0** and the same nine pinned package declarations.
 Open TUI is the only active persistent UI owner; neon-sakura is the selected
 palette. Observability stays installed but disabled. BTW commands **and its
-bundled `btw` skill** are enabled. The eight repo skills, five agents, five
-prompts, global guidance, Ponytail lite, Sol subagent default and 50-task/12-way
-parallel defaults are published by the same script.
+bundled `btw` skill** are enabled. The ten repo skills, shared-browser client
+extension, five agents, five prompts, global guidance, Ponytail lite, Sol subagent
+default and 50-task/12-way parallel defaults are published by the same script.
+The Linux browser service is installed separately and never starts during apply;
+see [Shared browser](shared-browser.md). Its profiles and client SSH alias remain
+host-local.
 
 Host-local: credentials, sessions, npm installation state, OS paths, cmux
 transport, fonts, interactive parent model/provider/thinking, unrelated user
@@ -117,7 +120,8 @@ node scripts/check-pi-host-peers.mjs /absolute/path/to/pi-coding-agent \
 
 The no-model check loads the real installed resources, compiles tool schemas,
 checks shared TUI identity, one BTW skill, `/btw:ask`, `/open-tui`, disabled `/obs`,
-neon-sakura and the selected skills/prompts without provider calls or sessions.
+neon-sakura, `/browser`, one `shared_browser` tool and the selected skills/prompts
+without provider calls, browser startup or sessions.
 It is not an interactive acceptance test. In a fresh Pi, verify one footer,
 the palette, `/skill:btw`, `/open-tui`, and a deliberate `/btw:ask` question,
 focus/cancel/handoff. Side requests use quota and send inherited context to the

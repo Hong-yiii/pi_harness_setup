@@ -151,6 +151,10 @@ addJson(join(agent, "settings.json"), settings);
 for (const kind of ["agents", "prompts"])
 	copyTree(join(root, "pi/agent", kind), join(agent, kind));
 copyFile(join(root, "pi/agent/AGENTS.md"), join(agent, "AGENTS.md"));
+copyTree(
+	join(root, "pi/agent/extensions/shared-browser"),
+	join(agent, "extensions/shared-browser"),
+);
 for (const name of profile.skills)
 	copyTree(join(root, "skills", name), join(home, ".agents/skills", name));
 copyFile(join(root, "terminal/zsh/piwt.zsh"), join(config, "piwt.zsh"));

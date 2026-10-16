@@ -239,6 +239,58 @@ test("Mac/Linux managed settings converge; host-local choices survive; check is 
 	assert.deepEqual(states[0], states[1]);
 });
 
+test("browser skills and extension publish, detect drift, and preserve unrelated extension files", (t) => {
+	const { home, agent, run } = fixture(t);
+	put(join(agent, "extensions/unrelated.ts"), "keep");
+	assert.equal(run().status, 0);
+	for (const name of ["cmux-browser", "shared-browser"]) {
+		assert.deepEqual(
+			readFileSync(join(home, ".agents/skills", name, "SKILL.md")),
+			readFileSync(join(root, "skills", name, "SKILL.md")),
+		);
+		assert.ok(
+			json(join(agent, "settings.json")).skills.includes(`+skills/${name}`),
+		);
+	}
+	const target = join(agent, "extensions/shared-browser/index.ts");
+	assert.deepEqual(
+		readFileSync(target),
+		readFileSync(join(root, "pi/agent/extensions/shared-browser/index.ts")),
+	);
+	put(target, "changed");
+	const backups = join(home, ".config/pi_harness_setup/backups");
+	const before = readdirSync(backups);
+	const check = run("--check");
+	assert.equal(check.status, 1);
+	assert.match(check.stdout, /extensions\/shared-browser\/index\.ts/);
+	assert.equal(readFileSync(target, "utf8"), "changed");
+	assert.deepEqual(readdirSync(backups), before);
+	assert.equal(run("--assets-only").status, 0);
+	assert.deepEqual(
+		readFileSync(target),
+		readFileSync(join(root, "pi/agent/extensions/shared-browser/index.ts")),
+	);
+	assert.equal(
+		readFileSync(join(agent, "extensions/unrelated.ts"), "utf8"),
+		"keep",
+	);
+});
+
+test("browser extension symlink is rejected before publication", (t) => {
+	const { home, agent, run } = fixture(t);
+	mkdirSync(join(agent, "extensions"), { recursive: true });
+	const elsewhere = join(home, "elsewhere");
+	mkdirSync(elsewhere);
+	symlinkSync(elsewhere, join(agent, "extensions/shared-browser"));
+	const result = run();
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /Review symlink before publication/);
+	assert.equal(
+		existsSync(join(home, ".config/pi_harness_setup/backups")),
+		false,
+	);
+});
+
 test("JSON formatting and key order do not cause drift or rewrite live settings", (t) => {
 	const { home, agent, run } = fixture(t);
 	assert.equal(run().status, 0);

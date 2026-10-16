@@ -135,8 +135,10 @@ browser automation authority.
 ## Persistence And Cleanup
 
 - SSH loss/reconnect can leave the owner and remote processes running.
-  Same-PID reconnect was validated on 0.64.22; it remains **Untested** on 0.65.1
-  in this harness's acceptance. Do not infer it from a fresh connection.
+  Same-PID reconnect was validated on 0.64.22. On October 16, **0.65.2** also
+  preserved the probe PID and in-memory nonce across explicit native workspace
+  disconnect/reconnect. Unexpected carrier loss and app restart are different
+  tests; do not infer them from this check or a fresh connection.
 - A tab/pane/workspace **view** close is not equivalent to killing its PTY.
   Use an exact `terminal <id> close` only when intentionally ending that process;
   normal shell exit also ends it. Do not carry forward legacy teardown assumptions.
@@ -173,10 +175,14 @@ rejected August pilot.
 - 2026-10-15: Linux-origin browser creation, native rendering versus a Mac decoy,
   origin-loss behavior, notification delivery/clear, and scoped cleanup passed
   without restarting the preserved owner.
-- [Upgrade and acceptance record](../operations/cmux-upgrade-0.65.1.md). These
-  manual checks do not establish a PASS from the separate
-  [automated upgrade runner](../operations/cmux-upgrade.md), whose native
-  execution and required receipt gates remain unvalidated.
+- [0.65.1 acceptance record](../operations/cmux-upgrade-0.65.1.md) and
+  [October 16 0.65.2/helper cutover](../history/2026-10-16-cmux-maintenance.md).
+  The latter verified fresh SSH/Pi startup, session-API notifications, explicit
+  same-process reconnect, shared-browser viewing/input, and manually prepared
+  native HTTP origin/decoy/origin-loss checks with scoped cleanup. The separate
+  [automated upgrade runner](../operations/cmux-upgrade.md) was attempted and
+  failed; those receipts are not replaced by manual evidence. Keep it away from
+  active work pending its surface-ownership/readiness/cleanup follow-up.
 - [ADR 0013](../decisions/0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md)
   preserves the primary native-SSH choice; its August backend details are historical.
 - [August pilot](../history/2026-08-27-native-cmux-ssh-pilot.md) records validation

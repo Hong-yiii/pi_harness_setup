@@ -10,6 +10,7 @@ The documentation is organized by what a reader is trying to do rather than by h
 | Try it on a real project | [`getting-started/first-real-project.md`](getting-started/first-real-project.md) |
 | Understand the complete workflow | [`guides/pi-harness-workflow-manual.md`](guides/pi-harness-workflow-manual.md) |
 | Work on the remote homelab | [`guides/cmux-ssh-remote.md`](guides/cmux-ssh-remote.md) |
+| Share one Linux browser between Pi and a human | [`operations/shared-browser.md`](operations/shared-browser.md) |
 | Rebuild or repair part of the setup | [`operations/README.md`](operations/README.md) |
 | See the current architecture and next work | [`current-plan.md`](current-plan.md) |
 | Understand a durable choice | [`decisions/README.md`](decisions/README.md) |
