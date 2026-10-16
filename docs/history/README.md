@@ -2,6 +2,10 @@
 
 Completed rollout plans and experiment logs retained as bookkeeping and validation evidence.
 
+## Maintenance Records
+
+- [`2026-10-16-cmux-maintenance.md`](2026-10-16-cmux-maintenance.md) — shared-browser publication and verified cmux 0.65.2/helper cutover; manual evidence and failed automated-gate limits.
+
 ## Rollouts
 
 - [`homelab-linux-rollout-plan.md`](homelab-linux-rollout-plan.md) — executed Ubuntu homelab rollout; later Mac control-plane steps were superseded.

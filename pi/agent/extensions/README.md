@@ -2,6 +2,19 @@
 
 This directory documents extension choices that should exist in `~/.pi/agent/extensions`.
 
+## Shared Browser Client
+
+`shared-browser/` is repository-owned source, published on both hosts by
+`node scripts/apply-pi-setup.mjs --assets-only`. Its version is the reviewed Git
+revision; it adds `/browser` and `shared_browser`, not another research owner.
+Registration is inert. The separate Linux service owns Chrome and survives Pi
+reloads and SSH loss; only the client lease and local viewer tunnel belong to Pi.
+
+Configuration, threat model, acceptance evidence, and rollback live in
+[`docs/operations/shared-browser.md`](../../../docs/operations/shared-browser.md)
+and [ADR 0016](../../../docs/decisions/0016-use-a-service-owned-shared-browser.md).
+Do not place private client configuration or browser state in this directory.
+
 ## Current Local State
 
 The current live machine uses Pi's bundled plan-mode example:

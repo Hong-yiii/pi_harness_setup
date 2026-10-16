@@ -1,6 +1,13 @@
 # cmux upgrade acceptance workflow
 
-Status: **Trial — test-only implementation; native Mac execution Untested.**
+Status: **Trial — native runs attempted on 0.65.1/0.65.2; acceptance failed.**
+
+The [October 16 maintenance record](../history/2026-10-16-cmux-maintenance.md)
+records readiness, surface-ownership and cleanup failures. Subsequent SSH links
+recovered only after scoped cleanup of the recorded disposable Linux workspace.
+The underlying cause is not established. **Do not run this verifier against
+active work or treat it as an accepted upgrade gate.** No passing comparison or
+full automated upgrade approval exists; manual checks are separate evidence.
 
 This workflow turns the 0.65.0 wrong-localhost incident into a repeatable routing
 gate. It is not an installer, a complete upgrade approval, or a claim that Linux

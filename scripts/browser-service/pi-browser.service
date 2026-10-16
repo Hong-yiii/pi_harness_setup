@@ -1,0 +1,19 @@
+[Unit]
+Description=Shared sandboxed browser and private viewer for Pi
+
+[Service]
+Type=exec
+ExecStart="%h/.local/bin/node" "%h/.local/share/pi-browser/current/service.mjs"
+WorkingDirectory=%h/.local/state/pi-browser
+UMask=0077
+KillMode=control-group
+TimeoutStopSec=15s
+RuntimeMaxSec=8h
+Restart=no
+MemoryMax=1536M
+TasksMax=256
+StandardOutput=journal
+StandardError=journal
+
+# Intentionally no [Install]: start explicitly, never automatically on login.
+# Do not add NoNewPrivileges/namespace restrictions without rechecking Chrome's sandbox.

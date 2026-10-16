@@ -73,10 +73,19 @@ function forwardPiThroughShim(home, env) {
 	// Do not consult the developer's real npm installation or extra Pi launchers.
 	env.PATH = join(home, "bin");
 	unlinkSync(join(home, "bin/pi"));
-	put(join(home, "bin/pi"), '#!/bin/sh\nexec "$HOME/runtime/dist/cli.js" "$@"\n');
-	put(join(home, "bin/npm"), '#!/bin/sh\n[ "$*" = "root -g" ] || exit 92\nprintf "%s\\n" "$HOME/global/node_modules"\n');
+	put(
+		join(home, "bin/pi"),
+		'#!/bin/sh\nexec "$HOME/runtime/dist/cli.js" "$@"\n',
+	);
+	put(
+		join(home, "bin/npm"),
+		'#!/bin/sh\n[ "$*" = "root -g" ] || exit 92\nprintf "%s\\n" "$HOME/global/node_modules"\n',
+	);
 	execFileSync("chmod", ["700", join(home, "bin/pi"), join(home, "bin/npm")]);
-	const packagePath = join(home, "global/node_modules/@earendil-works/pi-coding-agent");
+	const packagePath = join(
+		home,
+		"global/node_modules/@earendil-works/pi-coding-agent",
+	);
 	mkdirSync(resolve(packagePath, ".."), { recursive: true });
 	symlinkSync(join(home, "runtime"), packagePath);
 	return packagePath;
@@ -85,7 +94,10 @@ function forwardPiThroughShim(home, env) {
 test("forwarding Pi launcher resolves the npm host; check stays read-only and apply converges", (t) => {
 	const { home, agent, run, env } = fixture(t);
 	forwardPiThroughShim(home, env);
-	put(join(agent, "settings.json"), { theme: "original", defaultModel: "keep" });
+	put(join(agent, "settings.json"), {
+		theme: "original",
+		defaultModel: "keep",
+	});
 	const before = readFileSync(join(agent, "settings.json"));
 	const check = run("--check");
 	assert.equal(check.status, 1, check.stdout + check.stderr);
@@ -106,7 +118,16 @@ test("forwarding Pi launcher resolves the npm host; check stays read-only and ap
 });
 
 test("forwarding launcher rejects missing, invalid or unavailable npm hosts before writes", (t) => {
-	for (const failure of ["missing", "name", "version", "manifest", "npm", "relative", "empty", "multiline"]) {
+	for (const failure of [
+		"missing",
+		"name",
+		"version",
+		"manifest",
+		"npm",
+		"relative",
+		"empty",
+		"multiline",
+	]) {
 		const { home, agent, run, env } = fixture(t);
 		const packagePath = forwardPiThroughShim(home, env);
 		put(join(agent, "settings.json"), { theme: "original" });
@@ -117,18 +138,26 @@ test("forwarding launcher rejects missing, invalid or unavailable npm hosts befo
 				version: failure === "version" ? "0.83.0" : "1.2.0",
 			});
 		}
-		if (failure === "manifest") put(join(home, "runtime/package.json"), "INVALID JSON");
+		if (failure === "manifest")
+			put(join(home, "runtime/package.json"), "INVALID JSON");
 		if (failure === "npm") put(join(home, "bin/npm"), "#!/bin/sh\nexit 93\n");
-		if (failure === "relative") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '%s\\n' relative/path\n");
+		if (failure === "relative")
+			put(join(home, "bin/npm"), "#!/bin/sh\nprintf '%s\\n' relative/path\n");
 		if (failure === "empty") put(join(home, "bin/npm"), "#!/bin/sh\nexit 0\n");
-		if (failure === "multiline") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '/one\\n/two\\n'\n");
+		if (failure === "multiline")
+			put(join(home, "bin/npm"), "#!/bin/sh\nprintf '/one\\n/two\\n'\n");
 		for (const args of [["--check"], []]) {
 			const result = run(...args);
 			assert.notEqual(result.status, 0, failure);
 			assert.match(result.stderr, /npm.*Pi|npm host|Cannot parse/i, failure);
 			assert.ok(!result.stderr.includes("unexpected installer"));
-			assert.deepEqual(json(join(agent, "settings.json")), { theme: "original" });
-			assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+			assert.deepEqual(json(join(agent, "settings.json")), {
+				theme: "original",
+			});
+			assert.equal(
+				existsSync(join(home, ".config/pi_harness_setup/backups")),
+				false,
+			);
 		}
 	}
 });
@@ -143,7 +172,10 @@ test("forwarding discovery accepts canonical aliases but rejects conflicting run
 		if (conflict) {
 			target = join(home, "other-runtime/dist/cli.js");
 			put(target, "#!/bin/sh\nexit 94\n");
-			put(join(home, "other-runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "1.2.0" });
+			put(join(home, "other-runtime/package.json"), {
+				name: "@earendil-works/pi-coding-agent",
+				version: "1.2.0",
+			});
 		}
 		symlinkSync(target, join(extra, "pi"));
 		env.PATH += `:${extra}`;
@@ -152,7 +184,10 @@ test("forwarding discovery accepts canonical aliases but rejects conflicting run
 		if (conflict) assert.match(result.stderr, /Ambiguous npm Pi host/);
 		else assert.match(result.stdout, /DRIFT:/);
 		assert.equal(existsSync(join(agent, "settings.json")), false);
-		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+		assert.equal(
+			existsSync(join(home, ".config/pi_harness_setup/backups")),
+			false,
+		);
 	}
 });
 
@@ -160,12 +195,20 @@ test("direct runtime discovery never consults npm or masks a mismatched host man
 	for (const mismatch of [false, true]) {
 		const { home, run, env } = fixture(t);
 		env.PATH = join(home, "bin"); // No npm exists on this isolated PATH.
-		if (mismatch) put(join(home, "runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "0.83.0" });
+		if (mismatch)
+			put(join(home, "runtime/package.json"), {
+				name: "@earendil-works/pi-coding-agent",
+				version: "0.83.0",
+			});
 		const result = run("--check");
 		assert.equal(result.status, 1);
-		if (mismatch) assert.match(result.stderr, /npm Pi host version does not match/);
+		if (mismatch)
+			assert.match(result.stderr, /npm Pi host version does not match/);
 		else assert.match(result.stdout, /DRIFT:/);
-		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+		assert.equal(
+			existsSync(join(home, ".config/pi_harness_setup/backups")),
+			false,
+		);
 	}
 });
 
@@ -239,10 +282,66 @@ test("Mac/Linux managed settings converge; host-local choices survive; check is 
 	assert.deepEqual(states[0], states[1]);
 });
 
+test("browser skills and extension publish, detect drift, and preserve unrelated extension files", (t) => {
+	const { home, agent, run } = fixture(t);
+	put(join(agent, "extensions/unrelated.ts"), "keep");
+	assert.equal(run().status, 0);
+	for (const name of ["cmux-browser", "shared-browser"]) {
+		assert.deepEqual(
+			readFileSync(join(home, ".agents/skills", name, "SKILL.md")),
+			readFileSync(join(root, "skills", name, "SKILL.md")),
+		);
+		assert.ok(
+			json(join(agent, "settings.json")).skills.includes(`+skills/${name}`),
+		);
+	}
+	const target = join(agent, "extensions/shared-browser/index.ts");
+	assert.deepEqual(
+		readFileSync(target),
+		readFileSync(join(root, "pi/agent/extensions/shared-browser/index.ts")),
+	);
+	put(target, "changed");
+	const backups = join(home, ".config/pi_harness_setup/backups");
+	const before = readdirSync(backups);
+	const check = run("--check");
+	assert.equal(check.status, 1);
+	assert.match(check.stdout, /extensions\/shared-browser\/index\.ts/);
+	assert.equal(readFileSync(target, "utf8"), "changed");
+	assert.deepEqual(readdirSync(backups), before);
+	assert.equal(run("--assets-only").status, 0);
+	assert.deepEqual(
+		readFileSync(target),
+		readFileSync(join(root, "pi/agent/extensions/shared-browser/index.ts")),
+	);
+	assert.equal(
+		readFileSync(join(agent, "extensions/unrelated.ts"), "utf8"),
+		"keep",
+	);
+});
+
+test("browser extension symlink is rejected before publication", (t) => {
+	const { home, agent, run } = fixture(t);
+	mkdirSync(join(agent, "extensions"), { recursive: true });
+	const elsewhere = join(home, "elsewhere");
+	mkdirSync(elsewhere);
+	symlinkSync(elsewhere, join(agent, "extensions/shared-browser"));
+	const result = run();
+	assert.notEqual(result.status, 0);
+	assert.match(result.stderr, /Review symlink before publication/);
+	assert.equal(
+		existsSync(join(home, ".config/pi_harness_setup/backups")),
+		false,
+	);
+});
+
 test("JSON formatting and key order do not cause drift or rewrite live settings", (t) => {
 	const { home, agent, run } = fixture(t);
 	assert.equal(run().status, 0);
-	const paths = ["settings.json", "open-tui.json", "extensions/subagent/config.json"];
+	const paths = [
+		"settings.json",
+		"open-tui.json",
+		"extensions/subagent/config.json",
+	];
 	const snapshots = paths.map((path) => {
 		const target = join(agent, path);
 		const value = Object.fromEntries(Object.entries(json(target)).reverse());
@@ -255,7 +354,8 @@ test("JSON formatting and key order do not cause drift or rewrite live settings"
 	for (const args of [["--check"], [], ["--assets-only"]]) {
 		const result = run(...args);
 		assert.equal(result.status, 0, result.stdout + result.stderr);
-		for (const [path, bytes] of snapshots) assert.equal(readFileSync(path, "utf8"), bytes);
+		for (const [path, bytes] of snapshots)
+			assert.equal(readFileSync(path, "utf8"), bytes);
 		assert.deepEqual(readdirSync(backups), before);
 	}
 });
@@ -326,7 +426,10 @@ test("check detects restored shadow libraries and stale host links even with mat
 	const plan = join(agent, "extensions/plan-mode");
 	const originalTarget = readlinkSync(plan);
 	unlinkSync(plan);
-	assert.ok(existsSync(originalTarget), "unlink must preserve the bundled plan-mode directory");
+	assert.ok(
+		existsSync(originalTarget),
+		"unlink must preserve the bundled plan-mode directory",
+	);
 	symlinkSync("/not-the-selected-runtime", plan);
 	const check = run("--check");
 	assert.equal(check.status, 1, check.stdout + check.stderr);

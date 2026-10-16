@@ -5,6 +5,7 @@ Numbered ADR-style records preserve durable choices and their tradeoffs. Status 
 ## Current Decisions To Read First
 
 - [`0015`](0015-enforce-cross-host-harness-parity.md) — authoritative portable harness parity, shared UI/BTW, host-local private state.
+- [`0016`](0016-use-a-service-owned-shared-browser.md) — independent Linux browser lifecycle, thin Pi client, and human viewer.
 
 - [`0009`](0009-adopt-lean-default-and-separate-automation.md) — lean default package ownership and explicit automation boundary.
 - [`0010`](0010-use-native-worktrees-for-pr-lanes.md) — native Git worktrees for persistent PR lanes.
@@ -31,6 +32,7 @@ Numbered ADR-style records preserve durable choices and their tradeoffs. Status 
 | [0013](0013-adopt-native-cmux-ssh-as-primary-homelab-control-plane.md) | Native cmux SSH control plane | Accepted |
 | [0014](0014-organize-documentation-by-reader-intent.md) | Documentation organized by reader intent | Accepted |
 | [0015](0015-enforce-cross-host-harness-parity.md) | Enforce cross-host harness parity | Accepted |
+| [0016](0016-use-a-service-owned-shared-browser.md) | Service-owned shared Linux browser | Accepted |
 
 For current operational state, consult [`../current-plan.md`](../current-plan.md). An accepted ADR explains a durable choice; it does not replace the relevant guide or operation.
 

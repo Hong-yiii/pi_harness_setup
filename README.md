@@ -103,6 +103,7 @@ The lean profile deliberately has a small number of named owners:
 | Persistent PR lanes | native Git worktrees + optional `piwt` | One real cwd and one writer per lane. |
 | Deterministic loops and evals | code under `automation/` | Explicit invocation only; nothing becomes ambient by existing there. |
 | Remote control plane | native `cmux ssh` over Tailscale | Remote tmux and direct SSH/tmux remain break-glass paths. |
+| Shared browser automation | repo-owned `shared_browser` client + Linux user service | Explicit connection, sandboxed Chrome, and a human noVNC viewer; [operation](docs/operations/shared-browser.md). |
 
 The machine-readable profile is
 [`pi/package-profiles/lean-default.json`](pi/package-profiles/lean-default.json).

@@ -71,7 +71,7 @@ Current refinements:
 - Native Git worktrees own persistent PR lanes; start Pi inside each real worktree, optionally through `piwt`.
 - Pi Phone, Usher, and dynamic workflows are outside the lean default.
 - Ponytail stays at `lite`; its bundled skills are filtered from the normal catalog.
-- Eight shared general skills are pinned in `skills/`; `teach` emits disposable
+- Ten shared skills are versioned in `skills/`; `teach` emits disposable
   temp HTML. BTW contributes its enabled bundled skill; Pi Lens contributes four
   tool-specific guides. Use `/btw:ask` while the main agent works.
 - Ubuntu homelab rollout is executed: top-level repo checkout, user-scoped
@@ -81,18 +81,28 @@ Current refinements:
   a real Pi reconnect, native notifications, and remote browser routing passed.
 - ADR 0012 Remote tmux remains historical validation and break-glass recovery.
 - The standalone Rust cmux TUI pilot was decommissioned after comparison; this
-  differs from the `cmux-tui` backend now bundled with native cmux 0.65.1.
-- Mac cmux 0.65.1 and its matching Linux helper passed manual fresh-SSH, terminal,
-  public-browser, HTTP Linux-origin/decoy/origin-loss, and OSC-notification checks.
-  Old durable owners remain preserved. Linux session-API browser/notification
-  delivery passed on 2026-10-15 without reviving the legacy CLI wrapper.
-  Automatic Pi hooks, app-quit cleanup and broader browser behavior remain open; see
-  `docs/operations/cmux-upgrade-0.65.1.md`. The automated upgrade runner's native
-  execution remains Untested; these manual results do not substitute for receipts.
+  differs from the `cmux-tui` backend bundled with native cmux.
+- Historical 0.65.1 manual evidence covers fresh SSH, terminal, public-browser,
+  Linux-origin/decoy/origin-loss and notifications; old owners were preserved
+  during that earlier pass. See `docs/operations/cmux-upgrade-0.65.1.md`.
+- The 2026-10-16 maintenance window installed **Mac cmux 0.65.2 (111)** and its
+  signed-manifest-selected Linux helper **`a9b104f3…`**, after official artifacts
+  became available. Private recovery copies were retained; 23 verified old Linux
+  cmux processes were retired under renewed maintenance authorization. Fresh SSH,
+  Pi startup, session-API notifications, same-process explicit reconnect and the
+  shared-browser viewer/input path passed targeted manual checks. The automated
+  routing runner failed surface ownership/readiness/cleanup checks; it is not an
+  accepted upgrade gate. Its disposable Linux workspace required scoped cleanup
+  before fresh SSH worked again. No private state/profile tree was reset. See
+  `docs/history/2026-10-16-cmux-maintenance.md` for evidence and limits.
 - `teach` and deep-research share `skills/teach/references/artifact-delivery.md`:
   local Mac files open directly; Linux uses a bounded loopback server and
   session API browser creation, not `cmux browser open` through a stale relay.
-- Complete native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
+- ADR 0016 assigns the shared Linux browser to an on-demand user systemd service,
+  with a thin Pi client and separate `shared-browser` / native `cmux-browser`
+  skills. Pi reload does not own the browser lifetime. See
+  `docs/operations/shared-browser.md` for deployment and acceptance status.
+- Session-preserving native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.
 - The main operating manual is `docs/guides/pi-harness-workflow-manual.md`.
 - The first-project guide is `docs/getting-started/first-real-project.md`.

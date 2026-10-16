@@ -150,6 +150,13 @@ export default function () { assert.equal(LensText, Text, 'Lens/Pi TUI class ide
 		]);
 		assert.ok(commands.includes("btw:ask"));
 		assert.ok(commands.includes("open-tui"));
+		assert.equal(commands.filter((name) => name === "browser").length, 1);
+		assert.equal(
+			loaded.extensions
+				.flatMap((extension) => [...extension.tools.keys()])
+				.filter((name) => name === "shared_browser").length,
+			1,
+		);
 		assert.ok(!commands.includes("obs"), "Observability UI must be disabled");
 		for (const { definition } of loaded.extensions.flatMap((extension) => [
 			...extension.tools.values(),
@@ -174,7 +181,7 @@ export default function () { assert.equal(LensText, Text, 'Lens/Pi TUI class ide
 				.prompts.some((prompt) => prompt.name === "deep-research"),
 		);
 		console.log(
-			"PASS: shared profile loads, BTW command + skill, Open TUI alone, neon-sakura, selected skills/prompts; no resource warnings",
+			"PASS: shared profile loads, browser command/tool, BTW command + skill, Open TUI alone, neon-sakura, selected skills/prompts; no resource warnings",
 		);
 	}
 } finally {
