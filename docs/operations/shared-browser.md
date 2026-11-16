@@ -67,9 +67,30 @@ remote checkout by using an isolated snapshot rather than overwriting it.
 Reload Pi or start a fresh session after publication. Registration alone neither
 reads browser configuration nor launches children, sockets, timers or browsers.
 
+## Choose Local Mac or Shared Linux
+
+`/browser` always targets the service-owned **Linux Chrome**, even when Pi runs
+locally on Mac. Mac control travels over SSH; `/browser view` displays that same
+Linux browser through noVNC. It does not open the website in native Mac WebKit.
+Downloads and browser login state stay on Linux.
+
+| Request | Route |
+| --- | --- |
+| "Open/show this page" from local Mac Pi, with no other selected target | Native Mac `cmux-browser`; no `/browser` setup |
+| Explicit Linux/shared browsing, or an identified shared-browser tab | `shared-browser` / `shared_browser` after explicit connection |
+| General research or page reading without an interactive-browser request | Existing search/fetch tools |
+| Ambiguous target | Ask "Local Mac pane or shared Linux Chrome?" before acting |
+| Selected browser unavailable | Report the blocker; ask before switching browsers |
+
+An explicit target takes precedence over the local default. A connected lease is
+permission to control Linux Chrome, not a preference for all later browsing.
+Never silently substitute one browser for the other. Verify the result and name
+its destination: "Opened in your Mac cmux pane" or "Opened in shared Linux Chrome."
+These are agent-routing instructions, not a new runtime enforcement mechanism.
+
 ## Daily Use
 
-In the Pi session that will control the browser:
+Only after choosing shared Linux Chrome, in the Pi session that will control it:
 
 ```text
 /browser start

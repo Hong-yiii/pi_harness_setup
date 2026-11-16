@@ -1,6 +1,6 @@
 ---
 name: shared-browser
-description: Control the existing shared Linux Chrome with Playwright while the user watches or takes over through noVNC in Mac cmux. Use the shared_browser tool for tabs, DOM actions and screenshots; never launch a replacement browser.
+description: Control shared Linux Chrome only when the user requests Linux/shared browsing or identifies an existing shared-browser tab. Remote from Mac even when viewed in cmux via noVNC. For unspecified open/show-page requests from local Mac Pi, use cmux-browser instead; never silently switch targets.
 ---
 
 # Shared Linux browser
@@ -8,6 +8,25 @@ description: Control the existing shared Linux Chrome with Playwright while the 
 The Linux user service owns Chrome, its dedicated persistent profile, display
 and viewer. Pi is a client. noVNC is the human's live view of the same browser,
 not the agent's control API or a DOM-accessible iframe.
+
+## Choose the target before connecting
+
+- Use this skill only for a user-selected Linux/shared browser, including explicit
+  `/browser` lifecycle/status requests, or an identified shared-browser tab.
+  Running Pi on Mac is supported, but Chrome, downloads and login state remain
+  on Linux; the Mac cmux noVNC pane is only its viewer.
+- From local Mac Pi, default an unspecified "open/show this page" request to
+  native Mac `cmux-browser`, unless the user selects another browser or existing
+  tab. General research/search stays with the web-search/fetch tools.
+- If context leaves the target ambiguous, ask "Local Mac pane or shared Linux
+  Chrome?" before browser actions. Do not probe or start Linux Chrome merely to
+  satisfy an unspecified local page-opening request.
+- An active `/browser connect` lease grants control, not a default target
+  preference for unrelated tasks. If the selected browser is unavailable, report
+  the blocker and ask before switching; never silently fall back in either direction.
+
+After verifying the page, say "Opened in shared Linux Chrome" (and mention the
+Mac viewer only if opened), not "Opened locally" or simply "It's working."
 
 ## Connect once, work on an explicit tab
 
