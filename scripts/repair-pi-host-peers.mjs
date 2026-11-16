@@ -66,9 +66,9 @@ export function inspectHostPeers(host, modules, compat) {
 	const manifest = readJson(join(host, "package.json"));
 	if (
 		manifest.name !== "@earendil-works/pi-coding-agent" ||
-		manifest.version !== "1.2.0"
+		manifest.version !== "1.5.2"
 	)
-		throw new Error("Peer repair requires the reviewed Pi 1.2.0 npm runtime");
+		throw new Error("Peer repair requires the reviewed Pi 1.5.2 npm runtime");
 	noSymlinks(modules);
 	noSymlinks(compat);
 	const drift = [];

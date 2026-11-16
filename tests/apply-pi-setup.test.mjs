@@ -15,6 +15,7 @@ import {
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import test from "node:test";
+import { inspectHostPeers } from "../scripts/repair-pi-host-peers.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const profile = JSON.parse(
@@ -29,7 +30,7 @@ function put(path, value) {
 		typeof value === "string" ? value : JSON.stringify(value),
 	);
 }
-function fixture(t, version = "1.2.0") {
+function fixture(t, version = profile.runtime.pi) {
 	const home = mkdtempSync(join(tmpdir(), "harness-apply-test-"));
 	t.after(() => rmSync(home, { recursive: true, force: true }));
 	const agent = join(home, ".pi/agent");
@@ -73,10 +74,19 @@ function forwardPiThroughShim(home, env) {
 	// Do not consult the developer's real npm installation or extra Pi launchers.
 	env.PATH = join(home, "bin");
 	unlinkSync(join(home, "bin/pi"));
-	put(join(home, "bin/pi"), '#!/bin/sh\nexec "$HOME/runtime/dist/cli.js" "$@"\n');
-	put(join(home, "bin/npm"), '#!/bin/sh\n[ "$*" = "root -g" ] || exit 92\nprintf "%s\\n" "$HOME/global/node_modules"\n');
+	put(
+		join(home, "bin/pi"),
+		'#!/bin/sh\nexec "$HOME/runtime/dist/cli.js" "$@"\n',
+	);
+	put(
+		join(home, "bin/npm"),
+		'#!/bin/sh\n[ "$*" = "root -g" ] || exit 92\nprintf "%s\\n" "$HOME/global/node_modules"\n',
+	);
 	execFileSync("chmod", ["700", join(home, "bin/pi"), join(home, "bin/npm")]);
-	const packagePath = join(home, "global/node_modules/@earendil-works/pi-coding-agent");
+	const packagePath = join(
+		home,
+		"global/node_modules/@earendil-works/pi-coding-agent",
+	);
 	mkdirSync(resolve(packagePath, ".."), { recursive: true });
 	symlinkSync(join(home, "runtime"), packagePath);
 	return packagePath;
@@ -85,7 +95,10 @@ function forwardPiThroughShim(home, env) {
 test("forwarding Pi launcher resolves the npm host; check stays read-only and apply converges", (t) => {
 	const { home, agent, run, env } = fixture(t);
 	forwardPiThroughShim(home, env);
-	put(join(agent, "settings.json"), { theme: "original", defaultModel: "keep" });
+	put(join(agent, "settings.json"), {
+		theme: "original",
+		defaultModel: "keep",
+	});
 	const before = readFileSync(join(agent, "settings.json"));
 	const check = run("--check");
 	assert.equal(check.status, 1, check.stdout + check.stderr);
@@ -106,7 +119,16 @@ test("forwarding Pi launcher resolves the npm host; check stays read-only and ap
 });
 
 test("forwarding launcher rejects missing, invalid or unavailable npm hosts before writes", (t) => {
-	for (const failure of ["missing", "name", "version", "manifest", "npm", "relative", "empty", "multiline"]) {
+	for (const failure of [
+		"missing",
+		"name",
+		"version",
+		"manifest",
+		"npm",
+		"relative",
+		"empty",
+		"multiline",
+	]) {
 		const { home, agent, run, env } = fixture(t);
 		const packagePath = forwardPiThroughShim(home, env);
 		put(join(agent, "settings.json"), { theme: "original" });
@@ -114,21 +136,29 @@ test("forwarding launcher rejects missing, invalid or unavailable npm hosts befo
 		if (failure === "name" || failure === "version") {
 			put(join(home, "runtime/package.json"), {
 				name: failure === "name" ? "not-pi" : "@earendil-works/pi-coding-agent",
-				version: failure === "version" ? "0.83.0" : "1.2.0",
+				version: failure === "version" ? "0.83.0" : profile.runtime.pi,
 			});
 		}
-		if (failure === "manifest") put(join(home, "runtime/package.json"), "INVALID JSON");
+		if (failure === "manifest")
+			put(join(home, "runtime/package.json"), "INVALID JSON");
 		if (failure === "npm") put(join(home, "bin/npm"), "#!/bin/sh\nexit 93\n");
-		if (failure === "relative") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '%s\\n' relative/path\n");
+		if (failure === "relative")
+			put(join(home, "bin/npm"), "#!/bin/sh\nprintf '%s\\n' relative/path\n");
 		if (failure === "empty") put(join(home, "bin/npm"), "#!/bin/sh\nexit 0\n");
-		if (failure === "multiline") put(join(home, "bin/npm"), "#!/bin/sh\nprintf '/one\\n/two\\n'\n");
+		if (failure === "multiline")
+			put(join(home, "bin/npm"), "#!/bin/sh\nprintf '/one\\n/two\\n'\n");
 		for (const args of [["--check"], []]) {
 			const result = run(...args);
 			assert.notEqual(result.status, 0, failure);
 			assert.match(result.stderr, /npm.*Pi|npm host|Cannot parse/i, failure);
 			assert.ok(!result.stderr.includes("unexpected installer"));
-			assert.deepEqual(json(join(agent, "settings.json")), { theme: "original" });
-			assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+			assert.deepEqual(json(join(agent, "settings.json")), {
+				theme: "original",
+			});
+			assert.equal(
+				existsSync(join(home, ".config/pi_harness_setup/backups")),
+				false,
+			);
 		}
 	}
 });
@@ -143,7 +173,10 @@ test("forwarding discovery accepts canonical aliases but rejects conflicting run
 		if (conflict) {
 			target = join(home, "other-runtime/dist/cli.js");
 			put(target, "#!/bin/sh\nexit 94\n");
-			put(join(home, "other-runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "1.2.0" });
+			put(join(home, "other-runtime/package.json"), {
+				name: "@earendil-works/pi-coding-agent",
+				version: profile.runtime.pi,
+			});
 		}
 		symlinkSync(target, join(extra, "pi"));
 		env.PATH += `:${extra}`;
@@ -152,7 +185,10 @@ test("forwarding discovery accepts canonical aliases but rejects conflicting run
 		if (conflict) assert.match(result.stderr, /Ambiguous npm Pi host/);
 		else assert.match(result.stdout, /DRIFT:/);
 		assert.equal(existsSync(join(agent, "settings.json")), false);
-		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+		assert.equal(
+			existsSync(join(home, ".config/pi_harness_setup/backups")),
+			false,
+		);
 	}
 });
 
@@ -160,12 +196,131 @@ test("direct runtime discovery never consults npm or masks a mismatched host man
 	for (const mismatch of [false, true]) {
 		const { home, run, env } = fixture(t);
 		env.PATH = join(home, "bin"); // No npm exists on this isolated PATH.
-		if (mismatch) put(join(home, "runtime/package.json"), { name: "@earendil-works/pi-coding-agent", version: "0.83.0" });
+		if (mismatch)
+			put(join(home, "runtime/package.json"), {
+				name: "@earendil-works/pi-coding-agent",
+				version: "0.83.0",
+			});
 		const result = run("--check");
 		assert.equal(result.status, 1);
-		if (mismatch) assert.match(result.stderr, /npm Pi host version does not match/);
+		if (mismatch)
+			assert.match(result.stderr, /npm Pi host version does not match/);
 		else assert.match(result.stdout, /DRIFT:/);
-		assert.equal(existsSync(join(home, ".config/pi_harness_setup/backups")), false);
+		assert.equal(
+			existsSync(join(home, ".config/pi_harness_setup/backups")),
+			false,
+		);
+	}
+});
+
+test("fresh installs select Astra/high and Kimi/medium without per-agent model pins", (t) => {
+	assert.equal(profile.runtime.pi, "1.5.2");
+	const { agent, run } = fixture(t);
+	const result = run();
+	assert.equal(result.status, 0, result.stdout + result.stderr);
+	const settings = json(join(agent, "settings.json"));
+	assert.equal(settings.defaultProvider, "openai-codex");
+	assert.equal(settings.defaultModel, "gpt-6-astra");
+	assert.equal(settings.defaultThinkingLevel, "high");
+	assert.equal(settings.subagents.defaultModel, "kimi-coding/k3.1-pro:medium");
+	assert.deepEqual(
+		json(join(agent, "models.json")),
+		json(join(root, "pi/agent/models.json")),
+	);
+	assert.equal(
+		json(join(agent, "models.json")).providers["kimi-coding"].models[0]
+			.thinkingLevelMap.medium,
+		"high",
+	);
+	for (const [name, thinking] of Object.entries({
+		scout: "medium",
+		researcher: "medium",
+		planner: "high",
+		reviewer: "high",
+		worker: "xhigh",
+	})) {
+		const content = readFileSync(join(agent, "agents", `${name}.md`), "utf8");
+		assert.equal(
+			content,
+			readFileSync(join(root, "pi/agent/agents", `${name}.md`), "utf8"),
+		);
+		const frontmatter = content.split("---")[1];
+		assert.match(frontmatter, new RegExp(`^name: ${name}$`, "m"));
+		assert.match(frontmatter, new RegExp(`^thinking: ${thinking}$`, "m"));
+		assert.doesNotMatch(frontmatter, /^model:/m);
+	}
+	assert.equal(run("--check").status, 0);
+});
+
+test("model publication merges by ID, preserves private config, rejects symlinks and is idempotent", (t) => {
+	const { home, agent, run } = fixture(t);
+	const path = join(agent, "models.json");
+	const original = {
+		providers: {
+			private: { apiKey: "synthetic-only", models: [{ id: "local" }] },
+			"kimi-coding": {
+				apiKey: "$PRIVATE_KIMI_KEY",
+				headers: { "X-Local": "synthetic" },
+				models: [
+					{ id: "other" },
+					{
+						id: "k3.1-pro",
+						thinkingLevelMap: { medium: null },
+						headers: { "X-Model": "keep" },
+					},
+				],
+			},
+		},
+	};
+	put(path, original);
+	const before = readFileSync(path);
+	assert.equal(run("--check").status, 1);
+	assert.deepEqual(readFileSync(path), before);
+	const apply = run();
+	assert.equal(apply.status, 0, apply.stdout + apply.stderr);
+	const after = json(path);
+	assert.deepEqual(after.providers.private, original.providers.private);
+	const kimi = after.providers["kimi-coding"];
+	assert.equal(kimi.apiKey, "$PRIVATE_KIMI_KEY");
+	assert.deepEqual(kimi.headers, original.providers["kimi-coding"].headers);
+	assert.deepEqual(kimi.models[0], { id: "other" });
+	assert.equal(kimi.models.length, 2);
+	assert.deepEqual(kimi.models[1].headers, { "X-Model": "keep" });
+	assert.equal(kimi.models[1].thinkingLevelMap.medium, "high");
+	const backups = join(home, ".config/pi_harness_setup/backups");
+	const names = readdirSync(backups);
+	assert.deepEqual(
+		readFileSync(join(backups, names[0], "files/.pi/agent/models.json")),
+		before,
+	);
+	assert.equal(run("--check").status, 0);
+	assert.equal(run().status, 0);
+	assert.deepEqual(readdirSync(backups), names);
+	assert.doesNotMatch(
+		apply.stdout + apply.stderr,
+		/synthetic-only|PRIVATE_KIMI_KEY/,
+	);
+	unlinkSync(path);
+	const target = join(home, "private-models.json");
+	put(target, original);
+	symlinkSync(target, path);
+	assert.match(run().stderr, /Review symlink before publication/);
+	assert.deepEqual(json(target), original);
+});
+
+test("peer repair refuses unreviewed runtimes before touching extension paths", (t) => {
+	for (const version of ["1.2.0", "1.4.0", "1.5.1", "1.5.3", "2.0.0"]) {
+		const { home } = fixture(t, version);
+		assert.throws(
+			() =>
+				inspectHostPeers(
+					join(home, "runtime"),
+					join(home, "missing-modules"),
+					join(home, "compat"),
+				),
+			/requires the reviewed Pi 1\.5\.2/,
+		);
+		assert.equal(existsSync(join(home, "compat")), false);
 	}
 });
 
@@ -175,7 +330,10 @@ test("Mac/Linux managed settings converge; host-local choices survive; check is 
 		const { home, agent, run } = fixture(t);
 		put(join(agent, "settings.json"), {
 			theme,
+			defaultProvider: "keep-my-provider",
 			defaultModel: "keep-my-model",
+			defaultThinkingLevel: "low",
+			modelThinkingLevels: { "keep-my-provider/keep-my-model": "medium" },
 			unrelated: { keep: true },
 			subagents: { defaultModel: "old-model", custom: true },
 			packages: ["npm:pi-open-tui", "npm:pi-btw", "npm:unrelated@1.0.0"],
@@ -202,10 +360,18 @@ test("Mac/Linux managed settings converge; host-local choices survive; check is 
 		assert.equal(apply.status, 0, apply.stdout + apply.stderr);
 		const settings = json(join(agent, "settings.json"));
 		assert.equal(settings.theme, "neon-sakura");
+		assert.equal(settings.defaultProvider, "keep-my-provider");
 		assert.equal(settings.defaultModel, "keep-my-model");
+		assert.equal(settings.defaultThinkingLevel, "low");
+		assert.deepEqual(settings.modelThinkingLevels, {
+			"keep-my-provider/keep-my-model": "medium",
+		});
 		assert.deepEqual(settings.unrelated, { keep: true });
 		assert.equal(settings.subagents.custom, true);
-		assert.equal(settings.subagents.defaultModel, "openai-codex/gpt-6.1-sol");
+		assert.equal(
+			settings.subagents.defaultModel,
+			"kimi-coding/k3.1-pro:medium",
+		);
 		const packages = settings.packages;
 		assert.ok(packages.includes("npm:unrelated@1.0.0"));
 		assert.deepEqual(
@@ -294,7 +460,11 @@ test("browser extension symlink is rejected before publication", (t) => {
 test("JSON formatting and key order do not cause drift or rewrite live settings", (t) => {
 	const { home, agent, run } = fixture(t);
 	assert.equal(run().status, 0);
-	const paths = ["settings.json", "open-tui.json", "extensions/subagent/config.json"];
+	const paths = [
+		"settings.json",
+		"open-tui.json",
+		"extensions/subagent/config.json",
+	];
 	const snapshots = paths.map((path) => {
 		const target = join(agent, path);
 		const value = Object.fromEntries(Object.entries(json(target)).reverse());
@@ -307,7 +477,8 @@ test("JSON formatting and key order do not cause drift or rewrite live settings"
 	for (const args of [["--check"], [], ["--assets-only"]]) {
 		const result = run(...args);
 		assert.equal(result.status, 0, result.stdout + result.stderr);
-		for (const [path, bytes] of snapshots) assert.equal(readFileSync(path, "utf8"), bytes);
+		for (const [path, bytes] of snapshots)
+			assert.equal(readFileSync(path, "utf8"), bytes);
 		assert.deepEqual(readdirSync(backups), before);
 	}
 });
@@ -316,7 +487,7 @@ test("wrong runtime, missing package and symlink destinations fail before writes
 	for (const failure of ["runtime", "package", "symlink"]) {
 		const { home, agent, run } = fixture(
 			t,
-			failure === "runtime" ? "0.83.0" : "1.2.0",
+			failure === "runtime" ? "0.83.0" : profile.runtime.pi,
 		);
 		const settings = join(agent, "settings.json");
 		put(settings, { theme: "original" });
@@ -378,7 +549,10 @@ test("check detects restored shadow libraries and stale host links even with mat
 	const plan = join(agent, "extensions/plan-mode");
 	const originalTarget = readlinkSync(plan);
 	unlinkSync(plan);
-	assert.ok(existsSync(originalTarget), "unlink must preserve the bundled plan-mode directory");
+	assert.ok(
+		existsSync(originalTarget),
+		"unlink must preserve the bundled plan-mode directory",
+	);
 	symlinkSync("/not-the-selected-runtime", plan);
 	const check = run("--check");
 	assert.equal(check.status, 1, check.stdout + check.stderr);
@@ -413,7 +587,7 @@ test("fresh install failure after one success records original absence, not a fi
 	put(
 		join(home, "runtime/dist/cli.js"),
 		`#!/bin/sh
-if [ "$1" = --version ]; then echo 1.2.0; exit 0; fi
+if [ "$1" = --version ]; then echo ${profile.runtime.pi}; exit 0; fi
 if [ ! -e "$HOME/installed-once" ]; then
   mkdir -p "$HOME/.pi/agent/npm/node_modules/pi-observability"
   printf '%s' '{"name":"pi-observability","version":"1.3.2"}' > "$HOME/.pi/agent/npm/node_modules/pi-observability/package.json"
@@ -457,7 +631,8 @@ test("Ubuntu bootstrap refuses a runtime downgrade", {
 		.split("# Refuse an accidental downgrade")[1]
 		.split("# Retain old runtimes:")[0];
 	const body = guard.slice(guard.indexOf("\n"));
-	for (const version of ["1.0.4", "1.2.0", "1.3.0"]) {
+	const newer = `${Number(profile.runtime.pi.split(".")[0]) + 1}.0.0`;
+	for (const version of ["1.2.0", profile.runtime.pi, newer]) {
 		const { home } = fixture(t, version);
 		const result = spawnSync(
 			"bash",
@@ -467,10 +642,10 @@ test("Ubuntu bootstrap refuses a runtime downgrade", {
 				env: {
 					...process.env,
 					LOCAL_BIN: join(home, "bin"),
-					PI_VERSION: "1.2.0",
+					PI_VERSION: profile.runtime.pi,
 				},
 			},
 		);
-		assert.equal(result.status, version === "1.3.0" ? 1 : 0, result.stderr);
+		assert.equal(result.status, version === newer ? 1 : 0, result.stderr);
 	}
 });

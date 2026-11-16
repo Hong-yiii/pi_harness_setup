@@ -4,7 +4,7 @@
 
 **A reproducible coding-agent control plane built for inspection, remote durability, and deliberate autonomy.**
 
-[![Pi 1.2.0](https://img.shields.io/badge/Pi-1.2.0-f06292?style=flat-square)](https://github.com/badlogic/pi-mono) ![macOS + Ubuntu](https://img.shields.io/badge/runtime-macOS%20%2B%20Ubuntu-38bdf8?style=flat-square) [![ADR-driven](https://img.shields.io/badge/architecture-ADR--driven-a78bfa?style=flat-square)](docs/decisions/README.md) [![last commit](https://img.shields.io/github/last-commit/Hong-yiii/pi_harness_setup?style=flat-square&color=64748b)](https://github.com/Hong-yiii/pi_harness_setup/commits/main)
+[![Pi 1.5.2](https://img.shields.io/badge/Pi-1.5.2-f06292?style=flat-square)](https://github.com/badlogic/pi-mono) ![macOS + Ubuntu](https://img.shields.io/badge/runtime-macOS%20%2B%20Ubuntu-38bdf8?style=flat-square) [![ADR-driven](https://img.shields.io/badge/architecture-ADR--driven-a78bfa?style=flat-square)](docs/decisions/README.md) [![last commit](https://img.shields.io/github/last-commit/Hong-yiii/pi_harness_setup?style=flat-square&color=64748b)](https://github.com/Hong-yiii/pi_harness_setup/commits/main)
 
 </div>
 
@@ -91,7 +91,7 @@ The lean profile deliberately has a small number of named owners:
 
 | Surface | Owner | Boundary |
 | --- | --- | --- |
-| Agent runtime | upstream Pi `1.2.0` | Small documented base; OMP is a separate trial lane. |
+| Agent runtime | upstream Pi `1.5.2` | Latest-stable migration tracked in the shared-sync operation; OMP is a separate trial lane. |
 | Web and fetch | `pi-web-access@0.17.1` | Browser-cookie paths stay disabled unless deliberately enabled. |
 | Code exploration | `pi-lens@3.8.74` | No competing semantic index or read/edit replacement in the default. |
 | Conversational delegation | `pi-subagents@0.40.0` | Bounded scout, research, plan, worker, and review roles. |
@@ -159,14 +159,15 @@ Tailscale path. See [`CONTEXT.md`](CONTEXT.md) and the
 ## Quick Start
 
 The smallest useful path applies only the portable, user-level Pi harness.
-Pi `1.2.0` requires Node `>=22.19.0`.
+Pi `1.5.2` requires Node `>=22.19.0`. Existing hosts need the separate
+[runtime migration](docs/operations/shared-harness-sync.md#runtime-migration).
 
 ```bash
 git clone https://github.com/Hong-yiii/pi_harness_setup.git
 cd pi_harness_setup
 
 # Install the repository-pinned Pi version if needed.
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.5.2
 
 # Install selected packages and publish versioned assets.
 node scripts/apply-pi-setup.mjs

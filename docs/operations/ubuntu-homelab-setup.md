@@ -1,7 +1,7 @@
 # Ubuntu Homelab Setup
 
 Status: Native cmux SSH adopted; Remote tmux retained as break-glass fallback
-Last updated: 2026-10-15
+Last updated: 2026-11-16 (latest-stable publication tracked in shared-sync)
 
 ## Goal
 
@@ -55,7 +55,7 @@ Read-only inspection on 2026-08-26 found:
 - no passwordless sudo;
 - Tailscale using a Singapore DERP relay rather than a direct peer path.
 
-The current shared Pi pin is `1.2.0` (Node >=22.19.0). The bootstrap reads it
+The current shared Pi pin is `1.5.2` (Node >=22.19.0). The bootstrap reads it
 from the profile and installs a versioned Pi prefix. Node `24.20.0` remains
 user-scoped without replacing `/usr/bin/node`. The observations below are
 historical; normal refresh follows [Shared harness sync](shared-harness-sync.md).
@@ -228,7 +228,7 @@ Expected runtime pins:
 
 ```text
 Node v24.20.0
-Pi 1.2.0
+Pi 1.5.2
 Hunk 0.20.0
 ```
 

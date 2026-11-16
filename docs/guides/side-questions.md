@@ -48,7 +48,9 @@ Pi Subagents still owns delegated agent work; Open TUI owns the persistent UI.
 
 ## Install or reconstruct on either host
 
-The common runtime pin is Pi 1.2.0 (upstream BTW supports >=0.85.1 and <2).
+The common runtime is Pi 1.5.2 (upstream BTW supports >=0.85.1 and <2),
+published on both hosts. Native loading passed; interactive BTW acceptance on
+this runtime remains **Untested**.
 Follow [Shared harness sync](../operations/shared-harness-sync.md), not the
 old host-only install. Apply owns the pinned package and this resource filter:
 

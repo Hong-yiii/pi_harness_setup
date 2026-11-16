@@ -1,8 +1,8 @@
 {
   "name": "lean-default",
-  "date": "2026-10-15",
+  "date": "2026-11-16",
   "scope": "user",
-  "runtime": { "pi": "1.2.0" },
+  "runtime": { "pi": "1.5.2" },
   "packages": [
     {
       "surface": "retained-observability-state",
