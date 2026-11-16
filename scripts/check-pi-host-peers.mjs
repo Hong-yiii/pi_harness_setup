@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Bounded Pi 1.0.4/1.2.0 backport and optional shared-resource check; no session/model call.
+// Bounded Pi 1.5.2 backport and optional shared-resource check; no session/model call.
 import assert from "node:assert/strict";
 import {
 	mkdtempSync,
@@ -43,6 +43,16 @@ const { VIRTUAL_MODULES } = await import(
 );
 const { DefaultResourceLoader, SettingsManager } =
 	VIRTUAL_MODULES["@earendil-works/pi-coding-agent"];
+const { validateToolArguments } = VIRTUAL_MODULES["@earendil-works/pi-ai"];
+function checkToolSchema({ definition }) {
+	VIRTUAL_MODULES["typebox/compile"].Compile(definition.parameters);
+	// Pi 1.5 uses pi-schema at execution time, not the TypeBox compiler above.
+	try {
+		validateToolArguments(definition, { name: definition.name, arguments: {} });
+	} catch (error) {
+		assert.match(error.message, /^Validation failed for tool /);
+	}
+}
 const names = ["pi-web-access", "pi-lens", "pi-subagents"];
 for (const name of names) {
 	const file = join(modules, name, "package.json");
@@ -50,6 +60,7 @@ for (const name of names) {
 	for (const peer of [
 		"typebox",
 		...(name === "pi-lens" ? ["@earendil-works/pi-tui"] : []),
+		...(name === "pi-subagents" ? ["@earendil-works/pi-ai"] : []),
 	]) {
 		assert.ok(
 			!(peer in manifest.dependencies),
@@ -100,10 +111,27 @@ export default function () { assert.equal(LensText, Text, 'Lens/Pi TUI class ide
 		...extension.tools.values(),
 	]);
 	assert.equal(tools.length, 20);
-	for (const { definition } of tools)
-		VIRTUAL_MODULES["typebox/compile"].Compile(definition.parameters);
+	for (const tool of tools) checkToolSchema(tool);
+	const subagent = tools.find(
+		({ definition }) => definition.name === "subagent",
+	).definition;
+	assert.deepEqual(
+		validateToolArguments(subagent, {
+			name: "subagent",
+			arguments: { action: "list" },
+		}),
+		{ action: "list" },
+	);
+	assert.throws(
+		() =>
+			validateToolArguments(subagent, {
+				name: "subagent",
+				arguments: { concurrency: "not-a-number" },
+			}),
+		/Validation failed/,
+	);
 	console.log(
-		"PASS: no warnings/errors, 20 tool schemas, wildcard peers, no shadow copies, shared TUI class",
+		"PASS: no warnings/errors, 20 TypeBox + native pi-schema checks, subagent valid/invalid arguments, wildcard peers, no shadow copies, shared TUI class",
 	);
 	if (agentArg) {
 		const agent = resolve(agentArg);
@@ -158,10 +186,28 @@ export default function () { assert.equal(LensText, Text, 'Lens/Pi TUI class ide
 			1,
 		);
 		assert.ok(!commands.includes("obs"), "Observability UI must be disabled");
-		for (const { definition } of loaded.extensions.flatMap((extension) => [
+		const fullTools = loaded.extensions.flatMap((extension) => [
 			...extension.tools.values(),
-		]))
-			VIRTUAL_MODULES["typebox/compile"].Compile(definition.parameters);
+		]);
+		for (const tool of fullTools) checkToolSchema(tool);
+		const browser = fullTools.find(
+			({ definition }) => definition.name === "shared_browser",
+		).definition;
+		assert.deepEqual(
+			validateToolArguments(browser, {
+				name: "shared_browser",
+				arguments: { action: "status" },
+			}),
+			{ action: "status" },
+		);
+		assert.throws(
+			() =>
+				validateToolArguments(browser, {
+					name: "shared_browser",
+					arguments: { action: "start" },
+				}),
+			/Validation failed/,
+		);
 		for (const resources of [
 			full.getSkills(),
 			full.getPrompts(),

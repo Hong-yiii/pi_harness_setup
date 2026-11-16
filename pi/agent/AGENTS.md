@@ -23,6 +23,13 @@ Useful agents:
 - `worker`: isolated implementation.
 - `reviewer`: code review.
 
+### Turn budgets
+
+- Omit `turnBudget` by default for implementation workers and substantial research, planning, or review. Do not add a small cap merely because work is delegated.
+- For an explicitly bounded quick scout, an optional starting point is `turnBudget: { maxTurns: 25, graceTurns: 5 }`; this is a trial allowance, not a global default or validated optimum.
+- Honor deliberate user/task budget requirements. If a budget is exhausted, inspect progress and blockers before resuming; do not automatically retry or raise limits on a stalled loop.
+- Keep the 30-minute foreground runtime default unless the task warrants an explicit override. Background runs have no default runtime deadline; supply `timeoutMs` when bounded runtime matters. A wait timeout does not stop the child.
+
 Useful prompt templates:
 
 - `/research <question>`

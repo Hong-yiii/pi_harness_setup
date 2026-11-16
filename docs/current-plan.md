@@ -22,10 +22,224 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Stable Pi and Full Cross-Host Publication — 2026-11-16
+
+Status: Executed on Mac and homelab — newest-stable Pi and full shared
+publication passed. npm `latest` resolves to **1.5.2** (Node >=22.19.0); both installed
+Node versions qualify. This supersedes the pending 1.4.0 runtime target, not the
+nine extension pins. Preserve Astra/high and Kimi/Pi-medium, host-local auth and
+sessions, unrelated settings/packages, and both dirty source checkouts.
+
+Affected surfaces: runtime, host-peer compatibility and shared asset publication.
+First stage exact Pi 1.5.2 with lifecycle scripts disabled and validate the retained
+extensions, source regressions, native schema/TUI/resource loading and model/agent
+resolution in isolated copies. Review release changes and obtain independent
+review before cutover. Retain each old runtime and record launcher/config/npm
+recovery receipts. Publish through the shared apply/check procedure from one
+reviewed source snapshot; do not reset dirty Git trees or copy credentials/live
+`.pi` trees between hosts. No cmux/browser service upgrade/restart, blanket
+extension upgrade, npm audit-fix, or active Pi session restart is authorized.
+
+The already reviewed browser-target clarification (PR #21) belongs in this
+publication batch; retain its explicit local-Mac versus Linux routing without
+changing browser lifecycle or treating publication as a PR merge. Check for
+host-local guidance drift before replacing managed files. Re-run drift, native
+loader and model/default checks independently on both hosts, plus no-op apply;
+report missing Linux Kimi login and untested interactive behavior separately.
+Rollback restores the exact pre-cutover runtime/launcher and receipt-owned assets
+only after checking for later edits. Keep old runtimes for running sessions.
+
+Observed: both live launchers report 1.5.2; shared apply/check, no-op repeat,
+native loader/TUI/schema checks and all nine fresh model/agent contracts passed
+independently on each host. Source suite: Mac 67 passed / two platform skips;
+Linux 69 passed. Linux exposed a stale hardcoded downgrade-test fixture; it now
+derives the next major version without changing the production guard. Review
+found a missing dirty-checkout deployment recipe; the documented, exercised
+snapshot procedure fixed it and re-review returned no findings.
+
+Published archive SHA-256:
+`4e9d9ffd258d012d584db71460a6b7ecd7539d13289c33a4cf56c2255ddaf977`.
+Both hosts retain its source at
+`~/.local/share/pi_harness_setup/releases/4e9d9ffd258d012d/source` (130 manifested
+files). Checkout HEAD/status/diff comparisons passed before resuming evidence
+edits; neither dirty checkout was reset, pulled or committed. Existing turn-budget
+guidance was promoted into the shared source rather than overwritten.
+
+Minimal no-tools/no-context/no-session provider calls passed for Astra/high on
+both hosts and Kimi/Pi-medium on Mac. Linux Kimi remains **Blocked** on its own
+login. Runtime audit was clean in both staged trees; retained extension audits
+report Mac one high/three moderate and Linux one high/two moderate (DoS advisories;
+no audit-fix or extension upgrade). Runtime/launcher and apply backups, the exact
+source-check command, and remaining interactive/browser-service limitations are
+recorded in [shared sync](operations/shared-harness-sync.md#pi-152-full-publication--2026-11-16).
+No active sessions, cmux owners or browser services were restarted. Start a new Pi
+process for the new runtime; `/reload` does not upgrade a running process.
+
+## Astra Orchestration and Kimi Subagents — 2026-11-16
+
+Status: Historical model-only step, subsequently included in the full 1.5.2
+publication above. This section records the initial selective deployment;
+the follow-up rollout PR captures its source with the runtime work.
+Main defaults to `openai-codex/gpt-6-astra`
+/ `high`; subagents default
+to `kimi-coding/k3.1-pro` / Pi `medium`. Kimi maps `medium` to API `high` (not a
+separate medium effort tier); encode that mapping in the portable model entry.
+
+Affected surfaces: model catalog, subagent defaults and host-local parent choice.
+Keep Pi/Subagents as owners, preserve explicit per-run overrides and unrelated
+settings, and do not deploy the pending Pi 1.4.0/runtime or browser-routing batches.
+Promote the credential-free model entry into the shared apply path; merge by
+provider/model ID rather than overwriting private models or credentials. Publish
+only the reviewed model/default assets with host-local backups, then verify native
+model and agent resolution without restarting sessions. Credentials stay on each
+host: initial Linux auth check reported Kimi not configured; remote inference
+requires owner login, never copying Mac auth. Validate isolated merge/idempotence
+and native resolution before publication; use a bounded fresh-context smoke only
+where authentication is ready. Rollback restores only this batch's changed files
+from its per-host backup after checking for subsequent edits. Existing resumed
+sessions retain their model; defaults do not switch the current conversation.
+
+Observed: 16 apply regressions passed with one platform skip; primary JS and
+whitespace checks passed. Independent review found no findings. The selective
+publisher passed an isolated-HOME preservation/no-op fixture. Both hosts passed
+native catalog checks and all nine fresh-context launch contracts, before and
+after publication, using Pi 1.2.0 / Subagents 0.40.0. The verifier first needed a
+fix for Linux's hoisted npm dependency layout; final checks passed on both.
+Only `~/.pi/agent/settings.json` and `models.json` changed. Mac's default-model
+(no per-call override) fresh child returned `KIMI_DEFAULT_OK`; Linux Kimi auth
+still reports `credentials_not_configured`, so remote inference is **Blocked**
+until `/login kimi-coding`. Tool use/unattended reliability remain **Untested**.
+
+Recovery receipts and retained checker/publisher scripts are in host-local
+`~/.config/pi_harness_setup/backups/2026-11-16T06-33-36.041Z-astra-kimi/` (Mac)
+and `2026-11-16T06-33-36.763Z-astra-kimi/` (Linux). Mac had prior model/default
+files; Linux's receipt records that `models.json` was absent. Selective check is
+clean on both. Full harness check is deliberately not clean: Mac's pending source
+requires Pi 1.4.0 while live remains 1.2.0; the older Linux checkout reports
+settings drift and would restore the old Sol default. Do not full-apply that
+older checkout. Publish the reviewed source revision before the next full sync;
+no Git push/merge or remote checkout modification occurred in this pass.
+
+## Kimi Model Setup — 2026-11-16
+
+Status: Trial — local setup, OAuth readiness and minimal live inference passed;
+coding/tool use, unattended work and Linux remain Untested.
+
+Affected surface: model catalog and host-local model selection. Keep Pi's built-in
+`kimi-coding` provider and Pi Subagents as their existing owners. Add only the
+missing `k3.1-pro` model in the Mac's previously absent `~/.pi/agent/models.json`;
+use explicit launch commands for Pro/high and existing `kimi-for-coding`/low.
+Preserve parent/subagent defaults, packages, pending Pi 1.4.0 work and Linux.
+No credential values or existing sessions were inspected/copied. The owner
+completed native login; Pi's credential-status command reported OAuth ready.
+Configuration validation passed with Pi 1.2.0 in an isolated HOME. Subsequent
+no-tools/no-context/no-session live calls returned the requested markers for
+Pro/high and K2.8/low; neither sent repository contents.
+Rollback removes only the added model entry (or the file if otherwise unchanged).
+Reproduction and acceptance: [Kimi setup](guides/kimi.md). No full apply or upgrade.
+
+## Teach Right-Pane Delivery — 2026-10-31
+
+Status: Blocked after native trial — Linux placement and Mac projection disagree.
+The owner's implementation condition did not pass. No delivery assets changed
+or published; no cmux/Pi upgrade or restart.
+
+Affected surfaces: presentation skills/prompts, remote UI and background-command
+lifecycle. Keep native cmux SSH as transport owner and background-tasks 0.6.0 as
+the server owner. Serve a dedicated artifact directory on Linux loopback for at
+most three hours; terminate on Pi exit/reload. No detached service or persistent
+server. Open once to the right of the parent terminal without stealing focus;
+retain canonical Linux receipts and re-query projected native handles rather
+than closing/recreating panes. Keep the delivered page open for the reader.
+
+First inspect installed API/help, then test in a uniquely named disposable SSH
+workspace using synthetic content and bounded fixtures. Preserve all existing
+workspaces, processes and private state; clean up only receipt-owned resources.
+Validate right placement, unchanged parent/focus, rendered Linux marker, stable
+resource counts after reconciliation and explicit server shutdown. Do not reuse
+the known-failing native routing runner or infer general transport stability
+from one successful creation. If blocked, report evidence instead of shipping
+unverified split commands. Update the shared recipe/callers and retained checks,
+then obtain independent review. Any publication is limited to reviewed delivery
+assets with backups on both hosts; no full apply of the pending Pi 1.4.0 batch.
+Rollback restores only those assets; no transport reset is authorized.
+
+Observed on Mac **0.65.2 (111), 9d01f956c** and Linux helper **a9b104f3…**:
+
+- Native SSH created one disposable workspace without changing the user's focus.
+  Its synthetic HTTP fixture bound Linux loopback with a four-minute deadline.
+- `pane <parent> split --right --ratio 0.5 --correlation-key <key>` creates a
+  terminal placeholder, not a browser. `pane <new> tab create browser --url
+  <fixture-url> --correlation-key <key>` then returned the correct right-pane
+  browser receipt. Each mutation ran once; no retry/close/recreate repair.
+- Linux `screen ... show` placed and selected the browser in the right leaf.
+  Mac's scoped native tree instead placed it as an **unselected left-pane tab**;
+  the right pane still displayed its terminal placeholder. This is a failed
+  right-pane acceptance even though the page eventually rendered the Linux marker.
+- An 82-second read-only sampler observed settled surface counts/IDs and rendered
+  content after initial readiness timeouts. That sampler did not assert placement
+  or visibility and is **not** a passing delivery gate. A later placement assertion
+  ran after fixture expiry and failed with no browser in that snapshot; do not
+  conflate that lifetime-confounded failure with the earlier live placement mismatch.
+- The fixture exited at its deadline. Only the recorded Linux workspace, native
+  workspace and dedicated forward for the fixture port were closed. The origin,
+  native/Linux test workspaces and local forward listener were verified absent.
+  The original selected workspace/terminal remained unchanged.
+
+The [helper's pinned public operation catalog](https://github.com/manaflow-ai/cmux/blob/a9b104f3cb7d3808cf7eb5ae08b4819333b25870/cmux-tui/spec/resource-operations-v2.json)
+returns `CreatedTerminalPath` for `pane.split`; `tab.create_browser` has no split
+or focus control. No supported atomic no-focus browser split was established.
+Do not promote guessed flags, private raw commands, or native focus/reopen loops.
+Retest a verified upstream projection fix or a separately reviewed Mac-controller
+path before enabling right-pane delivery. Temporary trial artifacts stay outside
+Git; no general transport-stability claim follows from this one fixture.
+
+Lifecycle source review: background-tasks 0.6.0 accepts `timeoutSeconds: 10800`
+and terminates foreground-owned process groups on `session_shutdown` (normal
+exit/reload). It does **not** guarantee cleanup after SIGKILL/crash, because its
+own timeout also dies with Pi. No lifecycle implementation or real Pi exit/reload
+test was performed after the layout gate failed; retain this limitation before
+promising an unconditional no-orphan server lifetime.
+
+## Pi 1.4.0 and Model Defaults — 2026-10-31
+
+Status: Implemented; isolated Mac validation passed and independent review
+found no actionable defects. No live runtime upgrade or host publication in this pass.
+
+Affected surfaces: runtime, host-peer compatibility, model defaults and subagents.
+Target Pi **1.4.0** with the existing extension pins and owners. Set the fresh-install
+parent template to `openai-codex/gpt-6-astra` / `high`; retain the shared
+`openai-codex/gpt-6.1-sol` subagent default and existing role thinking levels
+(scout/researcher medium, planner/reviewer high, worker xhigh). Preserve existing
+host-local parent choices and explicit per-run model overrides.
+
+Review the exact-version peer repair against the real 1.4.0 runtime before
+changing its guard. Validate isolated install/apply, no-model native loading,
+schema/TUI identity, agent discovery/model resolution, drift and idempotence,
+plus the source regression suite. Keep credentials, sessions, live package trees
+and services untouched. Live Mac/Linux deployment and interactive/provider
+acceptance remain **Untested**. Publish only after the separate runtime migration
+and host checks in [shared harness sync](operations/shared-harness-sync.md).
+Rollback source by reverting this batch; future live deployment must retain the
+old runtime and back up changed config/packages before applying.
+
+Observed: source suite **66 passed / two platform skips**; primary JS diagnostics,
+syntax and whitespace checks passed. A clean temporary HOME with real npm Pi
+1.4.0 and all nine pinned packages passed apply, drift, no-op reapply and the
+native loader (20 schemas, no warnings/errors, shared TUI identity and full
+resource discovery). Native Subagents discovery resolved all nine agents to
+Sol, retained all five role thinking/context settings, and confirmed both Astra
+and Sol in Pi's bundled model catalog. Standalone Lens built a one-file graph;
+analyze help exited successfully. No provider calls or live state were used.
+The isolated extension-tree audit reports two moderate findings from one
+[minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249), counting
+Lens as an affected dependent; no dependency fixes or pin changes were applied.
+Existing host trees, Linux and interactive behavior still need migration checks.
+
 ## Explicit Browser Target Selection
 
-Status: Decided — implemented and source-validated for the owner-requested PR;
-no live publication.
+Status: PR #21 merged at `83fd6e8`; client and skills published with the Pi 1.5.2
+batch above. Native browser/model routing acceptance remains **Untested**.
 
 Affected surfaces: browser skill routing, tool/command descriptions and usage docs.
 Keep ADR 0016's existing owners. Default unspecified page-opening requests from
@@ -34,16 +248,12 @@ Linux/shared target. Clarify ambiguity before acting, never silently fall back
 between browsers, and do not mistake a connection lease for target preference.
 This is routing guidance, not a new runtime enforcement or consent mechanism.
 
-Validation: extension wiring and apply tests passed (35 passed, one platform
-skip). Independent read-only review found no findings across local, explicit-Linux,
-existing-tab, ambiguous, unavailable-target, Linux-session and research scenarios.
-JS primary diagnostics and whitespace checks passed; TypeScript diagnostics could
-not resolve the two Pi host packages in the dependency-free worktree. Native/model
-routing acceptance remains **Untested**.
-No browser, SSH connection, profile, package or live session is changed. Future
-publication uses the shared apply/check path on both hosts after review; do not
-publish unrelated pending assets. Rollback reverts this source commit, or restores
-only these assets from publication backups if later deployed.
+Original source validation: extension wiring and apply tests passed (35 passed,
+one platform skip); independent read-only review found no findings. JS primary
+and whitespace checks passed; dependency-free TypeScript host imports remain an
+editor limitation. The later batch passed native loader checks on both hosts,
+not browser lifecycle/viewer revalidation. Rollback restores only these managed
+assets from the publication receipts; never reset browser state or live sessions.
 
 ## Shared Browser PR Review Follow-up — 2026-10-16
 

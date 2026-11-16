@@ -34,10 +34,17 @@ The best shape is a layered harness:
 - Keep Remote tmux and direct SSH/tmux only as break-glass recovery for existing
   sessions.
 - Mirror the managed harness on Mac and Linux using one versioned profile:
-  Pi 1.2.0, Open TUI, neon-sakura, BTW commands and its skill, and the existing
+  Pi 1.5.2 (published and checked on both hosts; retained source snapshot
+  `4e9d9ffd258d012d`),
+  Open TUI, neon-sakura, BTW commands
+  and its skill, and the existing
   web/Lens/subagent/Ponytail/background owners. Keep credentials, package state,
   sessions, interactive parent model choices and OS paths host-local. Run check
-  and apply on each host; pulling Git alone does not publish. See ADR 0015 and
+  and apply on each host; pulling Git alone does not publish. Fresh installs
+  default to Astra/high for main and Kimi K3.1 Pro/Pi medium for subagents
+  (Kimi maps medium to API high). Normal apply preserves existing parent choices;
+  the owner separately authorized switching both live hosts to Astra/high.
+  The managed model entry contains no credentials; each host needs its own Kimi login. See ADR 0015 and
   `docs/operations/shared-harness-sync.md`.
 - Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"
@@ -100,8 +107,9 @@ Current refinements:
   session API browser creation, not `cmux browser open` through a stale relay.
 - ADR 0016 assigns the shared Linux browser to an on-demand user systemd service,
   with a thin Pi client and separate `shared-browser` / native `cmux-browser`
-  skills. Pi reload does not own the browser lifetime. PR #20's review follow-up
-  fixes are source-only; host publication/native revalidation are still pending.
+  skills. Pi reload does not own the browser lifetime. The client follow-up and
+  PR #21 routing clarification were published with Pi 1.5.2; browser service
+  installer publication and native viewer revalidation remain pending.
   See `docs/operations/shared-browser.md` for deployment and acceptance status.
 - Session-preserving native-app relaunch, Mac sleep/wake, Mosh, iOS, remote reboot, and
   direct rather than DERP Tailscale connectivity remain `Untested`.

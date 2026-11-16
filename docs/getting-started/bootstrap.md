@@ -4,7 +4,7 @@ Status: Shared Mac/Linux baseline; deployment evidence in the shared-sync operat
 
 ## Shared Runtime
 
-The shared profile pins Pi `1.2.0`, which requires Node `>=22.19.0`. Keep live
+The shared profile pins Pi `1.5.2`, which requires Node `>=22.19.0`. Keep live
 credentials, package installation state, and sessions host-local; Git carries
 the reproducible settings and profile.
 
@@ -15,7 +15,7 @@ mkdir -p ~/Projects
 cd ~/Projects
 git clone <repo-url> pi_harness_setup
 cd pi_harness_setup
-npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.2.0
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent@1.5.2
 brew install tmux neovim hunk
 node scripts/apply-pi-setup.mjs
 ```
@@ -67,7 +67,7 @@ node scripts/apply-pi-setup.mjs
 ```
 
 The script checks the common runtime pin, installs only missing package pins,
-publishes eight repo skills plus the enabled bundled BTW skill, global guidance,
+publishes ten repo skills plus the enabled bundled BTW skill, global guidance,
 agents/prompts, subagent defaults/capacity and Open TUI enablement. It enforces
 neon-sakura with one UI owner, preserves unrelated settings/packages/files, and
 writes private timestamped backups. Host-peer compatibility and bundled plan

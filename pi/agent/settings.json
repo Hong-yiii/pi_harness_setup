@@ -1,11 +1,12 @@
 {
   "theme": "neon-sakura",
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "xhigh",
+  "defaultModel": "gpt-6-astra",
+  "defaultThinkingLevel": "high",
   "defaultProjectTrust": "ask",
+  "cacheWarming": "off",
   "subagents": {
-    "defaultModel": "openai-codex/gpt-6.1-sol"
+    "defaultModel": "kimi-coding/k3.1-pro:medium"
   },
   "skills": [
     "!skills/**",

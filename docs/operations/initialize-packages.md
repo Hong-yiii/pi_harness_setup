@@ -1,6 +1,6 @@
 # Initialize The Lean Pi Profile
 
-Status: Shared cross-host profile; current procedure updated 2026-10-15
+Status: Shared cross-host profile; latest-stable batch tracked in the shared-sync operation
 
 For normal refresh, drift checks, exact managed boundaries, runtime migration
 and recovery, follow [Shared harness sync](shared-harness-sync.md). Dated
@@ -26,7 +26,7 @@ It intentionally excludes:
 
 ## Runtime
 
-The shared profile pins Pi **1.2.0**. Follow the host-specific runtime migration
+The shared profile pins Pi **1.5.2**. Follow the host-specific runtime migration
 in [Shared harness sync](shared-harness-sync.md#runtime-migration); do not
 replace a running runtime or rerun the old 0.83 bootstrap. `pi --version` must
 match the profile before apply. Open TUI/neon-sakura and BTW with its bundled

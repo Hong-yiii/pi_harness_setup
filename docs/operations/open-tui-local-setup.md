@@ -28,7 +28,7 @@ unchanged. No vendor theme files were patched.
 ## Reproduce the shared selection
 
 Use `node scripts/apply-pi-setup.mjs` on each host after reviewing its `--check`
-output and matching Pi 1.2.0. The authoritative profile selects these resources
+output and matching the profile's Pi runtime pin. The authoritative profile selects these resources
 without replacing unrelated user settings:
 
 ```json

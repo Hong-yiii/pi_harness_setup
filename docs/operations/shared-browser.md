@@ -1,8 +1,10 @@
 # Shared Linux Browser
 
 Status: initial service/client published and natively exercised on 2026-10-15–16.
-The PR #20 review follow-up changes are source-only: host publication and native
-reload/installer revalidation remain **Untested**. Decision:
+The client follow-up and PR #21 target-routing clarification were published on
+both hosts with Pi 1.5.2 on 2026-11-16. Browser service installer publication and
+native reload/viewer revalidation remain **Untested**; no browser service restart
+occurred in that batch. Decision:
 [ADR 0016](../decisions/0016-use-a-service-owned-shared-browser.md).
 
 ## Ownership and Scope
