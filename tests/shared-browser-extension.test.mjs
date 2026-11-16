@@ -751,6 +751,13 @@ test("thin Pi wiring registers inertly, declares only public actions, confirms s
 	});
 	assert.equal(calls.length, 0);
 	assert.equal(tool.name, "shared_browser");
+	assert.equal(tool.label, "Shared Linux browser");
+	assert.match(tool.description, /remote from Mac/);
+	assert.match(tool.description, /user-requested Linux\/shared target/);
+	assert.match(tool.description, /cmux-browser/);
+	assert.match(tool.description, /never silently switch browsers/);
+	assert.match(tool.description, /lease is not a target preference/);
+	assert.match(command.description, /Linux browser \(remote from Mac\)/);
 	const params = tool.parameters.args[0];
 	assert.deepEqual(Object.keys(params), [
 		"action",
@@ -768,10 +775,17 @@ test("thin Pi wiring registers inertly, declares only public actions, confirms s
 	const ctx = {
 		hasUI: true,
 		ui: {
-			confirm: async () => false,
+			confirm: async (title, message) => {
+				assert.match(title, /Linux browser/);
+				assert.match(message, /not native Mac browser panes/);
+				return false;
+			},
 			notify: (message) => notices.push(message),
 		},
 	};
+	await command.handler("help", ctx);
+	assert.match(notices.at(-1), /Linux browser \(remote from Mac\).*Usage:/);
+	assert.equal(calls.length, 0);
 	await command.handler("stop", ctx);
 	assert.equal(calls.length, 0);
 	await command.handler("connect", ctx);

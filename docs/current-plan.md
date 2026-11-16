@@ -22,6 +22,29 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Explicit Browser Target Selection
+
+Status: Decided — implemented and source-validated for the owner-requested PR;
+no live publication.
+
+Affected surfaces: browser skill routing, tool/command descriptions and usage docs.
+Keep ADR 0016's existing owners. Default unspecified page-opening requests from
+local Mac Pi to native cmux; use shared Linux Chrome only for a user-selected
+Linux/shared target. Clarify ambiguity before acting, never silently fall back
+between browsers, and do not mistake a connection lease for target preference.
+This is routing guidance, not a new runtime enforcement or consent mechanism.
+
+Validation: extension wiring and apply tests passed (35 passed, one platform
+skip). Independent read-only review found no findings across local, explicit-Linux,
+existing-tab, ambiguous, unavailable-target, Linux-session and research scenarios.
+JS primary diagnostics and whitespace checks passed; TypeScript diagnostics could
+not resolve the two Pi host packages in the dependency-free worktree. Native/model
+routing acceptance remains **Untested**.
+No browser, SSH connection, profile, package or live session is changed. Future
+publication uses the shared apply/check path on both hosts after review; do not
+publish unrelated pending assets. Rollback reverts this source commit, or restores
+only these assets from publication backups if later deployed.
+
 ## Shared Browser PR Review Follow-up — 2026-10-16
 
 Status: Implemented and source-validated; PR #20 update authorized by the owner.

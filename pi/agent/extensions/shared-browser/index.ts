@@ -28,9 +28,9 @@ export default function sharedBrowser(pi: ExtensionAPI) {
 	);
 	pi.registerTool({
 		name: "shared_browser",
-		label: "Shared browser",
+		label: "Shared Linux browser",
 		description:
-			"Control the shared Linux browser. Except status, requires the user to run /browser connect in this Pi session. Use explicit tab IDs from tabs/open. Lifecycle and viewer access are user commands only.",
+			"Control shared Linux Chrome (remote from Mac, even in a local noVNC viewer). Use only for a user-requested Linux/shared target or identified shared-browser tab; default unspecified local Mac page-opening requests to the cmux-browser skill instead. If ambiguous, ask before acting; never silently switch browsers. A connection lease is not a target preference. Except status, requires /browser connect in this Pi session. Use explicit tab IDs from tabs/open. Lifecycle and viewer access are user commands only.",
 		parameters,
 		async execute(
 			_id: string,
@@ -50,7 +50,7 @@ export default function sharedBrowser(pi: ExtensionAPI) {
 
 	pi.registerCommand("browser", {
 		description:
-			"Shared browser: start | status | connect | handoff | disconnect | view | stop",
+			"Linux browser (remote from Mac): start | status | connect | handoff | disconnect | view | stop",
 		handler: async (args: string, ctx: ExtensionCommandContext) => {
 			const action = args.trim() || "status";
 			if (
@@ -66,7 +66,7 @@ export default function sharedBrowser(pi: ExtensionAPI) {
 				].includes(action)
 			) {
 				ctx.ui.notify(
-					"Usage: /browser start|status|connect|handoff|disconnect|view|stop",
+					"Linux browser (remote from Mac). Usage: /browser start|status|connect|handoff|disconnect|view|stop",
 					"info",
 				);
 				return;
@@ -75,8 +75,8 @@ export default function sharedBrowser(pi: ExtensionAPI) {
 				action === "stop" &&
 				ctx.hasUI &&
 				!(await ctx.ui.confirm(
-					"Stop shared browser?",
-					"This stops the service-owned shared browser for everyone.",
+					"Stop shared Linux browser?",
+					"This stops the service-owned Linux Chrome for everyone, not native Mac browser panes.",
 				))
 			)
 				return;
