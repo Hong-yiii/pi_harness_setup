@@ -18,7 +18,7 @@ The Linux browser service is installed separately and never starts during apply;
 see [Shared browser](shared-browser.md). Its profiles and client SSH alias remain
 host-local.
 
-Fresh installs default to `openai-codex/gpt-6-astra` with `high` thinking for
+Fresh installs default to `openai-codex/gpt-6.2-sol` with `high` thinking for
 main. All nine standard subagents resolve to `kimi-coding/k3.1-pro:medium` unless
 explicitly overridden. The suffix wins over ordinary role thinking fields;
 `pi/agent/models.json` maps Pi `medium` to Kimi API effort `high`, as documented by
@@ -27,14 +27,182 @@ other models and private provider configuration are preserved. Use fresh context
 for Kimi children to avoid signed-fork thinking restrictions. Each host needs its
 own Kimi login; credentials are never published. See [Kimi setup](../guides/kimi.md).
 Existing parent model/provider/thinking preferences are preserved by normal apply;
-the owner separately authorized Astra/high publication to both existing hosts.
+the owner separately authorized Sol 6.2/high publication to both existing hosts.
 Changing the template alone does not force an existing host to switch models.
+Sol 6.2 now resolves from Pi's native catalog; the temporary bridge has been
+removed on all three hosts as described below. On Pi 1.5.2, refresh the catalog after provider login
+(`pi update --models`) before using this default; offline use requires its cache.
 
 Host-local: credentials, sessions, npm installation state, OS paths, cmux
 transport, fonts, interactive parent model/provider/thinking, unrelated user
 packages/settings, and Open TUI preferences absent from its shared template.
 Do not rsync `~/.pi` between hosts. A feature promoted on one host must update
 the shared sources and this procedure in the same change.
+
+## Supported route for future model changes
+
+Use Pi's native model catalog and supported stable releases as the normal path:
+
+1. Run `pi update --models` and verify the desired model on the host's existing
+   provider/account. A model's public release does not prove account availability.
+2. If a runtime change is needed, use the [reviewed runtime migration](#runtime-migration),
+   update the shared pin through a PR, and validate on each target before rollout.
+   Do not patch installed provider code or blanket-upgrade extensions.
+3. Publish the reviewed defaults through the shared check/apply procedure with
+   backups and per-host validation. Existing parent choices remain host-local;
+   changing them requires explicit approval and a selective update or Pi's native
+   model/default controls. Validate standalone Codex separately.
+
+Custom `models.json` entries are a supported Pi configuration mechanism, but
+hand-maintained metadata for a missing native model is **not** our long-term
+route. A temporary exception needs owner approval, evidence, rollback and a dated
+removal check. Once native support is verified without the override, remove the
+exception from both source and live files so it cannot shadow future metadata.
+
+## Native Sol 6.2 thinking levels — 2026-11-18
+
+Status: Executed on Mac, homelab and x1-dev; temporary entries removed from both
+source checkouts and all three live catalogs. PR #23 records the supported fix.
+A new `pi update --models` supplied Sol 6.2 metadata on all three hosts without
+upgrading Pi 1.5.2. The temporary definition had explicitly disabled xhigh/max,
+shadowing upstream metadata. Removing it is the supported fix, not another map.
+
+| Host/provider | Pi choices | Provider effort |
+| --- | --- | --- |
+| Mac/homelab `openai-codex` | minimal, low, medium, high, xhigh, max | minimal maps to low; all others map directly |
+| x1-dev `openai` | low, medium, high, xhigh, max | All map directly; off/minimal unsupported |
+
+These are native provider-specific mappings, not six distinct backend efforts.
+The current native context windows also differ (Codex 500,000; OpenAI 272,000);
+do not override one to match the other. Parent defaults remain Sol/high and
+child defaults, credentials, standalone Codex config and package pins stay intact.
+
+The fresh-install regression fails while custom Sol metadata exists, then passes
+when removed. Native checks use each host's authenticated, refreshed catalog with
+no custom model file, verify every effort in outgoing request payloads and live
+marker responses, and test function-call/result behavior. Blank-auth registries
+can lack overlays because Pi refreshes configured providers; do not infer missing
+native support from that alone. The actual picker renders all six/five labels
+and session cycling visits every label in a headless native component check.
+
+The reported two-choice live UI was not directly reproduced. Source tracing
+found no two-item cap or Open TUI filter. A running session holds its old model
+object even after the registry changes. **Open `/model`, wait for refresh, and
+explicitly reselect Sol 6.2**, then open `/thinking` with an empty search. A fresh
+Pi process is the deterministic alternative. `/reload` alone does not refresh
+model metadata and may stop background jobs; no sessions were forcibly reloaded.
+
+New check/removal scripts are retained under
+`~/.local/share/pi_harness_setup/releases/20261118-sol62-native/` on each host.
+The removal refuses modified/duplicate Sol entries or additional Sol overrides,
+preserves unrelated providers/models, backs up `models.json` with before/after
+hashes and checks for concurrent edits before replacement. Check/rename remains
+best-effort; keep other writers idle. Restore only the receipt-owned file after
+checking for later edits if rollback is needed. The source and live entries must
+both be removed because normal apply merges additively.
+
+Retirement and no-op repeat passed on each host. Persisted native catalog checks
+passed with network refresh disabled, and native picker/cycle checks returned six
+Codex labels / five OpenAI labels. Settings and standalone Codex config hashes
+were unchanged. Full source suite: 67 passed, two platform skips. All distinct
+efforts passed live payload/marker checks; Mac tool checks hit transient network
+timeouts and one repeated tool call before a bounded SSE check with a forced
+no-tool final response passed. This changed only test options, not live transport.
+
+Retirement backups under `~/.config/pi_harness_setup/backups/`:
+
+- Mac: `2026-11-17T19-49-43.866Z-sol62-native/`
+- homelab: `2026-11-17T19-49-48.608Z-sol62-native/`
+- x1-dev: `2026-11-17T19-49-51.636Z-sol62-native/`
+
+Recheck removal with `node "$HOME/.local/share/pi_harness_setup/releases/20261118-sol62-native/retire-sol-bridge.mjs" --check`.
+The planned November 19 bridge-removal check is closed early. Future model
+changes still follow the supported route above; no unattended check or upgrade
+is scheduled. Long-context, image and arbitrary resumed-session behavior remain
+**Untested**.
+
+## Temporary Sol 6.2 bridge — 2026-11-18
+
+Historical rollout, superseded by the native-catalog retirement above.
+Pi rollout is complete on Mac, `homelab` and `x1-dev`. This follows the November 16
+Astra/Kimi rollout (merged PR #22), not a new runtime upgrade. At rollout, Pi and
+npm latest were 1.5.2 and refreshed catalogs lacked Sol 6.2. OpenAI documents
+[`gpt-6.2-sol`](https://developers.openai.com/api/docs/models/gpt-6.2-sol.md) and
+[Codex availability](https://developers.openai.com/codex/models).
+
+| Target | Pi main default | Standalone Codex |
+| --- | --- | --- |
+| Mac | `openai-codex/gpt-6.2-sol:high` | Existing Sol 6.2/high config preserved; CLI `0.167.0-alpha.3.2` passed |
+| homelab | `openai-codex/gpt-6.2-sol:high` | CLI `0.164.0` rejected Sol for its ChatGPT account; Astra/max retained |
+| x1-dev | `openai/gpt-6.2-sol:high` | CLI `0.164.0` passed; changed Sol 6.1/xhigh to Sol 6.2/high |
+
+The credential-free entries preserve existing providers/logins. Their temporary
+272,000-token context ceiling, 128,000 maximum output and low/medium/high efforts
+are conservative bridge limits, not verified Codex maxima. OpenAI advertises up
+to 1M context in Codex; short-context API prices here are estimates, not verified
+subscription billing. No speculative compatibility flags or cache warming were
+added. Mac/homelab keep Kimi/medium children; x1-dev keeps Astra/high children.
+Do not full-apply the shared Kimi profile to x1-dev: its model-only update does
+not establish full harness parity. No other SSH aliases were deployment targets.
+
+All three Pi runtimes passed synthetic function-call/result round trips at high,
+native resolution and nine child contracts. Selective fixtures passed preservation,
+backups, no-op, symlink refusal and interleaved-edit aborts. Independent review
+prompted per-file hash rechecks and strict thinking-key validation; check/rename
+remains best-effort, so other config writers must be idle. Mac/x1-dev Codex passed
+separate ephemeral, read-only, empty-cwd marker calls with user config/instructions
+excluded. The same CLI version fails on homelab; an upgrade is not established as
+the remedy. Recheck its account entitlement/login separately; never copy auth.
+No binaries, active sessions, VM checkouts or package pins were changed.
+Image input, long-context and resumed-session behavior remain **Untested**.
+
+Each host retains identical SHA256-manifested model assets and selective check/
+publication scripts at `~/.local/share/pi_harness_setup/releases/20261118-sol62-bridge/`.
+This historical overlay does not replace the immutable November 16 full snapshot.
+After native retirement, its selective `--check` intentionally reports drift.
+**Do not rerun its `--apply`: that would restore the shadowing model definitions.**
+Keep the overlay only for evidence and deliberate rollback.
+
+Private backups under `~/.config/pi_harness_setup/backups/`:
+
+- Mac Pi: `2026-11-17T18-43-29.734Z-sol62/`
+- homelab Pi: `2026-11-17T18-43-31.300Z-sol62/`
+- x1-dev Pi: `2026-11-17T18-43-40.805Z-sol62/`
+- x1-dev Codex: `2026-11-17T18-43-59.024194Z-codex-sol62/`
+
+Mac's cmux wrapper could not find the installed Codex binary. A previously absent
+`~/.local/bin/codex` now links to the existing
+`/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex`.
+`codex --version` passes through the unchanged wrapper; the overlay's
+`codex-launcher-receipt.json` records absence/target. Rollback restores only changed
+files after checking receipt hashes for later edits, and unlinks this launcher
+only if its target still matches. Do not modify the app, wrapper, auth or sessions.
+New Pi sessions use Sol; existing sessions can select it with `/model` and are not
+automatically switched by publication.
+
+### Historical bridge exit procedure
+
+Originally planned for **2026-11-19 (local date)**; the native migration above
+implements it early. Retained as the procedure for future temporary exceptions:
+
+```bash
+npm view @earendil-works/pi-coding-agent version
+pi update --models
+pi --list-models '6.2'
+```
+
+Listing alone is insufficient while the override exists. Validate an isolated
+registry using the refreshed native catalog **without the custom Sol entry**,
+on each deployed provider/account. If a stable runtime update is necessary,
+follow the supported migration above rather than modifying installed code.
+After native inference/tool checks pass, remove only `gpt-6.2-sol` from source
+and all three hosts' `openai.models` and `openai-codex.models` arrays, preserving
+Kimi, private configuration and the Sol default. Remove the Sol-specific temporary
+metadata assertions from tests while retaining default/merge/preservation checks.
+Apply merges additively: deleting from source alone will not remove live entries.
+Remove an empty provider container only if it has no other settings. Back up and
+revalidate each host; if native support fails, retain the bridge and record the
+blocker and next check rather than silently claiming completion.
 
 ## Pi 1.5.2 full publication — 2026-11-16
 

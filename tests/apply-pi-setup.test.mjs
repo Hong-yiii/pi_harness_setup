@@ -213,14 +213,14 @@ test("direct runtime discovery never consults npm or masks a mismatched host man
 	}
 });
 
-test("fresh installs select Astra/high and Kimi/medium without per-agent model pins", (t) => {
+test("fresh installs select native Sol 6.2/high without shadowing its catalog and retain Kimi/medium", (t) => {
 	assert.equal(profile.runtime.pi, "1.5.2");
 	const { agent, run } = fixture(t);
 	const result = run();
 	assert.equal(result.status, 0, result.stdout + result.stderr);
 	const settings = json(join(agent, "settings.json"));
 	assert.equal(settings.defaultProvider, "openai-codex");
-	assert.equal(settings.defaultModel, "gpt-6-astra");
+	assert.equal(settings.defaultModel, "gpt-6.2-sol");
 	assert.equal(settings.defaultThinkingLevel, "high");
 	assert.equal(settings.subagents.defaultModel, "kimi-coding/k3.1-pro:medium");
 	assert.deepEqual(
@@ -232,6 +232,15 @@ test("fresh installs select Astra/high and Kimi/medium without per-agent model p
 			.thinkingLevelMap.medium,
 		"high",
 	);
+	for (const provider of ["openai", "openai-codex"]) {
+		const definition = json(join(agent, "models.json")).providers[provider];
+		assert.equal(
+			(definition?.models ?? []).some((model) => model.id === settings.defaultModel),
+			false,
+			`${provider}: custom Sol metadata must not shadow the native thinking levels`,
+		);
+		assert.equal(definition?.modelOverrides?.[settings.defaultModel], undefined);
+	}
 	for (const [name, thinking] of Object.entries({
 		scout: "medium",
 		researcher: "medium",
@@ -258,6 +267,7 @@ test("model publication merges by ID, preserves private config, rejects symlinks
 	const original = {
 		providers: {
 			private: { apiKey: "synthetic-only", models: [{ id: "local" }] },
+			"openai-codex": { models: [{ id: "gpt-6.1-sol", name: "keep" }] },
 			"kimi-coding": {
 				apiKey: "$PRIVATE_KIMI_KEY",
 				headers: { "X-Local": "synthetic" },
@@ -280,6 +290,7 @@ test("model publication merges by ID, preserves private config, rejects symlinks
 	assert.equal(apply.status, 0, apply.stdout + apply.stderr);
 	const after = json(path);
 	assert.deepEqual(after.providers.private, original.providers.private);
+	assert.deepEqual(after.providers["openai-codex"], original.providers["openai-codex"]);
 	const kimi = after.providers["kimi-coding"];
 	assert.equal(kimi.apiKey, "$PRIVATE_KIMI_KEY");
 	assert.deepEqual(kimi.headers, original.providers["kimi-coding"].headers);
