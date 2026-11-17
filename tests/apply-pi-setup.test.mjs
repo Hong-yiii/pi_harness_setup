@@ -213,14 +213,14 @@ test("direct runtime discovery never consults npm or masks a mismatched host man
 	}
 });
 
-test("fresh installs select Astra/high and Kimi/medium without per-agent model pins", (t) => {
+test("fresh installs select temporary Sol 6.2/high and Kimi/medium without per-agent model pins", (t) => {
 	assert.equal(profile.runtime.pi, "1.5.2");
 	const { agent, run } = fixture(t);
 	const result = run();
 	assert.equal(result.status, 0, result.stdout + result.stderr);
 	const settings = json(join(agent, "settings.json"));
 	assert.equal(settings.defaultProvider, "openai-codex");
-	assert.equal(settings.defaultModel, "gpt-6-astra");
+	assert.equal(settings.defaultModel, "gpt-6.2-sol");
 	assert.equal(settings.defaultThinkingLevel, "high");
 	assert.equal(settings.subagents.defaultModel, "kimi-coding/k3.1-pro:medium");
 	assert.deepEqual(
@@ -232,6 +232,20 @@ test("fresh installs select Astra/high and Kimi/medium without per-agent model p
 			.thinkingLevelMap.medium,
 		"high",
 	);
+	const sol = json(join(agent, "models.json")).providers["openai-codex"]
+		.models[0];
+	assert.equal(sol.id, settings.defaultModel);
+	assert.equal(sol.api, "openai-codex-responses");
+	assert.equal(sol.baseUrl, "https://chatgpt.com/backend-api");
+	assert.equal(sol.contextWindow, 272000); // Temporary conservative Codex ceiling.
+	assert.equal(sol.thinkingLevelMap.high, "high");
+	assert.equal(sol.thinkingLevelMap.off, null);
+	const openai = json(join(agent, "models.json")).providers.openai.models[0];
+	assert.deepEqual(openai, {
+		...sol,
+		api: "openai-responses",
+		baseUrl: "https://api.openai.com/v1",
+	});
 	for (const [name, thinking] of Object.entries({
 		scout: "medium",
 		researcher: "medium",
@@ -258,6 +272,7 @@ test("model publication merges by ID, preserves private config, rejects symlinks
 	const original = {
 		providers: {
 			private: { apiKey: "synthetic-only", models: [{ id: "local" }] },
+			"openai-codex": { models: [{ id: "gpt-6.1-sol", name: "keep" }] },
 			"kimi-coding": {
 				apiKey: "$PRIVATE_KIMI_KEY",
 				headers: { "X-Local": "synthetic" },
@@ -280,6 +295,12 @@ test("model publication merges by ID, preserves private config, rejects symlinks
 	assert.equal(apply.status, 0, apply.stdout + apply.stderr);
 	const after = json(path);
 	assert.deepEqual(after.providers.private, original.providers.private);
+	assert.deepEqual(
+		after.providers["openai-codex"].models[0],
+		original.providers["openai-codex"].models[0],
+	);
+	assert.equal(after.providers["openai-codex"].models[1].id, "gpt-6.2-sol");
+	assert.equal(after.providers["openai-codex"].models.length, 2);
 	const kimi = after.providers["kimi-coding"];
 	assert.equal(kimi.apiKey, "$PRIVATE_KIMI_KEY");
 	assert.deepEqual(kimi.headers, original.providers["kimi-coding"].headers);

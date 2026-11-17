@@ -1,7 +1,7 @@
 {
   "theme": "neon-sakura",
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
+  "defaultModel": "gpt-6.2-sol",
   "defaultThinkingLevel": "high",
   "defaultProjectTrust": "ask",
   "cacheWarming": "off",

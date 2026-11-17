@@ -41,10 +41,18 @@ The best shape is a layered harness:
   web/Lens/subagent/Ponytail/background owners. Keep credentials, package state,
   sessions, interactive parent model choices and OS paths host-local. Run check
   and apply on each host; pulling Git alone does not publish. Fresh installs
-  default to Astra/high for main and Kimi K3.1 Pro/Pi medium for subagents
-  (Kimi maps medium to API high). Normal apply preserves existing parent choices;
-  the owner separately authorized switching both live hosts to Astra/high.
-  The managed model entry contains no credentials; each host needs its own Kimi login. See ADR 0015 and
+  default to Sol 6.2/high for main and Kimi K3.1 Pro/Pi medium for subagents
+  (Kimi maps medium to API high). Sol 6.2 uses a temporary catalog entry pending
+  native support; check Pi/catalog updates on 2026-11-19 and remove the bridge
+  only after native resolution passes. Future model changes use the supported
+  catalog refresh/runtime-update route first, not permanent custom catalog entries.
+  Normal apply preserves existing parent
+  choices; the owner separately authorized switching both live hosts to Sol 6.2/high.
+  The model-only rollout also covered `x1-dev`, preserving its `openai` provider
+  and Astra/high children rather than claiming full harness parity. Standalone
+  Codex passed on Mac/x1-dev; homelab's Codex account rejected Sol 6.2 and keeps
+  its previous default. The managed model entry contains no credentials; each
+  Kimi-enabled host needs its own Kimi login. See ADR 0015 and
   `docs/operations/shared-harness-sync.md`.
 - Use Mosh for phone/flaky-network use.
 - Prefer OTEL-compatible observability for traces, plus heartbeat/status telemetry for "what is running now?"

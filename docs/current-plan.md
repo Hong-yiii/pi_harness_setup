@@ -22,6 +22,49 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Temporary Sol 6.2 Main Default — 2026-11-18
+
+Status: Executed for Pi on Mac, `homelab` and the inventoried `x1-dev` VM.
+Standalone Codex passed on Mac/x1-dev; homelab remains **Blocked** by its account's
+Sol 6.2 rejection and retains Astra/max. Other SSH aliases are not deployment targets.
+
+Affected surfaces: model catalog and host-local parent selection. The owner
+approved a temporary, credential-free Sol 6.2 bridge using the existing `openai`
+and `openai-codex` providers. Pi stays at 1.5.2 with unchanged package pins.
+Mac/homelab retain Kimi children; x1-dev retains OpenAI/Astra/high children and
+its authenticated `openai` provider. Selective publication backed up changed
+settings/models and x1-dev's Codex config, preserved private settings and both VM
+checkouts, and did not restart sessions or copy credentials. Mac's Codex PATH
+repair links only a previously absent launcher to its existing bundled binary.
+
+**Decided: use the supported route for future model changes.** Refresh Pi's
+native catalog first; if necessary, validate an official stable runtime update
+through the shared migration procedure. The custom Sol entry is an explicitly
+authorized temporary exception, not the long-term catalog owner. On 2026-11-19,
+check Pi/catalog updates, test native resolution without the override on each
+provider/host, then remove the bridge from source and live catalogs. Keep Sol
+as the default. No unattended update/check is scheduled by this note.
+
+Observed: all three Pi provider/tool round trips, native catalogs and nine child
+contracts passed. Selective fixtures passed preservation, backups, no-op,
+symlink and interleaved-edit guards; review prompted per-file rechecks and a
+strict thinking-key assertion. Standalone Codex passed separately on Mac/x1-dev;
+homelab returned `model_not_found`, so its config was not switched. No binaries
+were upgraded. Rollback restores only receipt-owned files after checking for
+later edits. Recovery and validation limits:
+[shared sync](operations/shared-harness-sync.md#temporary-sol-62-bridge--2026-11-18).
+
+PR validation: full Mac source suite passed (67 tests, two platform skips),
+primary JS diagnostics, local-link and whitespace checks passed, and the clean
+PR source matches the live Mac harness in read-only check. Independent review
+found no findings; it did not independently certify the earlier deployment.
+
+PR reconciliation: prior browser/runtime work is already merged in PRs #21/#22.
+The owner authorized a separate Sol-only PR based on current `origin/main`, using
+an isolated worktree to preserve the older dirty Mac checkout. This PR records
+existing deployment and future policy; it does not authorize a new live rollout
+or merge. Extension/package/runtime changes are out of scope.
+
 ## Stable Pi and Full Cross-Host Publication — 2026-11-16
 
 Status: Executed on Mac and homelab — newest-stable Pi and full shared

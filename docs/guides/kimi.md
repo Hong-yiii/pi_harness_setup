@@ -7,8 +7,9 @@ inference is **Blocked** pending `/login kimi-coding`. Coding/tool use and
 unattended work remain **Untested**.
 
 Use Pi's existing `kimi-coding` provider, not Moonshot pay-as-you-go. The owner
-selected Astra/high for main orchestration and Kimi K3.1 Pro/Pi medium for
-subagents on both hosts. No additional plugin or runtime upgrade is required.
+selected Sol 6.2/high for main orchestration and Kimi K3.1 Pro/Pi medium for
+subagents on both hosts. Sol uses a [temporary catalog bridge](../operations/shared-harness-sync.md#temporary-sol-62-bridge--2026-11-18)
+until native Pi support is validated. No additional plugin or runtime upgrade is required.
 Do not full-apply the older dirty Linux checkout, which would restore Sol. Use the retained [full-publication snapshot](../operations/shared-harness-sync.md#pi-152-full-publication--2026-11-16) until Git is reconciled.
 
 ## Add the missing model
@@ -71,7 +72,7 @@ spoofing are added.
 ```json
 {
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
+  "defaultModel": "gpt-6.2-sol",
   "defaultThinkingLevel": "high",
   "subagents": { "defaultModel": "kimi-coding/k3.1-pro:medium" }
 }
@@ -85,7 +86,7 @@ Use fresh context for Kimi children: signed Anthropic thinking in a fork can
 force thinking off, which K3.1 Pro does not support.
 
 Existing parent choices are normally preserved by apply. This owner's explicit
-switch also sets the live Astra per-model thinking preference to `high` on both
+switch also sets the live Sol 6.2 per-model thinking preference to `high` on both
 hosts so a cached `xhigh` choice cannot override it. Start a new session to use
 new parent defaults; resumed sessions retain their recorded model. Do not restart
 active sessions. Fresh subagent discovery must be verified after publication;
