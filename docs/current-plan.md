@@ -22,7 +22,42 @@ Before any meaningful build/configuration pass:
 5. Add install, rollback, smoke test, and trust notes if the change touches Pi packages or remote access.
 6. Move the change into the next build batch only after review.
 
+## Native Sol 6.2 Thinking Levels — 2026-11-18
+
+Status: Executed — corrected Pi thinking metadata on all three hosts; PR #23
+updated with native-catalog removal instead of extending the workaround. A fresh authenticated Pi catalog now contains native
+Sol 6.2, including xhigh/max; Pi's stable runtime is still 1.5.2. Prefer removing
+the temporary override to maintaining a second hand-written effort map.
+
+Affected surfaces: model metadata and selection UI. Verify native resolution,
+exact request effort and synthetic inference/tool behavior without the override
+on each host/provider before removal. Back up and remove only the two temporary
+Sol entries from live catalogs and shared source, preserving Kimi/private models,
+parent/child defaults, Codex settings and active sessions. Keep existing immutable
+release receipts; record new removal receipts. Verify persistent refreshed catalog
+resolution, native thinking picker/cycling and no-op removal. If any host lacks
+native support, stop its removal rather than leave its default unresolved.
+Rollback restores only the removed metadata after checking for later edits.
+No binary upgrade, package/vendor patch or forced session reload is authorized.
+The earlier two-choice UI symptom was not directly reproduced: the native picker
+has no two-item cap, while running sessions retain their selected model object.
+Reselect Sol through `/model` after catalog refresh; `/reload` alone is insufficient.
+Regression coverage now rejects source entries that shadow native Sol metadata.
+
+Observed: source regression failed before removing the overrides, then the full
+suite passed (67 tests, two platform skips). Each native provider effort was
+verified in outgoing payloads and live marker responses. Native tool round trips,
+persisted-catalog resolution, headless picker rendering/cycling, selective removal
+and no-op repeat passed on all hosts. Mac needed bounded tool-smoke retries for
+network failures; no persistent transport setting changed. Settings/Codex hashes
+were unchanged. Independent follow-up review found no findings; it did not rerun
+live validation. Shared Mac/homelab drift checks passed. The November 19 removal
+follow-up is closed early. Receipts and limits: [native Sol operation](operations/shared-harness-sync.md#native-sol-62-thinking-levels--2026-11-18).
+
 ## Temporary Sol 6.2 Main Default — 2026-11-18
+
+Historical: the native migration above has retired this bridge and completed its
+November 19 exit plan early. The following records the original rollout.
 
 Status: Executed for Pi on Mac, `homelab` and the inventoried `x1-dev` VM.
 Standalone Codex passed on Mac/x1-dev; homelab remains **Blocked** by its account's

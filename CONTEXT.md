@@ -42,10 +42,12 @@ The best shape is a layered harness:
   sessions, interactive parent model choices and OS paths host-local. Run check
   and apply on each host; pulling Git alone does not publish. Fresh installs
   default to Sol 6.2/high for main and Kimi K3.1 Pro/Pi medium for subagents
-  (Kimi maps medium to API high). Sol 6.2 uses a temporary catalog entry pending
-  native support; check Pi/catalog updates on 2026-11-19 and remove the bridge
-  only after native resolution passes. Future model changes use the supported
-  catalog refresh/runtime-update route first, not permanent custom catalog entries.
+  (Kimi maps medium to API high). Sol 6.2 now has native catalog support on
+  Pi 1.5.2; remove the temporary override rather than maintaining its effort map.
+  Native low/medium/high/xhigh/max are direct; Codex additionally exposes minimal
+  as a low alias. Reselect the refreshed model for existing Pi sessions.
+  Future model changes use the supported catalog refresh/runtime-update route
+  first, not permanent custom catalog entries.
   Normal apply preserves existing parent
   choices; the owner separately authorized switching both live hosts to Sol 6.2/high.
   The model-only rollout also covered `x1-dev`, preserving its `openai` provider

@@ -8,8 +8,10 @@ unattended work remain **Untested**.
 
 Use Pi's existing `kimi-coding` provider, not Moonshot pay-as-you-go. The owner
 selected Sol 6.2/high for main orchestration and Kimi K3.1 Pro/Pi medium for
-subagents on both hosts. Sol uses a [temporary catalog bridge](../operations/shared-harness-sync.md#temporary-sol-62-bridge--2026-11-18)
-until native Pi support is validated. No additional plugin or runtime upgrade is required.
+subagents on both hosts. Sol now uses the [native Pi catalog](../operations/shared-harness-sync.md#native-sol-62-thinking-levels--2026-11-18),
+not the temporary bridge. Run `pi update --models` after provider login and
+reselect Sol through `/model` to refresh an existing session's thinking choices.
+No additional plugin or runtime upgrade is required.
 Do not full-apply the older dirty Linux checkout, which would restore Sol. Use the retained [full-publication snapshot](../operations/shared-harness-sync.md#pi-152-full-publication--2026-11-16) until Git is reconciled.
 
 ## Add the missing model
